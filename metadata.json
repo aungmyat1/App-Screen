@@ -1,0 +1,5 @@
+{
+  "name": "App Screenshot Downloader",
+  "description": "A comprehensive SaaS blueprint for downloading app screenshots from the Google Play Store and Apple App Store. This service targets app developers, marketers, competitive analysts, and ASO specialists who need bulk screenshot extraction capabilities.",
+  "requestFramePermissions": []
+}
