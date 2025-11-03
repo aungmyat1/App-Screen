@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>AppScreens Braintree Payment Test</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://js.braintreegateway.com/web/dropin/1.32.1/js/dropin.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background-color: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        select, button {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+        #dropin-container {
+            margin: 20px 0;
+            min-height: 100px;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 5px;
+        }
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .info {
+            background-color: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>AppScreens Payment Test</h1>
+        
+        <div class="form-group">
+            <label for="plan">Select Plan:</label>
+            <select id="plan">
+                <option value="starter">Starter - $19/month</option>
+                <option value="professional">Professional - $49/month</option>
+                <option value="enterprise">Enterprise - $149/month</option>
+            </select>
+        </div>
+        
+        <div id="dropin-container"></div>
+        
+        <button id="submit-button" disabled>Pay Now</button>
+        
+        <div id="result"></div>
+    </div>
+
+    <script>
+        let dropinInstance;
+        
+        // In a real application, this would be fetched from your backend
+        // For testing purposes, we're using a placeholder
+        async function fetchClientToken() {
+            try {
+                // Simulate fetching token from backend
+                // In a real app, you would do:
+                // const response = await fetch('/api/payments/client-token');
+                // const { clientToken } = await response.json();
+                
+                // For demo purposes, we'll show how it would work
+                showMessage('info', 'In a real application, this would fetch a client token from your backend at /api/payments/client-token');
+                return 'sandbox_client_token'; // Placeholder
+            } catch (error) {
+                showMessage('error', 'Failed to fetch client token: ' + error.message);
+                throw error;
+            }
+        }
+        
+        async function initializeBraintree() {
+            try {
+                const clientToken = await fetchClientToken();
+                
+                // Uncomment the following lines in a real application
+                /*
+                dropinInstance = await braintree.dropin.create({
+                    authorization: clientToken,
+                    container: '#dropin-container',
+                    vaultManager: false
+                });
+                
+                document.getElementById('submit-button').disabled = false;
+                */
+               
+                // For demo purposes, show how it would work
+                document.getElementById('dropin-container').innerHTML = 
+                    '<div style="padding: 20px; text-align: center; background-color: #f8f9fa; border: 1px dashed #dee2e6; border-radius: 5px;">' +
+                    '<p>Braintree Drop-in UI would appear here</p>' +
+                    '<p><small>This is a placeholder for the actual payment form</small></p>' +
+                    '</div>';
+                
+                document.getElementById('submit-button').disabled = false;
+                showMessage('info', 'Braintree Drop-in UI initialized. In a real application, customers would enter their payment details here.');
+                
+            } catch (error) {
+                showMessage('error', 'Failed to initialize Braintree: ' + error.message);
+            }
+        }
+        
+        async function processPayment() {
+            if (!dropinInstance) {
+                showMessage('error', 'Payment form not initialized');
+                return;
+            }
+            
+            try {
+                document.getElementById('submit-button').disabled = true;
+                showMessage('info', 'Processing payment...');
+                
+                // Get payment method nonce from Drop-in
+                const payload = await dropinInstance.requestPaymentMethod();
+                
+                // Send nonce to backend for processing
+                // In a real app, you would do:
+                /*
+                const response = await fetch('/api/payments/checkout', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        // Add authentication headers as needed
+                    },
+                    body: JSON.stringify({
+                        plan: document.getElementById('plan').value,
+                        paymentMethodNonce: payload.nonce
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showMessage('success', 'Payment successful! Transaction ID: ' + result.transactionId);
+                } else {
+                    showMessage('error', 'Payment failed: ' + result.message);
+                }
+                */
+                
+                // For demo purposes
+                showMessage('success', 'Payment would be processed now! In a real application, the payment nonce would be sent to your backend at /api/payments/checkout');
+                
+            } catch (error) {
+                showMessage('error', 'Payment processing failed: ' + error.message);
+            } finally {
+                document.getElementById('submit-button').disabled = false;
+            }
+        }
+        
+        function showMessage(type, message) {
+            const resultDiv = document.getElementById('result');
+            resultDiv.className = 'result ' + type;
+            resultDiv.innerHTML = message;
+        }
+        
+        // Event listeners
+        document.getElementById('submit-button').addEventListener('click', processPayment);
+        
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', initializeBraintree);
+    </script>
+</body>
+</html>

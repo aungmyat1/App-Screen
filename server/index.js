@@ -1,8 +1,8 @@
 const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
-const mongoose = require('mongoose');
 const path = require('path');
+const { connectDB } = require('./config/database');
 
 // Load environment variables
 dotenv.config();
@@ -26,20 +26,45 @@ if (process.env.NODE_ENV === 'production') {
   });
 }
 
-// Connect to MongoDB
-mongoose.connect(process.env.MONGODB_URI, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-})
-.then(() => console.log('MongoDB connected'))
-.catch(err => console.log('MongoDB connection error:', err));
+// Connect to MongoDB (but continue even if it fails)
+let dbClient = null;
+connectDB().then(client => {
+  dbClient = client;
+}).catch(error => {
+  console.error('Database connection failed, continuing without database:', error.message);
+});
 
 // Routes
 app.get('/', (req, res) => {
   if (process.env.NODE_ENV === 'production') {
     res.sendFile(path.join(__dirname, '..', 'dist', 'index.html'));
   } else {
-    res.json({ message: 'AppScreens API is running' });
+    res.json({ 
+      message: 'AppScreens API is running',
+      mongodb: dbClient ? 'Connected' : 'Disconnected (but API is functional)'
+    });
+  }
+});
+
+// Health check endpoint
+app.get('/api/health', async (req, res) => {
+  try {
+    const gateway = require('./config/braintree');
+    // Test Braintree connection
+    await gateway.clientToken.generate({});
+    
+    res.status(200).json({
+      status: 'OK',
+      braintree: 'Connected',
+      mongodb: dbClient ? 'Connected' : 'Disconnected',
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    res.status(500).json({
+      status: 'ERROR',
+      message: error.message,
+      timestamp: new Date().toISOString()
+    });
   }
 });
 
@@ -58,4 +83,5 @@ app.use((err, req, res, next) => {
 // Start server
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
+  console.log('MongoDB connection status will be displayed in health checks');
 });
