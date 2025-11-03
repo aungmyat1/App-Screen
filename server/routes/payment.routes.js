@@ -1,10 +1,13 @@
 const express = require('express');
 const router = express.Router();
-const { createCheckoutSession, handleWebhook, getSubscription } = require('../controllers/payment.controller');
+const { generateToken, createTransaction, handleWebhook, getSubscription } = require('../controllers/payment.controller');
 const auth = require('../middleware/auth');
 
-// Create checkout session (protected)
-router.post('/checkout', auth, createCheckoutSession);
+// Generate client token (public)
+router.get('/client-token', generateToken);
+
+// Create transaction (protected)
+router.post('/checkout', auth, createTransaction);
 
 // Get subscription details (protected)
 router.get('/subscription', auth, getSubscription);

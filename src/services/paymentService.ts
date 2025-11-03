@@ -8,8 +8,14 @@ interface SubscriptionDetails {
   downloadsRemaining: number;
 }
 
-interface CheckoutSessionResponse {
-  sessionId: string;
+interface ClientTokenResponse {
+  clientToken: string;
+}
+
+interface TransactionResponse {
+  success: boolean;
+  transactionId?: string;
+  message?: string;
 }
 
 class PaymentService {
@@ -31,18 +37,33 @@ class PaymentService {
     return await response.json();
   }
 
-  async createCheckoutSession(plan: string): Promise<CheckoutSessionResponse> {
+  async getClientToken(): Promise<ClientTokenResponse> {
+    const response = await fetch(`${this.baseUrl}/client-token`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to fetch client token');
+    }
+
+    return await response.json();
+  }
+
+  async createTransaction(plan: string, paymentMethodNonce: string): Promise<TransactionResponse> {
     const response = await fetch(`${this.baseUrl}/checkout`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${localStorage.getItem('token')}`
       },
-      body: JSON.stringify({ plan })
+      body: JSON.stringify({ plan, paymentMethodNonce })
     });
 
     if (!response.ok) {
-      throw new Error('Failed to create checkout session');
+      throw new Error('Failed to create transaction');
     }
 
     return await response.json();

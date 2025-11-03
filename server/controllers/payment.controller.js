@@ -1,11 +1,23 @@
-const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+const braintree = require('braintree');
 const User = require('../models/User');
 const plans = require('../config/plans');
+const gateway = require('../config/braintree');
 
-// Create checkout session
-const createCheckoutSession = async (req, res) => {
+// Generate client token for Braintree
+const generateToken = async (req, res) => {
   try {
-    const { plan } = req.body;
+    const response = await gateway.clientToken.generate({});
+    res.json({ clientToken: response.clientToken });
+  } catch (error) {
+    console.error('Error generating token:', error);
+    res.status(500).json({ message: 'Error generating token' });
+  }
+};
+
+// Create transaction
+const createTransaction = async (req, res) => {
+  try {
+    const { plan, paymentMethodNonce } = req.body;
     
     // Validate plan
     if (!plans[plan]) {
@@ -13,112 +25,94 @@ const createCheckoutSession = async (req, res) => {
     }
     
     const planDetails = plans[plan];
+    const amount = planDetails.price;
     
-    // Create or retrieve Stripe customer
-    let customerId = req.user.subscription.stripeCustomerId;
-    
-    if (!customerId) {
-      const customer = await stripe.customers.create({
-        email: req.user.email,
-        name: req.user.name
-      });
-      customerId = customer.id;
-      
-      // Update user with Stripe customer ID
-      req.user.subscription.stripeCustomerId = customerId;
-      await req.user.save();
-    }
-    
-    // Create checkout session
-    const session = await stripe.checkout.sessions.create({
-      customer: customerId,
-      payment_method_types: ['card'],
-      line_items: [{
-        price_data: {
-          currency: 'usd',
-          product_data: {
-            name: `${planDetails.name} Plan`,
-            description: planDetails.features.join(', ')
-          },
-          unit_amount: planDetails.price * 100, // Convert to cents
-        },
-        quantity: 1,
-      }],
-      mode: 'subscription',
-      success_url: `${req.headers.origin}/success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${req.headers.origin}/pricing`,
-      client_reference_id: req.user._id.toString(),
-      metadata: {
-        plan: plan
+    // Create transaction
+    const transactionResult = await gateway.transaction.sale({
+      amount: amount.toFixed(2),
+      paymentMethodNonce: paymentMethodNonce,
+      options: {
+        submitForSettlement: true
       }
     });
     
-    res.json({ sessionId: session.id });
+    if (transactionResult.success) {
+      // Update user subscription
+      const user = req.user;
+      user.subscription.plan = plan;
+      
+      // Set expiration date (monthly subscription)
+      const expiresAt = new Date();
+      expiresAt.setMonth(expiresAt.getMonth() + 1);
+      user.subscription.expiresAt = expiresAt;
+      
+      // Update download limit based on plan
+      user.downloadLimit = plans[plan].downloadLimit;
+      
+      await user.save();
+      
+      res.json({ 
+        success: true, 
+        transactionId: transactionResult.transaction.id 
+      });
+    } else {
+      res.status(400).json({ 
+        success: false, 
+        message: transactionResult.message 
+      });
+    }
   } catch (error) {
-    console.error('Payment session creation error:', error);
-    res.status(500).json({ message: 'Error creating payment session' });
+    console.error('Transaction creation error:', error);
+    res.status(500).json({ message: 'Error creating transaction' });
   }
 };
 
-// Handle webhook events from Stripe
+// Handle webhook events from Braintree
 const handleWebhook = async (req, res) => {
   try {
-    const sig = req.headers['stripe-signature'];
-    const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
+    // For local testing, you might want to temporarily log the raw body
+    // console.log('Raw webhook body:', req.body);
     
-    let event;
+    const webhookNotification = await gateway.webhookNotification.parse(
+      req.body.bt_signature,
+      req.body.bt_payload
+    );
     
-    try {
-      event = stripe.webhooks.constructEvent(req.body, sig, endpointSecret);
-    } catch (err) {
-      console.log('Webhook signature verification failed.', err.message);
-      return res.status(400).send(`Webhook Error: ${err.message}`);
-    }
+    console.log('Webhook received:', webhookNotification);
     
-    // Handle the event
-    switch (event.type) {
-      case 'checkout.session.completed':
-        const session = event.data.object;
-        const userId = session.client_reference_id;
-        
-        if (userId) {
-          const user = await User.findById(userId);
-          if (user) {
-            const plan = session.metadata.plan;
-            user.subscription.plan = plan;
-            
-            // Set expiration date (monthly subscription)
-            const expiresAt = new Date();
-            expiresAt.setMonth(expiresAt.getMonth() + 1);
-            user.subscription.expiresAt = expiresAt;
-            
-            // Update download limit based on plan
-            user.downloadLimit = plans[plan].downloadLimit;
-            
-            await user.save();
-          }
-        }
+    // Handle different types of webhook notifications
+    switch (webhookNotification.kind) {
+      case braintree.WebhookNotification.Kind.SubscriptionWentActive:
+        // Handle subscription activation
+        console.log('Subscription activated:', webhookNotification.subscription);
         break;
-      
-      case 'customer.subscription.deleted':
+        
+      case braintree.WebhookNotification.Kind.SubscriptionCanceled:
         // Handle subscription cancellation
-        const subscription = event.data.object;
-        const customerId = subscription.customer;
-        
-        const user = await User.findOne({ 'subscription.stripeCustomerId': customerId });
-        if (user) {
-          // Revert to free plan
-          user.subscription.plan = 'free';
-          user.downloadLimit = plans.free.downloadLimit;
-          await user.save();
-        }
+        console.log('Subscription canceled:', webhookNotification.subscription);
+        // You might want to downgrade the user to free plan
         break;
-      
+        
+      case braintree.WebhookNotification.Kind.SubscriptionChargedSuccessfully:
+        // Handle successful charges
+        console.log('Subscription charged successfully:', webhookNotification.subscription);
+        break;
+        
+      case braintree.WebhookNotification.Kind.SubscriptionChargedUnsuccessfully:
+        // Handle failed charges
+        console.log('Subscription charged unsuccessfully:', webhookNotification.subscription);
+        break;
+        
+      case braintree.WebhookNotification.Kind.Check:
+        // Handle webhook verification
+        console.log('Webhook verified successfully');
+        break;
+        
       default:
-        console.log(`Unhandled event type ${event.type}`);
+        console.log(`Unhandled webhook kind: ${webhookNotification.kind}`);
     }
     
-    res.json({ received: true });
+    res.sendStatus(200);
   } catch (error) {
     console.error('Webhook handling error:', error);
     res.status(500).json({ message: 'Error handling webhook' });
@@ -143,7 +137,8 @@ const getSubscription = async (req, res) => {
 };
 
 module.exports = {
-  createCheckoutSession,
+  generateToken,
+  createTransaction,
   handleWebhook,
   getSubscription
 };
