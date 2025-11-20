@@ -1,65 +1,122 @@
 'use client';
 
 import { useState } from 'react';
-import { useAuth } from '@/contexts/auth-context';
+import { useRouter } from 'next/navigation';
+import { signIn, useSession } from 'next-auth/react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { useRouter } from 'next/navigation';
+import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
+import { Separator } from '@/components/ui/separator';
+import { Icons } from '@/components/icons';
 
-export default function Login() {
+export default function LoginPage() {
+  const router = useRouter();
+  const { data: session, status } = useSession();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
-  const { login } = useAuth();
-  const router = useRouter();
+  const [isLoading, setIsLoading] = useState<{ [key: string]: boolean }>({});
+  
+  // Redirect if already logged in
+  if (status === 'authenticated') {
+    router.push('/dashboard');
+    return null;
+  }
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError('');
-    setLoading(true);
+  const handleOAuthSignIn = async (provider: string) => {
+    setIsLoading(prev => ({ ...prev, [provider]: true }));
     
     try {
-      await login(email, password);
-      router.push('/dashboard');
-    } catch (err: any) {
-      setError(err.response?.data?.message || 'Invalid email or password');
+      const result = await signIn(provider, {
+        callbackUrl: '/dashboard',
+        redirect: true,
+      });
+      
+      if (result?.error) {
+        console.error(`Failed to sign in with ${provider}:`, result.error);
+      }
+    } catch (error) {
+      console.error(`Error signing in with ${provider}:`, error);
     } finally {
-      setLoading(false);
+      setIsLoading(prev => ({ ...prev, [provider]: false }));
+    }
+  };
+
+  const handleEmailSignIn = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(prev => ({ ...prev, email: true }));
+    
+    try {
+      const result = await signIn('credentials', {
+        email,
+        password,
+        callbackUrl: '/dashboard',
+        redirect: false,
+      });
+      
+      if (result?.error) {
+        console.error('Failed to sign in with email:', result.error);
+      } else {
+        router.push('/dashboard');
+      }
+    } catch (error) {
+      console.error('Error signing in with email:', error);
+    } finally {
+      setIsLoading(prev => ({ ...prev, email: false }));
     }
   };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background">
       <Card className="w-full max-w-md">
-        <CardHeader>
-          <CardTitle className="text-2xl font-bold">Login</CardTitle>
-          <CardDescription>
-            Enter your credentials to access your account
+        <CardHeader className="space-y-1">
+          <CardTitle className="text-2xl font-bold text-center">Login to AppScreens</CardTitle>
+          <CardDescription className="text-center">
+            Choose your preferred sign in method
           </CardDescription>
         </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            {error && (
-              <div className="bg-destructive/10 text-destructive p-3 rounded-md text-sm">
-                {error}
-              </div>
-            )}
-            
+        <CardContent className="space-y-4">
+          <div className="grid grid-cols-2 gap-4">
+            <Button 
+              variant="outline" 
+              onClick={() => handleOAuthSignIn('google')}
+              disabled={isLoading.google}
+            >
+              {isLoading.google ? (
+                <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                <Icons.google className="mr-2 h-4 w-4" />
+              )}
+              Google
+            </Button>
+            <Button 
+              variant="outline" 
+              onClick={() => handleOAuthSignIn('github')}
+              disabled={isLoading.github}
+            >
+              {isLoading.github ? (
+                <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                <Icons.gitHub className="mr-2 h-4 w-4" />
+              )}
+              GitHub
+            </Button>
+          </div>
+          
+          <Separator className="my-6" />
+          
+          <form onSubmit={handleEmailSignIn} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
               <Input
                 id="email"
                 type="email"
+                placeholder="name@example.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                disabled={loading}
               />
             </div>
-            
             <div className="space-y-2">
               <Label htmlFor="password">Password</Label>
               <Input
@@ -68,35 +125,32 @@ export default function Login() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                disabled={loading}
               />
             </div>
-            
-            <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? (
-                <div className="flex items-center">
-                  <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent"></div>
-                  Signing in...
-                </div>
+            <Button 
+              type="submit" 
+              className="w-full"
+              disabled={isLoading.email}
+            >
+              {isLoading.email ? (
+                <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />
               ) : (
-                'Sign In'
+                'Sign In with Email'
               )}
             </Button>
           </form>
-          
-          <div className="mt-4 text-center text-sm">
-            <span className="text-muted-foreground">
-              Don't have an account?{' '}
-            </span>
-            <Button 
-              variant="link" 
-              className="p-0 h-auto font-medium"
+        </CardContent>
+        <CardFooter className="flex flex-col space-y-4">
+          <div className="text-sm text-muted-foreground text-center">
+            Don't have an account?{' '}
+            <button 
               onClick={() => router.push('/register')}
+              className="text-primary underline-offset-4 hover:underline"
             >
               Sign up
-            </Button>
+            </button>
           </div>
-        </CardContent>
+        </CardFooter>
       </Card>
     </div>
   );

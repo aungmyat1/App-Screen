@@ -12,22 +12,26 @@ datasource db {
 
 // 1. Multi-tenant user management
 model User {
-  id             String    @id @default(uuid())
-  email          String    @unique
-  password       String
-  firstName      String
-  lastName       String
-  avatar         String?
-  role           Role      @default(USER)
-  status         UserStatus @default(ACTIVE)
-  organizationId String?
-  organization   Organization? @relation(fields: [organizationId], references: [id])
-  teamMemberships TeamMember[]
-  screenshotJobs  ScreenshotJob[]
-  comments       Comment[]
-  subscription   Subscription?
-  createdAt      DateTime  @default(now())
-  updatedAt      DateTime  @updatedAt
+  id                          String    @id @default(uuid())
+  email                       String    @unique
+  emailVerified               DateTime?
+  emailVerificationToken      String?
+  emailVerificationTokenExpiry DateTime?
+  password                    String
+  firstName                   String
+  lastName                    String
+  avatar                      String?
+  role                        Role      @default(USER)
+  status                      UserStatus @default(ACTIVE)
+  organizationId              String?
+  organization                Organization? @relation(fields: [organizationId], references: [id])
+  teamMemberships             TeamMember[]
+  screenshotJobs              ScreenshotJob[]
+  comments                    Comment[]
+  subscription                Subscription?
+  passwordLastChanged         DateTime?
+  createdAt                   DateTime  @default(now())
+  updatedAt                   DateTime  @updatedAt
 
   @@index([email])
   @@index([organizationId])
