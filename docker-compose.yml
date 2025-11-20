@@ -1,0 +1,43 @@
+version: '3.8'
+
+services:
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    environment:
+      - NODE_ENV=production
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "5000:5000"
+    environment:
+      - NODE_ENV=production
+      - DB_HOST=postgresql
+      - DB_PORT=5432
+      - DB_USERNAME=appscreen
+      - DB_PASSWORD=appscreen
+      - DB_NAME=appscreen
+    depends_on:
+      - postgresql
+
+  postgresql:
+    image: postgres:15-alpine
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=appscreen
+      - POSTGRES_PASSWORD=appscreen
+      - POSTGRES_DB=appscreen
+    volumes:
+      - postgresql_data:/var/lib/postgresql/data
+
+volumes:
+  postgresql_data:
