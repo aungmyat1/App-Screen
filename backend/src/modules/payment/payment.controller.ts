@@ -1,33 +1,34 @@
-import { Controller, Post, Body, UseGuards, Request, Get } from '@nestjs/common';
+import { Controller, Get, Post, Request, UseGuards } from '@nestjs/common';
 import { PaymentService } from './payment.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { SubscribeDto } from './dto/subscribe.dto';
 
 @Controller('payment')
-@UseGuards(JwtAuthGuard)
 export class PaymentController {
   constructor(private readonly paymentService: PaymentService) {}
 
+  @UseGuards(JwtAuthGuard)
   @Get('client-token')
-  async getClientToken() {
+  async getClientToken(@Request() req) {
     const clientToken = await this.paymentService.generateClientToken();
     return { clientToken };
   }
 
+  @UseGuards(JwtAuthGuard)
   @Post('subscribe')
-  async processSubscription(
-    @Request() req,
-    @Body('paymentMethodNonce') paymentMethodNonce: string,
-    @Body('planId') planId: string,
-  ) {
-    return this.paymentService.processSubscription(
-      req.user.id,
-      paymentMethodNonce,
-      planId,
+  async subscribe(@Request() req, subscribeDto: SubscribeDto) {
+    const result = await this.paymentService.createSubscription(
+      req.user.userId,
+      subscribeDto.paymentMethodNonce,
+      subscribeDto.planId,
     );
+    return result;
   }
 
+  @UseGuards(JwtAuthGuard)
   @Post('cancel')
   async cancelSubscription(@Request() req) {
-    return this.paymentService.cancelSubscription(req.user.id);
+    const result = await this.paymentService.cancelSubscription(req.user.userId);
+    return result;
   }
 }

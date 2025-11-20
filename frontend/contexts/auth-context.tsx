@@ -10,6 +10,7 @@ interface AuthContextType {
   logout: () => void;
   loading: boolean;
   isAuthenticated: boolean;
+  refreshUser: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -62,6 +63,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(null);
   };
 
+  const refreshUser = async () => {
+    try {
+      const userData = await apiService.getProfile();
+      setUser(userData);
+    } catch (error) {
+      console.error('Failed to refresh user:', error);
+      // If token is invalid, logout user
+      apiService.setAuthToken(null);
+      setUser(null);
+    }
+  };
+
   const isAuthenticated = !!user;
 
   return (
@@ -72,7 +85,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         register,
         logout,
         loading,
-        isAuthenticated
+        isAuthenticated,
+        refreshUser
       }}
     >
       {children}
