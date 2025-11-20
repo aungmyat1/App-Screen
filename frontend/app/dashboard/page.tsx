@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useAuth } from '@/contexts/auth-context';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -10,27 +9,18 @@ import {
   PlayIcon, 
   AppleIcon, 
   DownloadIcon,
-  LogOutIcon,
   RefreshCwIcon
 } from 'lucide-react';
-import { useRouter } from 'next/navigation';
 import { apiService, ScreenshotJob } from '@/lib/api';
 import { JobStatus } from '@/components/job-status';
 
 export default function Dashboard() {
-  const { user, logout } = useAuth();
-  const router = useRouter();
   const [appUrl, setAppUrl] = useState('');
   const [selectedStore, setSelectedStore] = useState<'google' | 'apple'>('google');
   const [isLoading, setIsLoading] = useState(false);
   const [jobs, setJobs] = useState<ScreenshotJob[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
-
-  const handleLogout = () => {
-    logout();
-    router.push('/');
-  };
 
   const handleDownload = async () => {
     setError(null);
@@ -92,41 +82,11 @@ export default function Dashboard() {
   };
 
   useEffect(() => {
-    if (user) {
-      refreshJobs();
-    }
-  }, [user]);
-
-  if (!user) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold">Access Denied</h1>
-          <p className="mt-2 text-muted-foreground">You must be logged in to view this page.</p>
-          <Button className="mt-4" onClick={() => router.push('/')}>
-            Go Home
-          </Button>
-        </div>
-      </div>
-    );
-  }
+    refreshJobs();
+  }, []);
 
   return (
-    <div className="min-h-screen bg-background">
-      <header className="border-b">
-        <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-          <h1 className="text-2xl font-bold">AppScreens</h1>
-          <div className="flex items-center gap-4">
-            <span className="text-sm">Welcome, {user.name}</span>
-            <Button variant="outline" size="sm" onClick={handleLogout}>
-              <LogOutIcon className="mr-2 h-4 w-4" />
-              Logout
-            </Button>
-          </div>
-        </div>
-      </header>
-
-      <main className="container mx-auto px-4 py-8">
+    <div className="space-y-8">
         <Card className="max-w-3xl mx-auto">
           <CardHeader>
             <CardTitle>Request App Screenshots</CardTitle>
@@ -238,7 +198,6 @@ export default function Dashboard() {
             </CardContent>
           </Card>
         </div>
-      </main>
-    </div>
+      </div>
   );
 }
