@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/auth-context';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -10,10 +10,12 @@ import {
   PlayIcon, 
   AppleIcon, 
   DownloadIcon,
-  LogOutIcon
+  LogOutIcon,
+  RefreshCwIcon
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { apiService } from '@/lib/api';
+import { apiService, ScreenshotJob } from '@/lib/api';
+import { JobStatus } from '@/components/job-status';
 
 export default function Dashboard() {
   const { user, logout } = useAuth();
@@ -21,7 +23,9 @@ export default function Dashboard() {
   const [appUrl, setAppUrl] = useState('');
   const [selectedStore, setSelectedStore] = useState<'google' | 'apple'>('google');
   const [isLoading, setIsLoading] = useState(false);
+  const [jobs, setJobs] = useState<ScreenshotJob[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   const handleLogout = () => {
     logout();
@@ -40,12 +44,58 @@ export default function Dashboard() {
       
       alert(result.message);
       setAppUrl('');
+      refreshJobs();
     } catch (err: any) {
       setError(err.response?.data?.message || 'Failed to request screenshots');
     } finally {
       setIsLoading(false);
     }
   };
+
+  const refreshJobs = async () => {
+    try {
+      setIsRefreshing(true);
+      const userJobs = await apiService.getUserScreenshotJobs();
+      setJobs(userJobs);
+    } catch (err) {
+      console.error('Failed to refresh jobs:', err);
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
+
+  const downloadJob = async (jobId: string) => {
+    try {
+      const blob = await apiService.downloadScreenshots(jobId);
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `screenshots-${jobId}.zip`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
+    } catch (err: any) {
+      setError(err.response?.data?.message || 'Failed to download screenshots');
+    }
+  };
+
+  const refreshJob = async (jobId: string) => {
+    try {
+      const updatedJob = await apiService.getScreenshotJob(jobId);
+      setJobs(prevJobs => 
+        prevJobs.map(job => job.id === jobId ? updatedJob : job)
+      );
+    } catch (err) {
+      console.error('Failed to refresh job:', err);
+    }
+  };
+
+  useEffect(() => {
+    if (user) {
+      refreshJobs();
+    }
+  }, [user]);
 
   if (!user) {
     return (
@@ -148,17 +198,43 @@ export default function Dashboard() {
         <div className="mt-8 max-w-3xl mx-auto">
           <Card>
             <CardHeader>
-              <CardTitle>Your Recent Requests</CardTitle>
-              <CardDescription>
-                View the status of your screenshot requests
-              </CardDescription>
+              <div className="flex justify-between items-center">
+                <div>
+                  <CardTitle>Your Recent Requests</CardTitle>
+                  <CardDescription>
+                    View the status of your screenshot requests
+                  </CardDescription>
+                </div>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={refreshJobs}
+                  disabled={isRefreshing}
+                >
+                  <RefreshCwIcon className={`h-4 w-4 mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
+                  Refresh
+                </Button>
+              </div>
             </CardHeader>
             <CardContent>
-              <div className="text-center py-8">
-                <p className="text-muted-foreground">
-                  No recent requests found. Submit a request above to get started.
-                </p>
-              </div>
+              {jobs.length === 0 ? (
+                <div className="text-center py-8">
+                  <p className="text-muted-foreground">
+                    No recent requests found. Submit a request above to get started.
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {jobs.map((job) => (
+                    <JobStatus 
+                      key={job.id} 
+                      job={job} 
+                      onDownload={downloadJob}
+                      onRefresh={refreshJob}
+                    />
+                  ))}
+                </div>
+              )}
             </CardContent>
           </Card>
         </div>

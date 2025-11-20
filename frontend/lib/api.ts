@@ -125,6 +125,13 @@ class ApiService {
     return response.data;
   }
 
+  async downloadScreenshots(jobId: string) {
+    const response = await this.api.get(`/download/screenshots/${jobId}`, {
+      responseType: 'blob',
+    });
+    return response.data;
+  }
+
   // Payment endpoints
   async getClientToken() {
     const response = await this.api.get<{ clientToken: string }>('/payment/client-token');

@@ -1,13 +1,17 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ScreenshotJob, JobStatus } from '../../entities/screenshot-job.entity';
+import { ScreenshotProcessor } from './screenshot.processor';
 
 @Injectable()
 export class ScreenshotService {
+  private readonly logger = new Logger(ScreenshotService.name);
+
   constructor(
     @InjectRepository(ScreenshotJob)
     private screenshotJobRepository: Repository<ScreenshotJob>,
+    private readonly screenshotProcessor: ScreenshotProcessor,
   ) {}
 
   async createJob(
@@ -22,7 +26,13 @@ export class ScreenshotService {
       store,
       userId,
     });
-    return this.screenshotJobRepository.save(job);
+    
+    const savedJob = await this.screenshotJobRepository.save(job);
+    
+    // Process the job asynchronously
+    this.processJobAsync(savedJob);
+    
+    return savedJob;
   }
 
   async getJobById(id: string): Promise<ScreenshotJob | null> {
@@ -52,5 +62,17 @@ export class ScreenshotService {
     }
 
     return this.screenshotJobRepository.save(job);
+  }
+
+  private async processJobAsync(job: ScreenshotJob): Promise<void> {
+    // Process job asynchronously without blocking the response
+    setImmediate(async () => {
+      try {
+        await this.screenshotProcessor.processJob(job);
+      } catch (error) {
+        this.logger.error(`Error processing job ${job.id}: ${error.message}`);
+        await this.updateJobStatus(job.id, JobStatus.FAILED);
+      }
+    });
   }
 }
