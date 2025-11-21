@@ -177,9 +177,14 @@ const mockApps: AppSuggestion[] = [
     { name: 'Google Maps', publisher: 'Google LLC', icon: '🗺️', url: 'https://play.google.com/store/apps/details?id=com.google.android.apps.maps', store: 'google', rating: 4.7, downloads: '5B+' },
     { name: 'Instagram', publisher: 'Meta Platforms, Inc.', icon: '📸', url: 'https://play.google.com/store/apps/details?id=com.instagram.android', store: 'google', rating: 4.5, downloads: '5B+' },
     { name: 'TikTok', publisher: 'TikTok Pte. Ltd.', icon: '🎵', url: 'https://play.google.com/store/apps/details?id=com.zhiliaoapp.musically', store: 'google', rating: 4.4, downloads: '1B+' },
+    { name: 'WhatsApp Messenger', publisher: 'WhatsApp LLC', icon: '💬', url: 'https://play.google.com/store/apps/details?id=com.whatsapp', store: 'google', rating: 4.3, downloads: '5B+' },
+    { name: 'Spotify', publisher: 'Spotify AB', icon: '🎧', url: 'https://play.google.com/store/apps/details?id=com.spotify.music', store: 'google', rating: 4.4, downloads: '1B+' },
+    
     { name: 'Procreate', publisher: 'Savage Interactive Pty Ltd', icon: '🖌️', url: 'https://apps.apple.com/us/app/procreate/id425073498', store: 'apple', rating: 4.5, downloads: '10M+' },
     { name: 'Notability', publisher: 'Ginger Labs', icon: '📝', url: 'https://apps.apple.com/us/app/notability/id360593530', store: 'apple', rating: 4.7, downloads: '10M+' },
     { name: 'ChatGPT', publisher: 'OpenAI', icon: '🤖', url: 'https://apps.apple.com/us/app/chatgpt/id6448311069', store: 'apple', rating: 4.9, downloads: '50M+' },
+    { name: 'Duolingo', publisher: 'Duolingo', icon: '🦉', url: 'https://apps.apple.com/us/app/duolingo-language-lessons/id570060128', store: 'apple', rating: 4.7, downloads: '100M+' },
+    { name: 'YouTube', publisher: 'Google LLC', icon: '▶️', url: 'https://apps.apple.com/us/app/youtube-watch-listen-stream/id544007664', store: 'apple', rating: 4.7, downloads: '1B+' },
 ];
 
 const fetchAppSuggestions = async (query: string, store: 'google' | 'apple'): Promise<AppSuggestion[]> => {
@@ -190,6 +195,7 @@ const fetchAppSuggestions = async (query: string, store: 'google' | 'apple'): Pr
     const appleIdRegex = /^\d{9,10}$/;
     const isUrl = query.startsWith('http://') || query.startsWith('https://');
     
+    // Return empty if it looks like a URL or ID to avoid interfering with direct input
     if (isUrl || googleIdRegex.test(query) || appleIdRegex.test(query)) return [];
 
     const lowerCaseQuery = query.toLowerCase();
@@ -309,14 +315,34 @@ const Hero: React.FC<{ showToast: (message: string, type: 'success' | 'error') =
     });
 
     useEffect(() => {
-        if (!debouncedAppUrl.trim()) setShowSuggestions(false);
-        else if (suggestions.length > 0 || isSearching) setShowSuggestions(true);
+        // If input is empty, hide suggestions
+        if (!debouncedAppUrl.trim()) {
+            setShowSuggestions(false);
+            return;
+        }
+        
+        // If we are searching OR we have results, OR we previously had results but now have 0 (showing "No results"), keep it open.
+        // The key is to close it only if the user explicitly clears input or clicks outside.
+        // We want to show "No results" if the query is valid but returns nothing.
+        if (debouncedAppUrl.trim()) {
+            setShowSuggestions(true);
+        }
     }, [debouncedAppUrl, suggestions.length, isSearching]);
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setAppUrl(e.target.value);
         setError(null);
-        setShowSuggestions(!!e.target.value.trim());
+        if (e.target.value.trim()) {
+             setShowSuggestions(true);
+        } else {
+            setShowSuggestions(false);
+        }
+    };
+    
+    const handleInputFocus = () => {
+        if (appUrl.trim()) {
+            setShowSuggestions(true);
+        }
     };
 
     const handleSuggestionClick = (app: AppSuggestion) => {
@@ -337,7 +363,12 @@ const Hero: React.FC<{ showToast: (message: string, type: 'success' | 'error') =
     }, []);
 
     const handleKeyDown = (e: React.KeyboardEvent) => {
-        if (!showSuggestions || suggestions.length === 0) return;
+        if (!showSuggestions) return;
+        
+        // If suggestions list is empty (no results), avoid navigating
+        const maxIndex = suggestions.length - 1;
+        if (maxIndex < 0) return;
+
         if (e.key === 'ArrowDown') { e.preventDefault(); setActiveIndex(p => (p + 1) % suggestions.length); }
         else if (e.key === 'ArrowUp') { e.preventDefault(); setActiveIndex(p => (p - 1 + suggestions.length) % suggestions.length); }
         else if (e.key === 'Enter' && activeIndex >= 0) { e.preventDefault(); handleSuggestionClick(suggestions[activeIndex]); }
@@ -376,7 +407,7 @@ const Hero: React.FC<{ showToast: (message: string, type: 'success' | 'error') =
                 </p>
 
                 <div className="max-w-3xl mx-auto relative" ref={suggestionsContainerRef} onKeyDown={handleKeyDown}>
-                    <div className="bg-white dark:bg-slate-900/80 p-2 rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 backdrop-blur-sm transition-all focus-within:ring-4 focus-within:ring-primary-100 dark:focus-within:ring-primary-900/30">
+                    <div className="bg-white dark:bg-slate-900/80 p-2 rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 backdrop-blur-sm transition-all focus-within:ring-4 focus-within:ring-primary-100 dark:focus-within:ring-primary-900/30 relative z-30">
                         <div className="flex flex-col sm:flex-row items-center gap-2">
                             <div className="flex rounded-2xl bg-slate-100 dark:bg-slate-800 p-1 ml-1">
                                 <button onClick={() => setSelectedStore('google')} className={`p-2 rounded-xl transition-all ${selectedStore === 'google' ? 'bg-white dark:bg-slate-700 shadow-sm text-primary-600 dark:text-primary-400' : 'text-slate-400 hover:text-slate-600'}`}>
@@ -394,6 +425,7 @@ const Hero: React.FC<{ showToast: (message: string, type: 'success' | 'error') =
                                 type="text"
                                 value={appUrl}
                                 onChange={handleInputChange}
+                                onFocus={handleInputFocus}
                                 placeholder={selectedStore === 'google' ? "Paste Google Play URL or search..." : "Paste App Store URL or search..."}
                                 className="flex-1 w-full bg-transparent border-none outline-none text-lg px-4 py-3 text-slate-900 dark:text-white placeholder-slate-400"
                                 autoComplete="off"
@@ -447,7 +479,7 @@ const Hero: React.FC<{ showToast: (message: string, type: 'success' | 'error') =
                                     ))}
                                 </ul>
                             ) : (
-                                <div className="p-6 text-center text-slate-500">No results found.</div>
+                                <div className="p-6 text-center text-slate-500">No results found for "{appUrl}".</div>
                             )}
                         </div>
                     )}
