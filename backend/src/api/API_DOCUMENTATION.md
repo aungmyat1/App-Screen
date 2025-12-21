@@ -36,6 +36,10 @@ Example response:
 
 See [Screenshots API Documentation](routes/SCREENSHOTS_API.md) for detailed information about the screenshots endpoints.
 
+### CRUD API Endpoints
+
+See [CRUD API Documentation](CRUD_API_DOCUMENTATION.md) for detailed information about all CRUD endpoints for users, jobs, screenshots, and API usage records.
+
 ## Middleware
 
 ### Authentication Middleware
