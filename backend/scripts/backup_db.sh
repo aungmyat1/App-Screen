@@ -15,7 +15,7 @@ mkdir -p $BACKUP_DIR
 
 # Create database backup
 echo "Creating backup of database: $DB_NAME"
-pg_dump -U $DB_USER -h localhost $DB_NAME > $BACKUP_FILE
+pg_dump -U $DB_USER -h localhost -w $DB_NAME > $BACKUP_FILE
 
 if [ $? -eq 0 ]; then
     echo "Backup successful: $BACKUP_FILE"

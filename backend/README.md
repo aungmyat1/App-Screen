@@ -34,12 +34,20 @@ This is the backend service for the AppScreens application, which provides APIs 
    ```
 
 5. Set up the database:
-   - Create a PostgreSQL database named `appscreens`
-   - Update the database connection string in `src/database/alembic.ini` if needed
-   - Run the database setup script:
-     ```bash
-     python src/database/setup.py
-     ```
+   See [Database Setup Guide](src/database/DATABASE_SETUP.md) for detailed instructions.
+   
+   Quick setup:
+   ```bash
+   ./setup_database.sh
+   ```
+
+6. PostgreSQL setup:
+   See [PostgreSQL Setup Guide](src/database/POSTGRESQL_SETUP.md) for detailed instructions.
+   
+   Quick setup:
+   ```bash
+   ./scripts/init_db.sh
+   ```
 
 ## Running the Application
 
@@ -94,6 +102,12 @@ The application uses PostgreSQL and consists of four main tables:
 2. **scrape_jobs** - Tracks screenshot scraping jobs
 3. **screenshots** - Stores information about individual screenshots
 4. **api_usage** - Tracks API usage for analytics and billing
+
+See [Database Schema Documentation](src/database/DATABASE_SETUP.md) for detailed schema information.
+
+## PostgreSQL Setup
+
+See [PostgreSQL Setup Guide](src/database/POSTGRESQL_SETUP.md) for detailed setup instructions.
 
 ## Environment Variables
 
