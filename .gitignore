@@ -7,12 +7,24 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
+# Dependencies
 node_modules
+jspm_packages
+
+# Distribution / packaging
 dist
 dist-ssr
 *.local
+.pnpm-store
+.parcel-cache
 
 # Python
+venv/
+env/
+ENV/
+.venv/
+env.bak/
+venv.bak/
 backend/venv/
 backend/.venv/
 __pycache__/
@@ -37,10 +49,27 @@ wheels/
 *.egg
 celerybeat-schedule
 celerybeat.pid
+.coverage
+.pytest_cache/
+.pytest_cache__
+htmlcov/
+.tox/
+.nox/
+.hypothesis/
 
-# Editor directories and files
+# Virtual environments
+*/venv/
+*/env/
+*/.venv/
+*/ENV/
+
+# Playwright
+.playwright/
+
+# IDEs
 .vscode/*
 !.vscode/extensions.json
+!.vscode/settings.json
 .idea
 .DS_Store
 *.suo
@@ -48,3 +77,74 @@ celerybeat.pid
 *.njsproj
 *.sln
 *.sw?
+Thumbs.db
+
+# OS generated files
+ehthumbs_vista.db
+*.stackdump
+*.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+Icon?
+*[Tt]humbs.db
+
+# Environment files
+.env
+.env.local
+.env.production
+.env.development
+
+# Next.js
+.next/
+out/
+!**/.gitkeep
+
+# Nuxt.js
+.nuxt/
+.nuxt2/
+
+# Vue CLI
+node_modules/
+dist/
+dist-ssr/
+*.local
+
+# Editor directories and files
+.atom/
+.buildpath
+.codio
+.factorypath
+.gradle
+.idea/
+.metadata
+.project
+.recommenders
+.settings
+.springBeans
+.sts4-cache
+nbproject/
+rebel.xml
+
+# Visual Studio Code
+.vscode/
+
+# Miscellaneous
+*.jar
+*.war
+*.ear
+*.class
+*.tar.gz
+*.rar
+*.zip
+*.7z
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+Icon?
+Thumbs.db
+ehthumbs_v1.db
+desktop.ini
