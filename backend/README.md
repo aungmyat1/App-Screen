@@ -49,16 +49,26 @@ To start the development server:
 ./start.sh
 ```
 
-Or manually:
+Or run directly with uvicorn:
 
 ```bash
+source venv/bin/activate
 uvicorn src.main:app --host 0.0.0.0 --port 8000 --reload
 ```
 
-The API will be available at http://localhost:8000
+## Environment Variables
+
+Copy the [.env.example](file:///workspaces/App-Screen-/backend/.env.example) file to `.env` and update the values as needed:
+
+```bash
+cp .env.example .env
+```
+
+Then edit the `.env` file with your actual configuration values.
 
 ## API Documentation
 
+Once the server is running, you can access the API documentation at:
 - Swagger UI: http://localhost:8000/docs
 - ReDoc: http://localhost:8000/redoc
 
