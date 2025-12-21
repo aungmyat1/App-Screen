@@ -87,6 +87,19 @@ source venv/bin/activate
 uvicorn src.main:app --host 0.0.0.0 --port 8000 --reload
 ```
 
+For the new FastAPI application structure:
+
+```bash
+./start_api.sh
+```
+
+Or run directly with uvicorn:
+
+```bash
+source venv/bin/activate
+uvicorn src.api.main:app --host 0.0.0.0 --port 8000 --reload
+```
+
 ## Environment Variables
 
 Copy the [.env.example](file:///workspaces/App-Screen-/backend/.env.example) file to `.env` and update the values as needed:
@@ -103,11 +116,15 @@ Once the server is running, you can access the API documentation at:
 - Swagger UI: http://localhost:8000/docs
 - ReDoc: http://localhost:8000/redoc
 
+For the new API structure, see [API Documentation](src/api/API_DOCUMENTATION.md).
+
 ## Project Structure
 
 ```
 src/
 ├── api/              # API routes and schemas
+│   ├── middleware/   # API middleware components
+│   └── main.py       # FastAPI application entry point
 ├── core/             # Core business logic (scrapers)
 ├── database/         # Database setup and management
 ├── models/           # Database models
