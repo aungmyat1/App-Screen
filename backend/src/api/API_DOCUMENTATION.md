@@ -32,6 +32,10 @@ Example response:
 }
 ```
 
+### Screenshots API
+
+See [Screenshots API Documentation](routes/SCREENSHOTS_API.md) for detailed information about the screenshots endpoints.
+
 ## Middleware
 
 ### Authentication Middleware
@@ -89,10 +93,10 @@ Once the server is running, you can access the API documentation at:
 
 ## Extending the API
 
-To add new endpoints, create new route files in the `src/api` directory and include them in the main application:
+To add new endpoints, create new route files in the `src/api/routes` directory and include them in the main application:
 
 ```python
-from src.api.your_new_routes import router as your_new_router
+from src.api.routes.your_new_routes import router as your_new_router
 app.include_router(your_new_router)
 ```
 

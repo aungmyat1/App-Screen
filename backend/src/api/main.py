@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
 from src.api.middleware.rate_limit import RateLimitMiddleware
 from src.api.middleware.auth import AuthMiddleware
+from src.api.routes.screenshots import router as screenshots_router
 
 app = FastAPI(
     title="Screenshot Scraper API",
@@ -21,6 +22,9 @@ app.add_middleware(
 )
 app.add_middleware(RateLimitMiddleware)
 app.add_middleware(AuthMiddleware)
+
+# Include routers
+app.include_router(screenshots_router)
 
 # Health check
 @app.get("/health")
