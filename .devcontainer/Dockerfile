@@ -43,8 +43,9 @@ COPY backend/requirements.txt ./backend/requirements.txt
 RUN cd backend && pip install -r requirements.txt
 
 # Install Node dependencies
-COPY package.json package-lock.json ./
-RUN npm install
+# package-lock.json may not exist in the repository root; copy package.json only
+COPY package.json ./
+RUN npm install --legacy-peer-deps || npm install
 
 EXPOSE 3000 8000
 
