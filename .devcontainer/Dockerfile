@@ -12,10 +12,6 @@ ARG PERSONAL_ACCESS_TOKEN=""
 ARG EXTENSIONS_STRING=""
 ARG FEATURES={}
 ENV DEBIAN_FRONTEND=noninteractive
-COPY _docker_build_features.sh /tmp/scripts/_docker_build_features.sh
-RUN chmod +x /tmp/scripts/_docker_build_features.sh \
-    && /tmp/scripts/_docker_build_features.sh
-ENV DEBIAN_FRONTEND=dialog
 
 # Install system dependencies
 RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
