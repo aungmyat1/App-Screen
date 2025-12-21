@@ -137,6 +137,29 @@ sudo systemctl start redis
 redis-server
 ```
 
+## Persistence and High Availability
+
+For production deployments, Redis should be configured with persistence and high availability:
+
+- [Redis Persistence and High Availability Setup](REDIS_PERSISTENCE_HA.md) - Detailed guide for configuring Redis with AOF+RDB persistence and Redis Sentinel for high availability
+
+### Quick Setup
+
+1. **Persistent Redis**:
+   ```bash
+   ./scripts/setup_persistent_redis.sh
+   ```
+
+2. **Redis Sentinel**:
+   ```bash
+   ./scripts/setup_sentinel.sh
+   ```
+
+3. **Cache Warming**:
+   ```bash
+   ./scripts/warm_cache.sh
+   ```
+
 ## Testing Redis Connection
 
 To test if Redis is running properly:

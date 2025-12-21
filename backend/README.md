@@ -57,6 +57,21 @@ This is the backend service for the AppScreens application, which provides APIs 
    ./scripts/setup_redis.sh
    ```
 
+8. Redis persistence and high availability (optional, for production):
+   See [Redis Persistence and HA Setup](src/config/REDIS_PERSISTENCE_HA.md) for detailed instructions.
+   
+   Quick setup:
+   ```bash
+   # Setup Redis with AOF+RDB persistence
+   ./scripts/setup_persistent_redis.sh
+   
+   # Setup Redis Sentinel for high availability
+   ./scripts/setup_sentinel.sh
+   
+   # Warm the cache with popular app data
+   ./scripts/warm_cache.sh
+   ```
+
 ## Running the Application
 
 To start the development server:
@@ -120,6 +135,12 @@ See [PostgreSQL Setup Guide](src/database/POSTGRESQL_SETUP.md) for detailed setu
 ## Redis Setup
 
 See [Redis Setup Guide](src/config/REDIS.md) for detailed setup instructions.
+
+## Redis Persistence and High Availability
+
+For production deployments, Redis should be configured with persistence and high availability:
+
+See [Redis Persistence and HA Setup](src/config/REDIS_PERSISTENCE_HA.md) for detailed instructions.
 
 ## Environment Variables
 
