@@ -1,0 +1,14 @@
+fastapi
+uvicorn
+playwright
+aiohttp
+beautifulsoup4
+redis
+celery
+sqlalchemy
+alembic
+pydantic
+boto3
+stripe
+sentry-sdk
+psycopg2-binary
