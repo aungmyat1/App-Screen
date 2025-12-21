@@ -1,0 +1,68 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: ..
+      dockerfile: .devcontainer/Dockerfile
+    image: app-screen-dev
+    container_name: app-screen-dev
+    volumes:
+      - ..:/workspaces/App-Screen-:cached
+      - /workspaces/App-Screen-/node_modules
+      - /workspaces/App-Screen-/backend/.venv
+    environment:
+      - DATABASE_URL=postgresql://appscreens_user:appscreens_pass@postgres:5432/appscreens
+      - REDIS_URL=redis://redis:6379
+      - NODE_ENV=development
+    ports:
+      - "5173:5173"  # Vite dev server
+      - "8000:8000"  # FastAPI backend
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - app-network
+    command: sleep infinity
+
+  postgres:
+    image: postgres:15
+    restart: unless-stopped
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_DB=appscreens
+      - POSTGRES_USER=appscreens_user
+      - POSTGRES_PASSWORD=appscreens_pass
+    ports:
+      - "5432:5432"
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U appscreens_user -d appscreens"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7
+    restart: unless-stopped
+    volumes:
+      - redis-data:/data
+    ports:
+      - "6379:6379"
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres-data:
+  redis-data:
+
+networks:
+  app-network:
+    driver: bridge
