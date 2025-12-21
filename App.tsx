@@ -1,9 +1,7 @@
-
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 
-// --- Helper Hooks (Simulating New Stack: TanStack Query) ---
+// --- Helper Hooks ---
 
-// 1. useDebounce
 function useDebounce<T>(value: T, delay: number): T {
   const [debouncedValue, setDebouncedValue] = useState(value);
   useEffect(() => {
@@ -17,7 +15,6 @@ function useDebounce<T>(value: T, delay: number): T {
   return debouncedValue;
 }
 
-// 2. useQuery
 interface QueryState<T> {
   data: T | undefined;
   isLoading: boolean;
@@ -61,24 +58,17 @@ function useQuery<T>({
     return () => {
       isMounted = false;
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [keyString, enabled]);
 
   return state;
 }
 
-// --- Helper Components & Icons ---
+// --- Icons ---
 
 const CheckIcon: React.FC<{ className?: string }> = ({ className = 'w-5 h-5' }) => (
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
     <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
   </svg>
-);
-
-const CopyIcon: React.FC<{ className?: string }> = ({ className = 'w-5 h-5' }) => (
-    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={className}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M15.666 3.888A2.25 2.25 0 0013.5 2.25h-3c-1.03 0-1.9.693-2.166 1.638m7.332 0c.055.194.084.4.084.612v0a2.25 2.25 0 01-2.25 2.25h-1.5a2.25 2.25 0 01-2.25-2.25v0c0-.212.03-.418.084-.612m7.332 0c.646.049 1.288.11 1.927.184 1.1.128 1.907 1.077 1.907 2.185V19.5a2.25 2.25 0 01-2.25 2.25H6.75A2.25 2.25 0 014.5 19.5V6.257c0-1.108.806-2.057 1.907-2.185a48.208 48.208 0 011.927-.184" />
-    </svg>
 );
 
 const StarIcon: React.FC<{ className?: string }> = ({ className = 'w-4 h-4' }) => (
@@ -118,7 +108,6 @@ const FeatureIcon: React.FC<{ icon: string }> = ({ icon }) => {
         'metadata': <path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />,
         'api': <path strokeLinecap="round" strokeLinejoin="round" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />,
     };
-
     return (
         <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             {icons[icon]}
@@ -127,7 +116,7 @@ const FeatureIcon: React.FC<{ icon: string }> = ({ icon }) => {
 };
 
 const LoadingSpinner: React.FC = () => (
-    <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-current" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+    <svg className="animate-spin h-5 w-5 text-current" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
         <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
         <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
     </svg>
@@ -135,9 +124,7 @@ const LoadingSpinner: React.FC = () => (
 
 const Toast: React.FC<{ message: string; type: 'success' | 'error'; onClose: () => void }> = ({ message, type, onClose }) => {
     useEffect(() => {
-        const timer = setTimeout(() => {
-            onClose();
-        }, 5000);
+        const timer = setTimeout(onClose, 5000);
         return () => clearTimeout(timer);
     }, [onClose]);
 
@@ -147,7 +134,7 @@ const Toast: React.FC<{ message: string; type: 'success' | 'error'; onClose: () 
     };
 
     return (
-        <div className={`fixed top-5 right-5 z-50 px-6 py-4 rounded-xl shadow-xl flex items-center space-x-3 transform transition-all hover:scale-105 ${typeClasses[type]}`}>
+        <div className={`fixed top-5 right-5 z-50 px-6 py-4 rounded-xl shadow-2xl flex items-center space-x-3 transform transition-all hover:scale-105 ${typeClasses[type]}`}>
             <p className="font-medium">{message}</p>
         </div>
     );
@@ -169,7 +156,8 @@ const HighlightMatch: React.FC<{ text: string; query: string }> = ({ text, query
     );
 };
 
-// --- App-specific Types & Mock Data ---
+// --- Types & Data ---
+
 type User = { name: string; avatarUrl: string; };
 type AppSuggestion = { name: string; publisher: string; icon: string; url: string; store: 'google' | 'apple'; rating?: number; downloads?: string; };
 
@@ -179,11 +167,8 @@ const mockApps: AppSuggestion[] = [
     { name: 'TikTok', publisher: 'TikTok Pte. Ltd.', icon: '🎵', url: 'https://play.google.com/store/apps/details?id=com.zhiliaoapp.musically', store: 'google', rating: 4.4, downloads: '1B+' },
     { name: 'WhatsApp Messenger', publisher: 'WhatsApp LLC', icon: '💬', url: 'https://play.google.com/store/apps/details?id=com.whatsapp', store: 'google', rating: 4.3, downloads: '5B+' },
     { name: 'Spotify', publisher: 'Spotify AB', icon: '🎧', url: 'https://play.google.com/store/apps/details?id=com.spotify.music', store: 'google', rating: 4.4, downloads: '1B+' },
-    
     { name: 'Procreate', publisher: 'Savage Interactive Pty Ltd', icon: '🖌️', url: 'https://apps.apple.com/us/app/procreate/id425073498', store: 'apple', rating: 4.5, downloads: '10M+' },
-    { name: 'Notability', publisher: 'Ginger Labs', icon: '📝', url: 'https://apps.apple.com/us/app/notability/id360593530', store: 'apple', rating: 4.7, downloads: '10M+' },
     { name: 'ChatGPT', publisher: 'OpenAI', icon: '🤖', url: 'https://apps.apple.com/us/app/chatgpt/id6448311069', store: 'apple', rating: 4.9, downloads: '50M+' },
-    { name: 'Duolingo', publisher: 'Duolingo', icon: '🦉', url: 'https://apps.apple.com/us/app/duolingo-language-lessons/id570060128', store: 'apple', rating: 4.7, downloads: '100M+' },
     { name: 'YouTube', publisher: 'Google LLC', icon: '▶️', url: 'https://apps.apple.com/us/app/youtube-watch-listen-stream/id544007664', store: 'apple', rating: 4.7, downloads: '1B+' },
 ];
 
@@ -191,12 +176,8 @@ const fetchAppSuggestions = async (query: string, store: 'google' | 'apple'): Pr
     await new Promise(resolve => setTimeout(resolve, 300));
     if (!query.trim()) return [];
     
-    const googleIdRegex = /^([a-zA-Z0-9_]{1,}\.)+[a-zA-Z0-9_]{1,}$/;
-    const appleIdRegex = /^\d{9,10}$/;
     const isUrl = query.startsWith('http://') || query.startsWith('https://');
-    
-    // Return empty if it looks like a URL or ID to avoid interfering with direct input
-    if (isUrl || googleIdRegex.test(query) || appleIdRegex.test(query)) return [];
+    if (isUrl) return [];
 
     const lowerCaseQuery = query.toLowerCase();
     const storeApps = mockApps.filter(app => app.store === store);
@@ -206,27 +187,24 @@ const fetchAppSuggestions = async (query: string, store: 'google' | 'apple'): Pr
     ).slice(0, 5);
 };
 
-// --- Components ---
+// --- Sub-components ---
 
-const DarkModeToggle: React.FC<{ isDarkMode: boolean; toggle: () => void }> = ({ isDarkMode, toggle }) => {
-    return (
-        <button
-            onClick={toggle}
-            className="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors flex items-center justify-center text-slate-500 dark:text-slate-400 focus:outline-none focus:ring-2 focus:ring-primary-500"
-            aria-label="Toggle dark mode"
-        >
-            {isDarkMode ? (
-                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 3v2.25m6.364.386l-1.591 1.591M21 12h-2.25m-.386 6.364l-1.591-1.591M12 18.75V21m-4.773-4.227l-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z" />
-                </svg>
-            ) : (
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z" />
-                </svg>
-            )}
-        </button>
-    );
-};
+const DarkModeToggle: React.FC<{ isDarkMode: boolean; toggle: () => void }> = ({ isDarkMode, toggle }) => (
+    <button
+        onClick={toggle}
+        className="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors flex items-center justify-center text-slate-500 dark:text-slate-400 focus:outline-none focus:ring-2 focus:ring-primary-500"
+    >
+        {isDarkMode ? (
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 3v2.25m6.364.386l-1.591 1.591M21 12h-2.25m-.386 6.364l-1.591-1.591M12 18.75V21m-4.773-4.227l-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z" />
+            </svg>
+        ) : (
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z" />
+            </svg>
+        )}
+    </button>
+);
 
 const Header: React.FC<{
     isDarkMode: boolean;
@@ -239,58 +217,56 @@ const Header: React.FC<{
     const profileRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
-        const handleClickOutside = (event: MouseEvent) => {
-            if (profileRef.current && !profileRef.current.contains(event.target as Node)) {
-                setIsProfileOpen(false);
-            }
+        const handleClickOutside = (e: MouseEvent) => {
+            if (profileRef.current && !profileRef.current.contains(e.target as Node)) setIsProfileOpen(false);
         };
         document.addEventListener('mousedown', handleClickOutside);
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
 
     return (
-        <header className="fixed w-full top-0 z-50 bg-white/70 dark:bg-slate-950/70 backdrop-blur-xl border-b border-slate-200/60 dark:border-slate-800/60 transition-colors duration-300">
-          <div className="container mx-auto px-6 h-16 flex justify-between items-center">
-            <div className="text-xl font-bold tracking-tight flex items-center gap-2">
-                <div className="w-8 h-8 bg-gradient-to-br from-primary-500 to-primary-700 rounded-lg flex items-center justify-center text-white">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5">
-                        <path fillRule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clipRule="evenodd" />
-                    </svg>
-                </div>
-                <span className="text-slate-900 dark:text-white">App<span className="text-primary-600 dark:text-primary-400">Screens</span></span>
-            </div>
-            
-            <nav className="hidden md:flex space-x-8 items-center text-sm font-medium">
-              <a href="#features" className="text-slate-600 dark:text-slate-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors">Features</a>
-              <a href="#pricing" className="text-slate-600 dark:text-slate-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors">Pricing</a>
-              <a href="#api" className="text-slate-600 dark:text-slate-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors">API</a>
-            </nav>
-
-            <div className="flex items-center space-x-3">
-                <DarkModeToggle isDarkMode={isDarkMode} toggle={toggleDarkMode} />
-                <div className="h-6 w-px bg-slate-200 dark:bg-slate-800 mx-2"></div>
-                {currentUser ? (
-                    <div className="relative" ref={profileRef}>
-                        <button onClick={() => setIsProfileOpen(!isProfileOpen)} className="flex items-center space-x-2 focus:outline-none">
-                            <img src={currentUser.avatarUrl} alt={currentUser.name} className="w-8 h-8 rounded-full ring-2 ring-slate-200 dark:ring-slate-800" />
-                        </button>
-                        {isProfileOpen && (
-                            <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-slate-900 rounded-xl shadow-xl border border-slate-200 dark:border-slate-800 py-1 z-50 overflow-hidden">
-                                <div className="px-4 py-3 border-b border-slate-100 dark:border-slate-800">
-                                    <p className="text-xs text-slate-500 dark:text-slate-400">Signed in as</p>
-                                    <p className="text-sm font-semibold text-slate-900 dark:text-white truncate">{currentUser.name}</p>
-                                </div>
-                                <button onClick={() => { onLogout(); setIsProfileOpen(false); }} className="block w-full text-left px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors">Sign out</button>
-                            </div>
-                        )}
+        <header className="fixed w-full top-0 z-50 bg-white/70 dark:bg-slate-950/70 backdrop-blur-xl border-b border-slate-200/60 dark:border-slate-800/60">
+            <div className="container mx-auto px-6 h-16 flex justify-between items-center">
+                <div className="text-xl font-bold flex items-center gap-2">
+                    <div className="w-8 h-8 bg-gradient-to-br from-primary-500 to-primary-700 rounded-lg flex items-center justify-center text-white">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5">
+                            <path fillRule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clipRule="evenodd" />
+                        </svg>
                     </div>
-                ) : (
-                    <button onClick={onLogin} className="text-sm font-semibold bg-slate-900 dark:bg-white text-white dark:text-slate-900 px-5 py-2.5 rounded-full hover:bg-slate-800 dark:hover:bg-slate-100 transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-0.5">
-                        Sign In
-                    </button>
-                )}
+                    <span className="text-slate-900 dark:text-white">App<span className="text-primary-600 dark:text-primary-400">Screens</span></span>
+                </div>
+                
+                <nav className="hidden md:flex space-x-8 text-sm font-medium">
+                    <a href="#features" className="text-slate-600 dark:text-slate-300 hover:text-primary-600 transition-colors">Features</a>
+                    <a href="#pricing" className="text-slate-600 dark:text-slate-300 hover:text-primary-600 transition-colors">Pricing</a>
+                    <a href="#api" className="text-slate-600 dark:text-slate-300 hover:text-primary-600 transition-colors">API</a>
+                </nav>
+
+                <div className="flex items-center space-x-3">
+                    <DarkModeToggle isDarkMode={isDarkMode} toggle={toggleDarkMode} />
+                    <div className="h-6 w-px bg-slate-200 dark:bg-slate-800 mx-2"></div>
+                    {currentUser ? (
+                        <div className="relative" ref={profileRef}>
+                            <button onClick={() => setIsProfileOpen(!isProfileOpen)} className="flex items-center space-x-2">
+                                <img src={currentUser.avatarUrl} alt={currentUser.name} className="w-8 h-8 rounded-full ring-2 ring-slate-200 dark:ring-slate-800" />
+                            </button>
+                            {isProfileOpen && (
+                                <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-slate-900 rounded-xl shadow-xl border border-slate-200 dark:border-slate-800 py-1 overflow-hidden">
+                                    <div className="px-4 py-3 border-b border-slate-100 dark:border-slate-800">
+                                        <p className="text-xs text-slate-500">Signed in as</p>
+                                        <p className="text-sm font-semibold truncate">{currentUser.name}</p>
+                                    </div>
+                                    <button onClick={() => { onLogout(); setIsProfileOpen(false); }} className="block w-full text-left px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20">Sign out</button>
+                                </div>
+                            )}
+                        </div>
+                    ) : (
+                        <button onClick={onLogin} className="text-sm font-semibold bg-slate-900 dark:bg-white text-white dark:text-slate-900 px-5 py-2.5 rounded-full hover:shadow-lg transition-all">
+                            Sign In
+                        </button>
+                    )}
+                </div>
             </div>
-          </div>
         </header>
     );
 };
@@ -304,7 +280,6 @@ const Hero: React.FC<{ showToast: (message: string, type: 'success' | 'error') =
     const [activeIndex, setActiveIndex] = useState(-1);
     
     const suggestionsContainerRef = useRef<HTMLDivElement>(null);
-    const listboxRef = useRef<HTMLUListElement>(null);
     const inputRef = useRef<HTMLInputElement>(null);
 
     const debouncedAppUrl = useDebounce(appUrl, 300);
@@ -315,46 +290,36 @@ const Hero: React.FC<{ showToast: (message: string, type: 'success' | 'error') =
     });
 
     useEffect(() => {
-        // If input is empty, hide suggestions
+        setActiveIndex(-1); // Reset index whenever suggestions change
+    }, [suggestions]);
+
+    useEffect(() => {
         if (!debouncedAppUrl.trim()) {
             setShowSuggestions(false);
             return;
         }
-        
-        // If we are searching OR we have results, OR we previously had results but now have 0 (showing "No results"), keep it open.
-        // The key is to close it only if the user explicitly clears input or clicks outside.
-        // We want to show "No results" if the query is valid but returns nothing.
-        if (debouncedAppUrl.trim()) {
-            setShowSuggestions(true);
-        }
-    }, [debouncedAppUrl, suggestions.length, isSearching]);
+        setShowSuggestions(true);
+    }, [debouncedAppUrl]);
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setAppUrl(e.target.value);
         setError(null);
-        if (e.target.value.trim()) {
-             setShowSuggestions(true);
-        } else {
-            setShowSuggestions(false);
-        }
+        setShowSuggestions(!!e.target.value.trim());
     };
     
     const handleInputFocus = () => {
-        if (appUrl.trim()) {
-            setShowSuggestions(true);
-        }
+        if (appUrl.trim()) setShowSuggestions(true);
     };
 
     const handleSuggestionClick = (app: AppSuggestion) => {
         setAppUrl(app.url);
         setShowSuggestions(false);
         setActiveIndex(-1);
-        inputRef.current?.focus();
     };
 
     useEffect(() => {
-        const handleClickOutside = (event: MouseEvent) => {
-            if (suggestionsContainerRef.current && !suggestionsContainerRef.current.contains(event.target as Node)) {
+        const handleClickOutside = (e: MouseEvent) => {
+            if (suggestionsContainerRef.current && !suggestionsContainerRef.current.contains(e.target as Node)) {
                 setShowSuggestions(false);
             }
         };
@@ -364,164 +329,142 @@ const Hero: React.FC<{ showToast: (message: string, type: 'success' | 'error') =
 
     const handleKeyDown = (e: React.KeyboardEvent) => {
         if (!showSuggestions) return;
-        
-        // If suggestions list is empty (no results), avoid navigating
-        const maxIndex = suggestions.length - 1;
-        if (maxIndex < 0) return;
+        const count = suggestions.length;
+        if (count === 0) return;
 
-        if (e.key === 'ArrowDown') { e.preventDefault(); setActiveIndex(p => (p + 1) % suggestions.length); }
-        else if (e.key === 'ArrowUp') { e.preventDefault(); setActiveIndex(p => (p - 1 + suggestions.length) % suggestions.length); }
+        if (e.key === 'ArrowDown') { e.preventDefault(); setActiveIndex(p => (p + 1) % count); }
+        else if (e.key === 'ArrowUp') { e.preventDefault(); setActiveIndex(p => (p - 1 + count) % count); }
         else if (e.key === 'Enter' && activeIndex >= 0) { e.preventDefault(); handleSuggestionClick(suggestions[activeIndex]); }
-        else if (e.key === 'Escape') { e.preventDefault(); setShowSuggestions(false); setActiveIndex(-1); }
+        else if (e.key === 'Escape') { e.preventDefault(); setShowSuggestions(false); }
     };
 
     const handleDownload = async () => {
+        if (!appUrl.trim()) { setError("Please enter a valid URL."); return; }
         setError(null);
         setIsLoading(true);
         await new Promise(resolve => setTimeout(resolve, 1500));
-        if (!appUrl.trim()) { setError("Please enter a valid URL."); setIsLoading(false); return; }
         showToast('Download started successfully!', 'success');
         setIsLoading(false);
     };
     
     return (
         <section className="relative pt-32 pb-20 overflow-hidden">
-            {/* Background Gradient Effects */}
             <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[800px] bg-primary-500/10 dark:bg-primary-500/20 rounded-full blur-[100px] -z-10" />
             
-            <div className="container mx-auto px-6 text-center relative z-10">
-                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary-50 dark:bg-primary-900/30 border border-primary-100 dark:border-primary-800 text-primary-700 dark:text-primary-300 text-xs font-semibold mb-8 animate-fade-in-up">
+            <div className="container mx-auto px-6 text-center">
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary-50 dark:bg-primary-900/30 border border-primary-100 dark:border-primary-800 text-primary-700 dark:text-primary-300 text-xs font-semibold mb-8">
                     <span className="relative flex h-2 w-2">
                       <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary-400 opacity-75"></span>
                       <span className="relative inline-flex rounded-full h-2 w-2 bg-primary-500"></span>
                     </span>
-                    New: API v2.0 is now available
+                    New: API v2.0 available
                 </div>
 
                 <h1 className="text-5xl md:text-7xl font-extrabold text-slate-900 dark:text-white tracking-tight leading-[1.1] mb-6 max-w-4xl mx-auto">
                     App Screenshots. <br/>
-                    <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary-600 to-violet-600 dark:from-primary-400 dark:to-violet-400">Instantly.</span>
+                    <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary-600 to-violet-600">Instantly.</span>
                 </h1>
                 <p className="text-lg md:text-xl text-slate-600 dark:text-slate-400 max-w-2xl mx-auto mb-10 leading-relaxed">
-                    Download high-quality assets from Google Play & Apple App Store in seconds. Perfect for developers, designers, and marketers.
+                    Download assets from Google Play & Apple App Store in seconds. High-quality original files ready for your next project.
                 </p>
 
                 <div className="max-w-3xl mx-auto relative" ref={suggestionsContainerRef} onKeyDown={handleKeyDown}>
-                    <div className="bg-white dark:bg-slate-900/80 p-2 rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 backdrop-blur-sm transition-all focus-within:ring-4 focus-within:ring-primary-100 dark:focus-within:ring-primary-900/30 relative z-30">
+                    <div className="bg-white dark:bg-slate-900/80 p-2 rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 backdrop-blur-sm transition-all focus-within:ring-4 focus-within:ring-primary-100/50">
                         <div className="flex flex-col sm:flex-row items-center gap-2">
                             <div className="flex rounded-2xl bg-slate-100 dark:bg-slate-800 p-1 ml-1">
-                                <button onClick={() => setSelectedStore('google')} className={`p-2 rounded-xl transition-all ${selectedStore === 'google' ? 'bg-white dark:bg-slate-700 shadow-sm text-primary-600 dark:text-primary-400' : 'text-slate-400 hover:text-slate-600'}`}>
+                                <button onClick={() => setSelectedStore('google')} className={`p-2 rounded-xl transition-all ${selectedStore === 'google' ? 'bg-white dark:bg-slate-700 shadow-sm text-primary-600' : 'text-slate-400'}`}>
                                     <GooglePlayIcon className="w-6 h-6" />
                                 </button>
-                                <button onClick={() => setSelectedStore('apple')} className={`p-2 rounded-xl transition-all ${selectedStore === 'apple' ? 'bg-white dark:bg-slate-700 shadow-sm text-primary-600 dark:text-primary-400' : 'text-slate-400 hover:text-slate-600'}`}>
+                                <button onClick={() => setSelectedStore('apple')} className={`p-2 rounded-xl transition-all ${selectedStore === 'apple' ? 'bg-white dark:bg-slate-700 shadow-sm text-primary-600' : 'text-slate-400'}`}>
                                     <AppStoreIcon className="w-6 h-6" />
                                 </button>
                             </div>
                             
-                            <div className="h-8 w-px bg-slate-200 dark:bg-slate-700 hidden sm:block" />
-
                             <input
                                 ref={inputRef}
                                 type="text"
                                 value={appUrl}
                                 onChange={handleInputChange}
                                 onFocus={handleInputFocus}
-                                placeholder={selectedStore === 'google' ? "Paste Google Play URL or search..." : "Paste App Store URL or search..."}
-                                className="flex-1 w-full bg-transparent border-none outline-none text-lg px-4 py-3 text-slate-900 dark:text-white placeholder-slate-400"
+                                placeholder={selectedStore === 'google' ? "Search for apps or paste URL..." : "Search for apps or paste URL..."}
+                                className="flex-1 w-full bg-transparent border-none outline-none text-lg px-4 py-3 text-slate-900 dark:text-white"
                                 autoComplete="off"
                             />
 
                             <button
                                 onClick={handleDownload}
                                 disabled={isLoading || !appUrl}
-                                className="w-full sm:w-auto px-8 py-3 rounded-2xl bg-primary-600 hover:bg-primary-700 text-white font-semibold text-lg shadow-lg shadow-primary-500/30 transition-all transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed"
+                                className="w-full sm:w-auto px-8 py-3 rounded-2xl bg-primary-600 hover:bg-primary-700 text-white font-semibold text-lg shadow-lg shadow-primary-500/30 disabled:opacity-50"
                             >
                                 {isLoading ? <LoadingSpinner /> : 'Download'}
                             </button>
                         </div>
                     </div>
                     
-                    {error && <p className="mt-4 text-red-500 text-sm font-medium bg-red-50 dark:bg-red-900/20 py-2 px-4 rounded-lg inline-block">{error}</p>}
+                    {error && <p className="mt-4 text-red-500 text-sm font-medium">{error}</p>}
 
                     {showSuggestions && (
-                        <div className="absolute top-full left-0 right-0 mt-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl z-20 text-left overflow-hidden">
+                        <div className="absolute top-full left-0 right-0 mt-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl z-20 text-left overflow-hidden animate-fade-in">
                             {isSearching ? (
-                                <div className="p-8 text-center text-slate-500 flex flex-col items-center justify-center gap-3">
-                                    <div className="animate-spin h-6 w-6 border-2 border-primary-500 border-t-transparent rounded-full"></div>
-                                    <span className="text-sm">Searching stores...</span>
+                                <div className="p-8 text-center text-slate-500 flex flex-col items-center gap-2">
+                                    <LoadingSpinner />
+                                    <span className="text-sm">Searching...</span>
                                 </div>
                             ) : suggestions.length > 0 ? (
-                                <ul role="listbox">
+                                <ul>
                                     {suggestions.map((app, index) => (
                                         <li key={app.url}
                                             onClick={() => handleSuggestionClick(app)}
                                             onMouseEnter={() => setActiveIndex(index)}
-                                            className={`p-4 flex items-center space-x-4 cursor-pointer border-b border-slate-100 dark:border-slate-800 last:border-0 transition-colors ${
-                                                index === activeIndex ? 'bg-slate-50 dark:bg-slate-800/50' : 'hover:bg-slate-50 dark:hover:bg-slate-800/50'
+                                            className={`p-4 flex items-center space-x-4 cursor-pointer transition-colors ${
+                                                index === activeIndex ? 'bg-primary-50 dark:bg-primary-900/20' : 'hover:bg-slate-50 dark:hover:bg-slate-800/50'
                                             }`}
                                         >
-                                            <span className="text-4xl select-none">{app.icon}</span>
+                                            <span className="text-4xl">{app.icon}</span>
                                             <div className="flex-1 min-w-0">
                                                 <p className="font-semibold text-slate-900 dark:text-slate-100 truncate">
                                                     <HighlightMatch text={app.name} query={appUrl} />
                                                 </p>
-                                                <p className="text-sm text-slate-500 truncate">
-                                                    <HighlightMatch text={app.publisher} query={appUrl} />
-                                                </p>
+                                                <p className="text-sm text-slate-500 truncate">{app.publisher}</p>
                                             </div>
-                                            <div className="text-right hidden sm:block">
-                                                <div className="flex items-center justify-end text-yellow-500 text-sm font-medium">
-                                                    <span>{app.rating}</span> <StarIcon className="w-4 h-4 ml-1" />
-                                                </div>
-                                                <div className="text-xs text-slate-400 mt-1">{app.downloads} DLs</div>
+                                            <div className="hidden sm:flex items-center text-yellow-500 text-sm font-medium">
+                                                <span>{app.rating}</span> <StarIcon className="ml-1" />
                                             </div>
                                         </li>
                                     ))}
                                 </ul>
                             ) : (
-                                <div className="p-6 text-center text-slate-500">No results found for "{appUrl}".</div>
+                                <div className="p-8 text-center text-slate-500">No suggestions for "{appUrl}"</div>
                             )}
                         </div>
                     )}
-                </div>
-                
-                <div className="mt-16 flex items-center justify-center gap-8 opacity-60 grayscale hover:grayscale-0 transition-all duration-500">
-                    <p className="text-sm font-semibold text-slate-400 uppercase tracking-wider mr-4 hidden md:block">Trusted by teams at</p>
-                    <img src="https://tailwindui.com/img/logos/158x48/transistor-gray-900.svg" alt="Transistor" className="h-6 dark:invert" />
-                    <img src="https://tailwindui.com/img/logos/158x48/reform-gray-900.svg" alt="Reform" className="h-6 dark:invert" />
-                    <img src="https://tailwindui.com/img/logos/158x48/tuple-gray-900.svg" alt="Tuple" className="h-6 dark:invert" />
-                    <img src="https://tailwindui.com/img/logos/158x48/savvycal-gray-900.svg" alt="SavvyCal" className="h-6 dark:invert" />
                 </div>
             </div>
         </section>
     );
 };
 
-const features = [
-    { icon: 'batch', title: 'Batch Downloads', description: 'Download screenshots from multiple apps simultaneously.' },
-    { icon: 'platform', title: 'Cross-Platform', description: 'Unified support for both Google Play and App Store.' },
-    { icon: 'output', title: 'High Resolution', description: 'Get original uncompressed assets directly from source.' },
-    { icon: 'metadata', title: 'Metadata Extraction', description: 'Automatically organize files by app version and locale.' },
-    { icon: 'api', title: 'Developer API', description: 'RESTful API to automate your competitive analysis.' },
-    { icon: 'input', title: 'Smart Search', description: 'Find apps by name, ID, or URL with our instant search.' },
-];
-
 const Features: React.FC = () => (
-    <section id="features" className="py-24 bg-slate-50 dark:bg-slate-950 relative">
+    <section id="features" className="py-24 bg-slate-50 dark:bg-slate-950">
         <div className="container mx-auto px-6">
             <div className="text-center max-w-3xl mx-auto mb-16">
-                <h2 className="text-3xl md:text-4xl font-bold text-slate-900 dark:text-white tracking-tight">Everything you need to analyze apps</h2>
-                <p className="mt-4 text-lg text-slate-600 dark:text-slate-400">
-                    Built for speed and precision. Stop taking manual screenshots and start automating your workflow.
-                </p>
+                <h2 className="text-3xl md:text-4xl font-bold tracking-tight">Everything you need to analyze apps</h2>
+                <p className="mt-4 text-lg text-slate-600 dark:text-slate-400">Built for speed and precision. Stop taking manual screenshots.</p>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                {features.map((feature, i) => (
-                    <div key={i} className="group bg-white dark:bg-slate-900 p-8 rounded-2xl border border-slate-200 dark:border-slate-800 hover:border-primary-200 dark:hover:border-primary-800 hover:shadow-xl hover:shadow-primary-500/5 transition-all duration-300">
-                        <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-primary-600 text-white mb-6 shadow-lg shadow-primary-500/30 group-hover:scale-110 transition-transform">
+                {[
+                    { icon: 'batch', title: 'Batch Downloads', description: 'Download screenshots from multiple apps simultaneously.' },
+                    { icon: 'platform', title: 'Cross-Platform', description: 'Unified support for both Google Play and App Store.' },
+                    { icon: 'output', title: 'High Resolution', description: 'Get original uncompressed assets directly from source.' },
+                    { icon: 'metadata', title: 'Metadata Extraction', description: 'Automatically organize files by app version and locale.' },
+                    { icon: 'api', title: 'Developer API', description: 'RESTful API to automate your competitive analysis.' },
+                    { icon: 'input', title: 'Smart Search', description: 'Find apps by name, ID, or URL with our instant search.' },
+                ].map((feature, i) => (
+                    <div key={i} className="bg-white dark:bg-slate-900 p-8 rounded-2xl border border-slate-200 dark:border-slate-800 hover:shadow-xl transition-all">
+                        <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-primary-600 text-white mb-6">
                            <FeatureIcon icon={feature.icon} />
                         </div>
-                        <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-3">{feature.title}</h3>
+                        <h3 className="text-xl font-bold mb-3">{feature.title}</h3>
                         <p className="text-slate-600 dark:text-slate-400 leading-relaxed">{feature.description}</p>
                     </div>
                 ))}
@@ -531,104 +474,79 @@ const Features: React.FC = () => (
 );
 
 const Pricing: React.FC = () => (
-  <section id="pricing" className="py-32 bg-white dark:bg-slate-950">
-    <div className="container mx-auto px-6">
-      <div className="text-center mb-16">
-        <h2 className="text-3xl md:text-4xl font-bold text-slate-900 dark:text-white tracking-tight">Simple, Transparent Pricing</h2>
-        <p className="mt-4 text-lg text-slate-600 dark:text-slate-400">
-            Start for free, upgrade when you need to scale.
-        </p>
-      </div>
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 max-w-6xl mx-auto items-center">
-        {[
-            { name: 'Hobby', price: '$0', desc: 'For individuals', features: ['10 downloads/mo', 'Standard Quality', 'Web Access'] },
-            { name: 'Pro', price: '$29', desc: 'For professionals', features: ['Unlimited downloads', 'High Res Source', 'API Access', 'Priority Support'], primary: true },
-            { name: 'Team', price: '$99', desc: 'For agencies', features: ['Unlimited Seats', 'Dedicated API Key', 'SSO & Invoice', '24/7 Support'] }
-        ].map((plan) => (
-          <div key={plan.name} className={`relative p-8 rounded-3xl border ${plan.primary ? 'bg-slate-900 text-white border-slate-900 shadow-2xl ring-4 ring-primary-500/20 lg:-mt-8 lg:mb-8 lg:p-10 z-10' : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800'}`}>
-            {plan.primary && <div className="absolute top-0 right-0 -mt-4 mr-6 px-4 py-1 bg-gradient-to-r from-primary-500 to-violet-500 text-white text-xs font-bold uppercase tracking-wide rounded-full shadow-lg">Popular</div>}
-            <h3 className={`text-2xl font-bold ${!plan.primary && 'text-slate-900 dark:text-white'}`}>{plan.name}</h3>
-            <p className={`mt-2 text-sm ${plan.primary ? 'text-slate-300' : 'text-slate-500'}`}>{plan.desc}</p>
-            <div className="my-8">
-              <span className={`text-5xl font-extrabold ${!plan.primary && 'text-slate-900 dark:text-white'}`}>{plan.price}</span>
-              <span className={`text-lg ${plan.primary ? 'text-slate-400' : 'text-slate-500'}`}>/mo</span>
+    <section id="pricing" className="py-32 bg-white dark:bg-slate-950">
+        <div className="container mx-auto px-6">
+            <div className="text-center mb-16">
+                <h2 className="text-3xl font-bold tracking-tight">Simple Pricing</h2>
+                <p className="mt-4 text-slate-600 dark:text-slate-400">Scale as you grow.</p>
             </div>
-            <button type="button" className={`w-full py-4 rounded-xl font-bold text-sm transition-all transform hover:scale-[1.02] ${plan.primary ? 'bg-white text-slate-900 hover:bg-slate-50' : 'bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white hover:bg-slate-200 dark:hover:bg-slate-700'}`}>
-              Get Started
-            </button>
-            <ul className="mt-8 space-y-4">
-              {plan.features.map((f, i) => (
-                <li key={i} className="flex items-start text-sm">
-                  <CheckIcon className={`w-5 h-5 mr-3 ${plan.primary ? 'text-primary-400' : 'text-primary-600'}`} />
-                  <span className={plan.primary ? 'text-slate-300' : 'text-slate-600 dark:text-slate-400'}>{f}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
-        ))}
-      </div>
-    </div>
-  </section>
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
+                {[
+                    { name: 'Hobby', price: '$0', features: ['10 downloads/mo', 'Standard Quality'] },
+                    { name: 'Pro', price: '$29', features: ['Unlimited downloads', 'High Res Source', 'API Access'], primary: true },
+                    { name: 'Team', price: '$99', features: ['Unlimited Seats', 'Dedicated API Key', 'Priority Support'] }
+                ].map((plan) => (
+                    <div key={plan.name} className={`p-8 rounded-3xl border ${plan.primary ? 'bg-slate-900 text-white border-slate-900 shadow-2xl ring-4 ring-primary-500/20 lg:-mt-4' : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800'}`}>
+                        <h3 className="text-2xl font-bold">{plan.name}</h3>
+                        <div className="my-8">
+                            <span className="text-5xl font-extrabold">{plan.price}</span>
+                            <span className="text-lg opacity-60">/mo</span>
+                        </div>
+                        <ul className="space-y-4 mb-8">
+                            {plan.features.map((f, i) => (
+                                <li key={i} className="flex items-center text-sm">
+                                    <CheckIcon className="w-5 h-5 mr-3 text-primary-500" />
+                                    {f}
+                                </li>
+                            ))}
+                        </ul>
+                        <button className={`w-full py-3 rounded-xl font-bold ${plan.primary ? 'bg-white text-slate-900' : 'bg-slate-100 dark:bg-slate-800'}`}>Get Started</button>
+                    </div>
+                ))}
+            </div>
+        </div>
+    </section>
 );
 
 const Footer: React.FC = () => (
-    <footer className="bg-slate-50 dark:bg-slate-950 border-t border-slate-200 dark:border-slate-800 pt-20 pb-10">
-        <div className="container mx-auto px-6">
-            <div className="flex flex-col md:flex-row justify-between items-center mb-12">
-                <div className="flex items-center gap-2 mb-4 md:mb-0">
-                     <div className="w-8 h-8 bg-primary-600 rounded-lg flex items-center justify-center text-white">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5">
-                            <path fillRule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clipRule="evenodd" />
-                        </svg>
-                    </div>
-                    <span className="text-xl font-bold text-slate-900 dark:text-white">AppScreens</span>
-                </div>
-                <div className="flex space-x-8 text-sm font-medium text-slate-500">
-                    <a href="#" className="hover:text-primary-600 transition-colors">Product</a>
-                    <a href="#" className="hover:text-primary-600 transition-colors">Features</a>
-                    <a href="#" className="hover:text-primary-600 transition-colors">Pricing</a>
-                    <a href="#" className="hover:text-primary-600 transition-colors">Legal</a>
-                </div>
+    <footer className="bg-slate-50 dark:bg-slate-950 border-t border-slate-200 dark:border-slate-800 py-12">
+        <div className="container mx-auto px-6 text-center">
+            <div className="flex items-center justify-center gap-2 mb-6">
+                 <div className="w-6 h-6 bg-primary-600 rounded flex items-center justify-center text-white text-xs">A</div>
+                 <span className="font-bold">AppScreens</span>
             </div>
-            <div className="text-center text-slate-400 text-sm">
-                &copy; {new Date().getFullYear()} AppScreens Inc. All rights reserved.
-            </div>
+            <p className="text-slate-400 text-sm">&copy; {new Date().getFullYear()} AppScreens Inc.</p>
         </div>
     </footer>
 );
 
-// --- Auth Modal (Clerk-like) ---
 const AuthModal: React.FC<{ isOpen: boolean; onClose: () => void; onLoginSuccess: () => void; }> = ({ isOpen, onClose, onLoginSuccess }) => {
     const [isLoading, setIsLoading] = useState(false);
-    
     if (!isOpen) return null;
-
     const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsLoading(true);
-        await new Promise(resolve => setTimeout(resolve, 800));
+        await new Promise(r => setTimeout(r, 800));
         onLoginSuccess();
         setIsLoading(false);
     };
-
     return (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm" onClick={onClose}>
-            <div className="bg-white dark:bg-slate-900 w-full max-w-sm p-8 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800" onClick={e => e.stopPropagation()}>
+            <div className="bg-white dark:bg-slate-900 w-full max-w-sm p-8 rounded-2xl shadow-2xl" onClick={e => e.stopPropagation()}>
                 <div className="text-center mb-8">
-                    <h3 className="text-xl font-bold text-slate-900 dark:text-white">Welcome back</h3>
-                    <p className="text-slate-500 text-sm mt-2">Please enter your details to sign in.</p>
+                    <h3 className="text-xl font-bold">Welcome back</h3>
                 </div>
                 <form onSubmit={handleLogin} className="space-y-4">
-                    <button type="button" className="w-full flex items-center justify-center gap-3 py-2.5 border border-slate-200 dark:border-slate-700 rounded-xl font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
-                        <GoogleIcon className="w-5 h-5" /> Sign in with Google
+                    <button type="button" className="w-full flex items-center justify-center gap-3 py-2.5 border border-slate-200 dark:border-slate-700 rounded-xl font-medium">
+                        <GoogleIcon /> Sign in with Google
                     </button>
-                    <div className="relative flex py-2 items-center">
-                        <div className="flex-grow border-t border-slate-200 dark:border-slate-800"></div>
-                        <span className="flex-shrink-0 mx-4 text-xs text-slate-400 uppercase">Or</span>
-                        <div className="flex-grow border-t border-slate-200 dark:border-slate-800"></div>
+                    <div className="relative flex py-2 items-center text-slate-400 text-xs uppercase">
+                        <div className="flex-grow border-t border-slate-100 dark:border-slate-800"></div>
+                        <span className="mx-2">Or</span>
+                        <div className="flex-grow border-t border-slate-100 dark:border-slate-800"></div>
                     </div>
-                    <input type="email" placeholder="Email address" className="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-800 border-transparent focus:bg-white dark:focus:bg-slate-900 border focus:border-primary-500 outline-none transition-all text-slate-900 dark:text-white" />
-                    <button type="submit" className="w-full py-3 bg-primary-600 hover:bg-primary-700 text-white rounded-xl font-semibold shadow-lg shadow-primary-500/30 transition-all flex justify-center">
+                    <input type="email" placeholder="Email address" className="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-800 border-none focus:ring-2 focus:ring-primary-500" />
+                    <button type="submit" className="w-full py-3 bg-primary-600 text-white rounded-xl font-semibold">
                         {isLoading ? <LoadingSpinner /> : 'Sign In'}
                     </button>
                 </form>
@@ -639,7 +557,7 @@ const AuthModal: React.FC<{ isOpen: boolean; onClose: () => void; onLoginSuccess
 
 const App: React.FC = () => {
     const [toast, setToast] = useState<{ message: string; type: 'success' | 'error'; id: number } | null>(null);
-    const [isDarkMode, setIsDarkMode] = useState(() => localStorage.getItem('theme') === 'dark' || (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches));
+    const [isDarkMode, setIsDarkMode] = useState(() => localStorage.getItem('theme') === 'dark');
     const [currentUser, setCurrentUser] = useState<User | null>(null);
     const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
 
@@ -651,8 +569,8 @@ const App: React.FC = () => {
     const showToast = (message: string, type: 'success' | 'error') => setToast({ message, type, id: Date.now() });
 
     return (
-        <div className="font-sans text-slate-900 dark:text-slate-200 antialiased selection:bg-primary-500/30">
-            <Header isDarkMode={isDarkMode} toggleDarkMode={() => setIsDarkMode(!isDarkMode)} currentUser={currentUser} onLogin={() => setIsAuthModalOpen(true)} onLogout={() => { setCurrentUser(null); showToast('Signed out', 'success'); }} />
+        <div className="min-h-screen bg-white dark:bg-slate-950">
+            <Header isDarkMode={isDarkMode} toggleDarkMode={() => setIsDarkMode(!isDarkMode)} currentUser={currentUser} onLogin={() => setIsAuthModalOpen(true)} onLogout={() => setCurrentUser(null)} />
             <main>
                 <Hero showToast={showToast} />
                 <Features />
@@ -660,7 +578,7 @@ const App: React.FC = () => {
             </main>
             <Footer />
             {toast && <Toast key={toast.id} message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
-            <AuthModal isOpen={isAuthModalOpen} onClose={() => setIsAuthModalOpen(false)} onLoginSuccess={() => { setCurrentUser({ name: 'Alex', avatarUrl: 'https://i.pravatar.cc/150?u=1' }); setIsAuthModalOpen(false); showToast('Signed in successfully', 'success'); }} />
+            <AuthModal isOpen={isAuthModalOpen} onClose={() => setIsAuthModalOpen(false)} onLoginSuccess={() => { setCurrentUser({ name: 'User', avatarUrl: 'https://i.pravatar.cc/150?u=1' }); setIsAuthModalOpen(false); }} />
         </div>
     );
 };
