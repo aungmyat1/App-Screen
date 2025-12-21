@@ -93,22 +93,36 @@ if count and count > 100:
     pass
 ```
 
-## Installation
+## Installation and Setup
 
-To install Redis locally:
+### Automated Setup
 
-### Ubuntu/Debian
+Run the setup script:
+
+```bash
+./scripts/setup_redis.sh
+```
+
+This script will:
+1. Install Redis if not already installed
+2. Start the Redis service
+3. Enable Redis to start automatically on system boot
+4. Test the connection to ensure everything is working
+
+### Manual Installation
+
+#### Ubuntu/Debian
 ```bash
 sudo apt update
 sudo apt install redis-server
 ```
 
-### macOS
+#### macOS
 ```bash
 brew install redis
 ```
 
-### Windows
+#### Windows
 Download from: https://github.com/microsoftarchive/redis/releases
 
 ## Starting Redis
@@ -132,3 +146,27 @@ redis-cli ping
 ```
 
 Should return `PONG` if Redis is running correctly.
+
+## Integration with Application
+
+The application uses a custom RedisManager class defined in [redis_manager.py](file:///workspaces/App-Screen-/backend/src/database/redis_manager.py) which:
+
+1. Uses connection pooling for efficient resource management
+2. Provides convenient methods for common Redis operations
+3. Integrates with the application's configuration system
+4. Handles serialization/deserialization of complex data types
+
+You can access the RedisManager instance directly:
+
+```python
+from database.redis_manager import redis_manager
+
+# Set a value
+redis_manager.set("my_key", {"data": "value"}, ttl=3600)
+
+# Get a value
+value = redis_manager.get("my_key")
+
+# Delete a key
+redis_manager.delete("my_key")
+```

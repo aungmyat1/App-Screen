@@ -7,7 +7,7 @@ This is the backend service for the AppScreens application, which provides APIs 
 - Python 3.11+
 - Virtual environment (recommended)
 - PostgreSQL database
-- Redis (for Celery)
+- Redis (for caching and background tasks)
 
 ## Setup
 
@@ -47,6 +47,14 @@ This is the backend service for the AppScreens application, which provides APIs 
    Quick setup:
    ```bash
    ./scripts/init_db.sh
+   ```
+
+7. Redis setup:
+   See [Redis Setup Guide](src/config/REDIS.md) for detailed instructions.
+   
+   Quick setup:
+   ```bash
+   ./scripts/setup_redis.sh
    ```
 
 ## Running the Application
@@ -109,11 +117,13 @@ See [Database Schema Documentation](src/database/DATABASE_SETUP.md) for detailed
 
 See [PostgreSQL Setup Guide](src/database/POSTGRESQL_SETUP.md) for detailed setup instructions.
 
+## Redis Setup
+
+See [Redis Setup Guide](src/config/REDIS.md) for detailed setup instructions.
+
 ## Environment Variables
 
 Copy `.env.example` to `.env` and update the values as needed:
 - Database connection details
-- Redis configuration for Celery
-- AWS credentials for S3 storage
-- Stripe keys for payments
-- Sentry DSN for error tracking
+- Redis connection details
+- API keys and secrets
