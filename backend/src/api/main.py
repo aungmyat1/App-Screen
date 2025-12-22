@@ -13,6 +13,8 @@ from src.api.routes.screenshots_crud import router as screenshots_crud_router
 from src.api.routes.api_usage import router as api_usage_router
 from src.api.routes.metrics import router as metrics_router
 from src.api.routes.webhooks import router as webhooks_router
+from src.api.routes.stripe_webhooks import router as stripe_webhooks_router
+from src.api.routes.billing import router as billing_router
 import sentry_sdk
 from sentry_sdk.integrations.fastapi import FastApiIntegration
 
@@ -56,6 +58,8 @@ app.include_router(screenshots_crud_router)
 app.include_router(api_usage_router)
 app.include_router(metrics_router)
 app.include_router(webhooks_router)
+app.include_router(stripe_webhooks_router)
+app.include_router(billing_router)
 
 # Health check
 @app.get("/health")

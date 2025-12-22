@@ -316,6 +316,26 @@ The API includes several security hardening measures:
    - Protection against common attack vectors
    - Rate limiting at the network level
 
+### Billing and Subscription
+
+The application includes a billing system powered by Stripe:
+
+1. **Subscription Plans**:
+   - Free tier: 10 screenshots/month
+   - Pro tier: 500 screenshots/month for $29/month
+   - Enterprise tier: 50,000 screenshots/month for $299/month
+
+2. **Features**:
+   - Stripe integration for payments
+   - Subscription management
+   - Webhook handling for payment events
+   - Trial periods for new subscribers
+
+3. **Setup**:
+   - Configure `STRIPE_SECRET_KEY` and `STRIPE_PUBLISHABLE_KEY` in your environment
+   - Set up webhook endpoints in the Stripe dashboard
+   - Configure `STRIPE_WEBHOOK_SECRET` for secure webhook handling
+
 ### Monitoring and Observability
 
 The application includes several monitoring features:

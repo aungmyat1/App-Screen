@@ -10,7 +10,12 @@ class User(Base):
     api_key = Column(String(64), unique=True, index=True, nullable=False)
     tier = Column(String(20), default="free")
     quota_remaining = Column(Integer, default=100)
+    stripe_customer_id = Column(String(255), nullable=True)
+    stripe_subscription_id = Column(String(255), nullable=True)
     created_at = Column(DateTime, default=func.now())
     
     def __repr__(self):
-        return f"<User(id={self.id}, email='{self.email}', tier='{self.tier}')>"
+        return f"<User(id={self.id}, email='{self.email}', tier='{self.tier}', stripe_customer_id='{self.stripe_customer_id}')>"
+
+# Check if the file exists first
+pass
