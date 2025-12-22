@@ -336,6 +336,10 @@ The application includes a billing system powered by Stripe:
    - Set up webhook endpoints in the Stripe dashboard
    - Configure `STRIPE_WEBHOOK_SECRET` for secure webhook handling
 
+4. **Validation**:
+   - Pricing plans are validated between frontend and backend ([PRICING_VALIDATION.md](../PRICING_VALIDATION.md))
+   - Regular checks ensure consistency between displayed and actual plans
+
 ### Monitoring and Observability
 
 The application includes several monitoring features:

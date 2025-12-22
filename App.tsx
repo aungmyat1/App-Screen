@@ -482,9 +482,22 @@ const Pricing: React.FC = () => (
             </div>
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
                 {[
-                    { name: 'Hobby', price: '$0', features: ['10 downloads/mo', 'Standard Quality'] },
-                    { name: 'Pro', price: '$29', features: ['Unlimited downloads', 'High Res Source', 'API Access'], primary: true },
-                    { name: 'Team', price: '$99', features: ['Unlimited Seats', 'Dedicated API Key', 'Priority Support'] }
+                    { 
+                        name: 'Free', 
+                        price: '$0', 
+                        features: ['10 screenshots/mo', 'Basic scraping', 'Play Store only'] 
+                    },
+                    { 
+                        name: 'Pro', 
+                        price: '$29', 
+                        features: ['500 screenshots/mo', 'Both stores', 'Batch operations', 'API access'], 
+                        primary: true 
+                    },
+                    { 
+                        name: 'Enterprise', 
+                        price: '$299', 
+                        features: ['50,000 screenshots/mo', 'Everything', 'Priority support', 'Custom integration'] 
+                    }
                 ].map((plan) => (
                     <div key={plan.name} className={`p-8 rounded-3xl border ${plan.primary ? 'bg-slate-900 text-white border-slate-900 shadow-2xl ring-4 ring-primary-500/20 lg:-mt-4' : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800'}`}>
                         <h3 className="text-2xl font-bold">{plan.name}</h3>
