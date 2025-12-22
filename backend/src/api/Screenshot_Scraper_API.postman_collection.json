@@ -112,7 +112,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"requests\": [\n    {\n      \"app_id\": \"com.example.app1\",\n      \"store\": \"playstore\",\n      \"force_refresh\": false\n    },\n    {\n      \"app_id\": \"com.example.app2\",\n      \"store\": \"appstore\",\n      \"force_refresh\": true\n    }\n  ]\n}"
+							"raw": "[\n  {\n    \"app_id\": \"com.example.app1\",\n    \"store\": \"playstore\",\n    \"force_refresh\": false\n  },\n  {\n    \"app_id\": \"com.example.app2\",\n    \"store\": \"appstore\",\n    \"force_refresh\": true\n  }\n]"
 						},
 						"url": {
 							"raw": "{{base_url}}/api/v1/screenshots/batch",
@@ -128,14 +128,9 @@
 						}
 					},
 					"response": []
-				}
-			]
-		},
-		{
-			"name": "Users",
-			"item": [
+				},
 				{
-					"name": "List Users",
+					"name": "Get Screenshot by ID",
 					"request": {
 						"method": "GET",
 						"header": [
@@ -145,6 +140,154 @@
 								"type": "text"
 							}
 						],
+						"url": {
+							"raw": "{{base_url}}/api/v1/screenshots/:screenshot_id",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"screenshots",
+								":screenshot_id"
+							],
+							"variable": [
+								{
+									"key": "screenshot_id",
+									"value": "1"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "List Screenshots by Job",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{api_key}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/v1/screenshots/job/:job_id/screenshots",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"screenshots",
+								"job",
+								":job_id",
+								"screenshots"
+							],
+							"variable": [
+								{
+									"key": "job_id",
+									"value": "12345"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Screenshot",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{api_key}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"device_type\": \"iPhone 13 Pro\",\n  \"resolution\": \"1170x2532\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/screenshots/:screenshot_id",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"screenshots",
+								":screenshot_id"
+							],
+							"variable": [
+								{
+									"key": "screenshot_id",
+									"value": "1"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Screenshot",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{api_key}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/v1/screenshots/:screenshot_id",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"screenshots",
+								":screenshot_id"
+							],
+							"variable": [
+								{
+									"key": "screenshot_id",
+									"value": "1"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Users",
+			"item": [
+				{
+					"name": "Create User",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"user@example.com\",\n  \"api_key\": \"user_api_key\",\n  \"tier\": \"free\",\n  \"quota_remaining\": 100\n}"
+						},
 						"url": {
 							"raw": "{{base_url}}/api/v1/users/",
 							"host": [
@@ -193,25 +336,16 @@
 					"response": []
 				},
 				{
-					"name": "Create User",
+					"name": "List Users",
 					"request": {
-						"method": "POST",
+						"method": "GET",
 						"header": [
 							{
 								"key": "Authorization",
 								"value": "Bearer {{api_key}}",
 								"type": "text"
-							},
-							{
-								"key": "Content-Type",
-								"value": "application/json",
-								"type": "text"
 							}
 						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n  \"email\": \"user@example.com\",\n  \"api_key\": \"abc123\",\n  \"tier\": \"pro\",\n  \"quota_remaining\": 1000\n}"
-						},
 						"url": {
 							"raw": "{{base_url}}/api/v1/users/",
 							"host": [
@@ -245,7 +379,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"email\": \"updated@example.com\",\n  \"tier\": \"enterprise\"\n}"
+							"raw": "{\n  \"email\": \"updated@example.com\",\n  \"tier\": \"pro\"\n}"
 						},
 						"url": {
 							"raw": "{{base_url}}/api/v1/users/:user_id",
@@ -301,549 +435,6 @@
 					"response": []
 				}
 			]
-		},
-		{
-			"name": "Scrape Jobs",
-			"item": [
-				{
-					"name": "List Scrape Jobs",
-					"request": {
-						"method": "GET",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{api_key}}",
-								"type": "text"
-							}
-						],
-						"url": {
-							"raw": "{{base_url}}/api/v1/jobs/",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"api",
-								"v1",
-								"jobs",
-								""
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Get Scrape Job",
-					"request": {
-						"method": "GET",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{api_key}}",
-								"type": "text"
-							}
-						],
-						"url": {
-							"raw": "{{base_url}}/api/v1/jobs/:job_id",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"api",
-								"v1",
-								"jobs",
-								":job_id"
-							],
-							"variable": [
-								{
-									"key": "job_id",
-									"value": "12345"
-								}
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Create Scrape Job",
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{api_key}}",
-								"type": "text"
-							},
-							{
-								"key": "Content-Type",
-								"value": "application/json",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n  \"user_id\": 1,\n  \"app_id\": \"com.example.app\",\n  \"store\": \"playstore\",\n  \"status\": \"pending\"\n}"
-						},
-						"url": {
-							"raw": "{{base_url}}/api/v1/jobs/",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"api",
-								"v1",
-								"jobs",
-								""
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Update Scrape Job",
-					"request": {
-						"method": "PUT",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{api_key}}",
-								"type": "text"
-							},
-							{
-								"key": "Content-Type",
-								"value": "application/json",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n  \"status\": \"completed\",\n  \"screenshots_count\": 5\n}"
-						},
-						"url": {
-							"raw": "{{base_url}}/api/v1/jobs/:job_id",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"api",
-								"v1",
-								"jobs",
-								":job_id"
-							],
-							"variable": [
-								{
-									"key": "job_id",
-									"value": "12345"
-								}
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Delete Scrape Job",
-					"request": {
-						"method": "DELETE",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{api_key}}",
-								"type": "text"
-							}
-						],
-						"url": {
-							"raw": "{{base_url}}/api/v1/jobs/:job_id",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"api",
-								"v1",
-								"jobs",
-								":job_id"
-							],
-							"variable": [
-								{
-									"key": "job_id",
-									"value": "12345"
-								}
-							]
-						}
-					},
-					"response": []
-				}
-			]
-		},
-		{
-			"name": "Screenshots CRUD",
-			"item": [
-				{
-					"name": "List Screenshots",
-					"request": {
-						"method": "GET",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{api_key}}",
-								"type": "text"
-							}
-						],
-						"url": {
-							"raw": "{{base_url}}/api/v1/screenshots-crud/",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"api",
-								"v1",
-								"screenshots-crud",
-								""
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Get Screenshot",
-					"request": {
-						"method": "GET",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{api_key}}",
-								"type": "text"
-							}
-						],
-						"url": {
-							"raw": "{{base_url}}/api/v1/screenshots-crud/:screenshot_id",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"api",
-								"v1",
-								"screenshots-crud",
-								":screenshot_id"
-							],
-							"variable": [
-								{
-									"key": "screenshot_id",
-									"value": "1"
-								}
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Create Screenshot",
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{api_key}}",
-								"type": "text"
-							},
-							{
-								"key": "Content-Type",
-								"value": "application/json",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n  \"job_id\": 12345,\n  \"url\": \"https://example.com/screenshot.png\",\n  \"device_type\": \"mobile\",\n  \"resolution\": \"1080x1920\"\n}"
-						},
-						"url": {
-							"raw": "{{base_url}}/api/v1/screenshots-crud/",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"api",
-								"v1",
-								"screenshots-crud",
-								""
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Update Screenshot",
-					"request": {
-						"method": "PUT",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{api_key}}",
-								"type": "text"
-							},
-							{
-								"key": "Content-Type",
-								"value": "application/json",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n  \"device_type\": \"tablet\",\n  \"resolution\": \"1536x2048\"\n}"
-						},
-						"url": {
-							"raw": "{{base_url}}/api/v1/screenshots-crud/:screenshot_id",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"api",
-								"v1",
-								"screenshots-crud",
-								":screenshot_id"
-							],
-							"variable": [
-								{
-									"key": "screenshot_id",
-									"value": "1"
-								}
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Delete Screenshot",
-					"request": {
-						"method": "DELETE",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{api_key}}",
-								"type": "text"
-							}
-						],
-						"url": {
-							"raw": "{{base_url}}/api/v1/screenshots-crud/:screenshot_id",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"api",
-								"v1",
-								"screenshots-crud",
-								":screenshot_id"
-							],
-							"variable": [
-								{
-									"key": "screenshot_id",
-									"value": "1"
-								}
-							]
-						}
-					},
-					"response": []
-				}
-			]
-		},
-		{
-			"name": "API Usage",
-			"item": [
-				{
-					"name": "List API Usage Records",
-					"request": {
-						"method": "GET",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{api_key}}",
-								"type": "text"
-							}
-						],
-						"url": {
-							"raw": "{{base_url}}/api/v1/usage/",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"api",
-								"v1",
-								"usage",
-								""
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Get API Usage Record",
-					"request": {
-						"method": "GET",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{api_key}}",
-								"type": "text"
-							}
-						],
-						"url": {
-							"raw": "{{base_url}}/api/v1/usage/:usage_id",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"api",
-								"v1",
-								"usage",
-								":usage_id"
-							],
-							"variable": [
-								{
-									"key": "usage_id",
-									"value": "1"
-								}
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Create API Usage Record",
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{api_key}}",
-								"type": "text"
-							},
-							{
-								"key": "Content-Type",
-								"value": "application/json",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n  \"user_id\": 1,\n  \"endpoint\": \"/api/v1/screenshots/scrape\",\n  \"response_time_ms\": 150,\n  \"status_code\": 200\n}"
-						},
-						"url": {
-							"raw": "{{base_url}}/api/v1/usage/",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"api",
-								"v1",
-								"usage",
-								""
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Update API Usage Record",
-					"request": {
-						"method": "PUT",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{api_key}}",
-								"type": "text"
-							},
-							{
-								"key": "Content-Type",
-								"value": "application/json",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n  \"response_time_ms\": 200\n}"
-						},
-						"url": {
-							"raw": "{{base_url}}/api/v1/usage/:usage_id",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"api",
-								"v1",
-								"usage",
-								":usage_id"
-							],
-							"variable": [
-								{
-									"key": "usage_id",
-									"value": "1"
-								}
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Delete API Usage Record",
-					"request": {
-						"method": "DELETE",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{api_key}}",
-								"type": "text"
-							}
-						],
-						"url": {
-							"raw": "{{base_url}}/api/v1/usage/:usage_id",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"api",
-								"v1",
-								"usage",
-								":usage_id"
-							],
-							"variable": [
-								{
-									"key": "usage_id",
-									"value": "1"
-								}
-							]
-						}
-					},
-					"response": []
-				}
-			]
-		}
-	],
-	"event": [
-		{
-			"listen": "prerequest",
-			"script": {
-				"type": "text/javascript",
-				"exec": [
-					""
-				]
-			}
-		},
-		{
-			"listen": "test",
-			"script": {
-				"type": "text/javascript",
-				"exec": [
-					""
-				]
-			}
-		}
-	],
-	"variable": [
-		{
-			"key": "base_url",
-			"value": "http://localhost:8000"
-		},
-		{
-			"key": "api_key",
-			"value": "your-api-key-here"
 		}
 	]
 }
