@@ -3,6 +3,14 @@ from typing import List, Optional
 from pydantic import BaseModel
 from datetime import datetime
 
+# Import Celery tasks
+try:
+    from backend.src.workers.tasks import scrape_playstore, scrape_appstore, download_screenshots
+    CELERY_AVAILABLE = True
+except ImportError:
+    CELERY_AVAILABLE = False
+    print("Warning: Celery not available. Using synchronous processing.")
+
 router = APIRouter(prefix="/api/v1/screenshots", tags=["screenshots"])
 
 # Data models (in a real app, these would be imported from a models module)
@@ -47,6 +55,13 @@ async def create_scrape_job(user_id, request):
     return Job()
 
 async def execute_scrape_job(job_id, app_id, store):
+    # If Celery is available, use it for background processing
+    if CELERY_AVAILABLE:
+        if store == "playstore":
+            scrape_playstore.delay(app_id, job_id)
+        elif store == "appstore":
+            scrape_appstore.delay(app_id, job_id)
+    # Otherwise, use the existing background tasks mechanism
     pass
 
 async def fetch_job(job_id, user_id):
@@ -177,6 +192,15 @@ async def batch_scrape(
     for req in requests[:50]:  # Limit 50 per batch
         job = await queue_scrape_job(user.id, req)
         jobs.append(job)
+        
+        # Queue background task for each request
+        background_tasks = BackgroundTasks()
+        background_tasks.add_task(
+            execute_scrape_job,
+            job.id,
+            req.app_id,
+            req.store
+        )
     
     return {"jobs": jobs, "total": len(jobs)}
 

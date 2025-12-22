@@ -1,0 +1,17 @@
+[Unit]
+Description=Celery Worker for Screenshot Scraper
+After=network.target
+
+[Service]
+Type=forking
+User=appscreens
+Group=appscreens
+EnvironmentFile=/etc/default/celery
+WorkingDirectory=/opt/appscreens/backend
+ExecStart=/opt/appscreens/backend/start_workers.sh
+ExecReload=/bin/kill -HUP $MAINPID
+KillSignal=SIGTERM
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
