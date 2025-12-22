@@ -56,3 +56,10 @@ uvicorn==0.38.0
 vine==5.1.0
 wcwidth==0.2.14
 yarl==1.22.0
+# Added essential dependencies for better functionality
+gunicorn==23.0.0
+python-multipart==0.0.20
+email-validator==2.2.0
+passlib==1.7.4
+bcrypt==4.2.0
+python-jose==3.3.0

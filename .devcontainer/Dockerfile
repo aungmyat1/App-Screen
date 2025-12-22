@@ -1,6 +1,4 @@
-# [Choice] Python version: 3, 3.11, 3.10, 3.9, 3.8, 3.7, 3.6
-ARG VARIANT=3.11
-FROM mcr.microsoft.com/devcontainers/python:0-${VARIANT}
+FROM mcr.microsoft.com/devcontainers/python:3.11
 
 # Features section for devcontainer features
 ARG INSTALL_ZSH="true"
@@ -11,24 +9,53 @@ ARG SOURCE_SOCKET=true
 ARG PERSONAL_ACCESS_TOKEN=""
 ARG EXTENSIONS_STRING=""
 ARG FEATURES={}
-ENV DEBIAN_FRONTEND=noninteractive
 
-# Install system dependencies
-RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
-    && apt-get -y install --no-install-recommends postgresql-client \
-    && apt-get clean \
+# Install system dependencies on Debian-based devcontainer image
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    bash \
+    curl \
+    wget \
+    git \
+    postgresql-client \
+    nodejs \
+    npm \
+    ca-certificates \
+    gnupg2 \
+    dirmngr \
     && rm -rf /var/lib/apt/lists/*
 
 # Install Python dependencies
-RUN pip install --upgrade pip
+RUN pip install --upgrade pip setuptools wheel
 
-# Install Playwright browsers
-RUN pip install playwright
-RUN playwright install-deps
-RUN playwright install chromium firefox webkit
+# Install Playwright dependencies (Debian package names)
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libstdc++6 \
+    libx11-6 \
+    libxcomposite1 \
+    libxdamage1 \
+    libxext6 \
+    libxfixes3 \
+    libxrandr2 \
+    libxrender1 \
+    xvfb \
+    libfreetype6 \
+    fontconfig \
+    libglib2.0-0 \
+    dbus-user-session \
+    libgtk-3-0 \
+    libgbm1 \
+    mesa-utils \
+    libnss3 \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Playwright and browsers
+RUN python -m pip install --upgrade pip setuptools wheel
+RUN python -m pip install playwright
+RUN npx playwright install-deps || playwright install-deps || true
+RUN npx playwright install chromium || playwright install chromium
 
 # Install uvicorn for running FastAPI
-RUN pip install uvicorn
+RUN python -m pip install uvicorn
 
 WORKDIR /workspaces/App-Screen-
 
@@ -45,7 +72,6 @@ RUN npm install --legacy-peer-deps || npm install
 
 EXPOSE 3000 8000
 
-# Setting the ENTRYPOINT to docker-init ensures the piped scripts run during container creation
-ENTRYPOINT [ "/usr/local/share/docker-init.sh", "--", "/bin/bash", "-c" ]
 # Use sleep infinity so the container stays running after initialization
+# Avoid requiring a non-guaranteed helper script as ENTRYPOINT; keep a simple CMD instead.
 CMD ["sleep", "infinity"]
