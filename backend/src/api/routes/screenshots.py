@@ -126,3 +126,26 @@ async def batch_scrape(
         jobs.append({"job_id": job.id})
     
     return BatchScrapeResponse(jobs=jobs, total=len(jobs))
+
+
+# Example of how to implement rate limiting on a screenshots endpoint
+# This would be added to the actual screenshots route implementation
+
+"""
+from fastapi import Request, APIRouter
+from src.api.middleware.rate_limit import limiter
+
+router = APIRouter(prefix="/api/v1")
+
+@router.get("/screenshots")
+@limiter.limit("100/hour")
+async def get_screenshots(request: Request):
+    # ... endpoint logic
+    return {"message": "Screenshots retrieved successfully"}
+
+@router.get("/screenshots/{screenshot_id}")
+@limiter.limit("1000/hour")
+async def get_screenshot(request: Request, screenshot_id: int):
+    # ... endpoint logic
+    return {"message": f"Screenshot {screenshot_id} retrieved successfully"}
+"""

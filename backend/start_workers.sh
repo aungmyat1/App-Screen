@@ -20,11 +20,46 @@ fi
 echo "Installing/updating dependencies..."
 pip install -r requirements.txt
 
-# Start Celery workers with different queues
+# Start multiple Celery workers with different queues
 echo "Starting Celery workers..."
-celery -A src.workers.celery_app worker --loglevel=info \
-    -Q playstore,appstore,downloads \
-    -n screenshot_worker@%h \
-    --concurrency=4
 
-echo "Celery workers started successfully!"
+# Start Play Store worker
+celery -A src.workers.celery_app worker \
+    --loglevel=info \
+    -Q playstore \
+    -n playstore_worker@%h \
+    --concurrency=2 \
+    --max-tasks-per-child=100 \
+    &
+
+# Start App Store worker
+celery -A src.workers.celery_app worker \
+    --loglevel=info \
+    -Q appstore \
+    -n appstore_worker@%h \
+    --concurrency=2 \
+    --max-tasks-per-child=100 \
+    &
+
+# Start Downloads worker
+celery -A src.workers.celery_app worker \
+    --loglevel=info \
+    -Q downloads \
+    -n downloads_worker@%h \
+    --concurrency=4 \
+    --max-tasks-per-child=50 \
+    &
+
+# Start Maintenance worker
+celery -A src.workers.celery_app worker \
+    --loglevel=info \
+    -Q maintenance \
+    -n maintenance_worker@%h \
+    --concurrency=1 \
+    --max-tasks-per-child=10 \
+    &
+
+# Wait for all background processes
+wait
+
+echo "All Celery workers started successfully!"

@@ -1,26 +1,31 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Request
 from typing import List
 from sqlalchemy.orm import Session
 from src.database.connection import get_db
 from src.models.screenshot import Screenshot
 from src.models.schemas import ScreenshotCreate, ScreenshotUpdate, ScreenshotResponse
+from src.api.middleware.rate_limit import limiter
 
 router = APIRouter(prefix="/api/v1/screenshots-crud", tags=["screenshots-crud"])
 
 
 @router.get("/", response_model=List[ScreenshotResponse])
-async def list_screenshots(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+@limiter.limit("100/hour")
+async def list_screenshots(request: Request, skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
     """
     Retrieve a list of screenshots.
+    Rate limited to 100 requests per hour.
     """
     screenshots = db.query(Screenshot).offset(skip).limit(limit).all()
     return screenshots
 
 
 @router.get("/{screenshot_id}", response_model=ScreenshotResponse)
-async def get_screenshot(screenshot_id: int, db: Session = Depends(get_db)):
+@limiter.limit("1000/hour")
+async def get_screenshot(request: Request, screenshot_id: int, db: Session = Depends(get_db)):
     """
     Retrieve a specific screenshot by ID.
+    Rate limited to 1000 requests per hour.
     """
     screenshot = db.query(Screenshot).filter(Screenshot.id == screenshot_id).first()
     if not screenshot:
@@ -31,30 +36,26 @@ async def get_screenshot(screenshot_id: int, db: Session = Depends(get_db)):
     return screenshot
 
 
-@router.post("/", response_model=ScreenshotResponse, status_code=status.HTTP_201_CREATED)
-async def create_screenshot(screenshot: ScreenshotCreate, db: Session = Depends(get_db)):
+@router.post("/", response_model=ScreenshotResponse)
+@limiter.limit("50/hour")
+async def create_screenshot(request: Request, screenshot: ScreenshotCreate, db: Session = Depends(get_db)):
     """
-    Create a new screenshot record.
+    Create a new screenshot.
+    Rate limited to 50 requests per hour.
     """
-    new_screenshot = Screenshot(
-        job_id=screenshot.job_id,
-        url=screenshot.url,
-        s3_key=screenshot.s3_key,
-        device_type=screenshot.device_type,
-        resolution=screenshot.resolution,
-        file_size=screenshot.file_size
-    )
-    
-    db.add(new_screenshot)
+    db_screenshot = Screenshot(**screenshot.dict())
+    db.add(db_screenshot)
     db.commit()
-    db.refresh(new_screenshot)
-    return new_screenshot
+    db.refresh(db_screenshot)
+    return db_screenshot
 
 
 @router.put("/{screenshot_id}", response_model=ScreenshotResponse)
-async def update_screenshot(screenshot_id: int, screenshot_update: ScreenshotUpdate, db: Session = Depends(get_db)):
+@limiter.limit("100/hour")
+async def update_screenshot(request: Request, screenshot_id: int, screenshot: ScreenshotUpdate, db: Session = Depends(get_db)):
     """
-    Update an existing screenshot record.
+    Update an existing screenshot.
+    Rate limited to 100 requests per hour.
     """
     db_screenshot = db.query(Screenshot).filter(Screenshot.id == screenshot_id).first()
     if not db_screenshot:
@@ -63,18 +64,8 @@ async def update_screenshot(screenshot_id: int, screenshot_update: ScreenshotUpd
             detail="Screenshot not found"
         )
     
-    # Update screenshot fields
-    if screenshot_update.s3_key is not None:
-        db_screenshot.s3_key = screenshot_update.s3_key
-    
-    if screenshot_update.device_type is not None:
-        db_screenshot.device_type = screenshot_update.device_type
-    
-    if screenshot_update.resolution is not None:
-        db_screenshot.resolution = screenshot_update.resolution
-    
-    if screenshot_update.file_size is not None:
-        db_screenshot.file_size = screenshot_update.file_size
+    for key, value in screenshot.dict(exclude_unset=True).items():
+        setattr(db_screenshot, key, value)
     
     db.commit()
     db.refresh(db_screenshot)
@@ -82,9 +73,11 @@ async def update_screenshot(screenshot_id: int, screenshot_update: ScreenshotUpd
 
 
 @router.delete("/{screenshot_id}", status_code=status.HTTP_204_NO_CONTENT)
-async def delete_screenshot(screenshot_id: int, db: Session = Depends(get_db)):
+@limiter.limit("50/hour")
+async def delete_screenshot(request: Request, screenshot_id: int, db: Session = Depends(get_db)):
     """
-    Delete a screenshot record.
+    Delete a screenshot.
+    Rate limited to 50 requests per hour.
     """
     db_screenshot = db.query(Screenshot).filter(Screenshot.id == screenshot_id).first()
     if not db_screenshot:

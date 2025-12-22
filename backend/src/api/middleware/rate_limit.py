@@ -1,47 +1,53 @@
-from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.requests import Request
 from starlette.responses import Response, JSONResponse
-from starlette.status import HTTP_429_TOO_MANY_REQUESTS
-import time
-from typing import Dict
-
-# Simple in-memory store for rate limiting
-# In production, you'd use Redis for distributed rate limiting
-rate_limit_store: Dict[str, Dict[str, int]] = {}
+from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi.util import get_remote_address
+from slowapi.errors import RateLimitExceeded
+import os
 
 
-class RateLimitMiddleware(BaseHTTPMiddleware):
-    async def dispatch(self, request: Request, call_next):
-        # Simple rate limiting: 100 requests per minute per IP
-        client_ip = request.client.host if request.client else "unknown"
-        current_time = int(time.time())
-        window_start = current_time - 60  # 1 minute window
+# Tier-based rate limits
+TIER_LIMITS = {
+    "free": "100/hour",
+    "basic": "500/hour",
+    "premium": "2000/hour",
+    "enterprise": "10000/hour"
+}
 
-        # Clean up old entries
-        if client_ip in rate_limit_store:
-            rate_limit_store[client_ip] = {
-                timestamp: count
-                for timestamp, count in rate_limit_store[client_ip].items()
-                if timestamp > window_start
-            }
-        else:
-            rate_limit_store[client_ip] = {}
+# Default tier if none specified
+DEFAULT_TIER = "free"
 
-        # Count request
-        if current_time in rate_limit_store[client_ip]:
-            rate_limit_store[client_ip][current_time] += 1
-        else:
-            rate_limit_store[client_ip][current_time] = 1
+# Initialize the limiter
+limiter = Limiter(key_func=get_remote_address)
 
-        # Calculate total requests in window
-        total_requests = sum(rate_limit_store[client_ip].values())
 
-        # Check if limit exceeded (100 requests per minute)
-        if total_requests > 100:
-            return JSONResponse(
-                status_code=HTTP_429_TOO_MANY_REQUESTS,
-                content={"detail": "Rate limit exceeded"}
-            )
+def get_tier_from_request(request: Request) -> str:
+    """
+    Extract user tier from request.
+    In a real implementation, this would check the user's account tier.
+    For now, we'll use a simple header or default to free tier.
+    """
+    # Check for tier in header (would normally come from user authentication)
+    tier = request.headers.get("X-User-Tier", DEFAULT_TIER).lower()
+    
+    # Validate tier
+    if tier not in TIER_LIMITS:
+        tier = DEFAULT_TIER
+    
+    return tier
 
-        response = await call_next(request)
-        return response
+
+def get_rate_limit_for_tier(tier: str) -> str:
+    """Get rate limit string for a given tier"""
+    return TIER_LIMITS.get(tier, TIER_LIMITS[DEFAULT_TIER])
+
+
+class RateLimitMiddleware:
+    def __init__(self, app):
+        self.app = app
+        # Handle rate limit exceeded
+        app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+    
+    async def __call__(self, scope, receive, send):
+        # Pass through to the next middleware/application
+        await self.app(scope, receive, send)

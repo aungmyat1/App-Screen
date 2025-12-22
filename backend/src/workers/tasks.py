@@ -2,6 +2,9 @@ import asyncio
 import logging
 import sys
 import os
+import random
+from datetime import datetime, timedelta
+from typing import List, Dict
 
 # Add the backend directory to the Python path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..'))
@@ -9,27 +12,17 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..'))
 from backend.src.workers.celery_app import celery_app
 from backend.src.core.playstore_scraper import PlayStoreScraper
 from backend.src.core.appstore_scraper import AppStoreScraper
+from backend.src.core.storage import S3Storage
+from backend.src.core.image_processor import ImageProcessor
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-@celery_app.task(bind=True)
-def scrape_playstore(self, app_id: str, job_id: int = None):
-    """
-    Celery task to scrape screenshots from Play Store
-    
-    Args:
-        app_id (str): The package name of the app
-        job_id (int): The job ID for tracking purposes
-        
-    Returns:
-        dict: Result of the scraping operation
-    """
+@celery_app.task(bind=True, max_retries=3)
+def scrape_playstore(self, job_id: int, app_id: str):
+    """Celery task for Play Store scraping"""
     try:
-        logger.info(f"Starting Play Store scrape for app: {app_id}")
-        
-        # Initialize the scraper
         scraper = PlayStoreScraper()
         
         # Run the async scraping function in a new event loop
@@ -38,46 +31,57 @@ def scrape_playstore(self, app_id: str, job_id: int = None):
         
         try:
             # Execute the scraping
-            result = loop.run_until_complete(scraper.scrape(app_id))
-            
-            logger.info(f"Successfully scraped {len(result)} screenshots for app: {app_id}")
-            
-            return {
-                "status": "success",
-                "app_id": app_id,
-                "job_id": job_id,
-                "screenshots": result,
-                "count": len(result)
-            }
+            screenshots, metadata = loop.run_until_complete(scraper.scrape(app_id))
+        finally:
+            loop.close()
+        
+        # Save to database
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        try:
+            loop.run_until_complete(save_screenshots(job_id, screenshots, metadata))
+        finally:
+            loop.close()
+        
+        # Process and upload to S3
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        try:
+            loop.run_until_complete(process_and_upload_screenshots(screenshots))
+        finally:
+            loop.close()
+        
+        # Update job status
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        try:
+            loop.run_until_complete(update_job_status(job_id, 'completed'))
+        finally:
+            loop.close()
+        
+        return {
+            'job_id': job_id,
+            'screenshots_count': len(screenshots)
+        }
+        
+    except Exception as e:
+        # Calculate exponential backoff delay
+        countdown = self.default_retry_delay * (2 ** self.request.retries) + random.uniform(0, 1)
+        
+        # Update job status
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        try:
+            loop.run_until_complete(update_job_status(job_id, 'retrying', str(e)))
         finally:
             loop.close()
             
-    except Exception as exc:
-        logger.error(f"Error scraping Play Store for app {app_id}: {str(exc)}")
-        self.retry(countdown=60, max_retries=3)  # Retry after 60 seconds
-        return {
-            "status": "error",
-            "app_id": app_id,
-            "job_id": job_id,
-            "error": str(exc)
-        }
+        raise self.retry(exc=e, countdown=countdown, max_retries=3)
 
-@celery_app.task(bind=True)
-def scrape_appstore(self, app_id: str, job_id: int = None):
-    """
-    Celery task to scrape screenshots from App Store
-    
-    Args:
-        app_id (str): The ID of the app
-        job_id (int): The job ID for tracking purposes
-        
-    Returns:
-        dict: Result of the scraping operation
-    """
+@celery_app.task(bind=True, max_retries=3)
+def scrape_appstore(self, job_id: int, app_id: str):
+    """Celery task for App Store scraping"""
     try:
-        logger.info(f"Starting App Store scrape for app: {app_id}")
-        
-        # Initialize the scraper
         scraper = AppStoreScraper()
         
         # Run the async scraping function in a new event loop
@@ -86,87 +90,88 @@ def scrape_appstore(self, app_id: str, job_id: int = None):
         
         try:
             # Execute the scraping
-            result = loop.run_until_complete(scraper.scrape(app_id))
-            
-            logger.info(f"Successfully scraped {len(result)} screenshots for app: {app_id}")
-            
-            return {
-                "status": "success",
-                "app_id": app_id,
-                "job_id": job_id,
-                "screenshots": result,
-                "count": len(result)
-            }
+            screenshots, metadata = loop.run_until_complete(scraper.scrape(app_id))
+        finally:
+            loop.close()
+        
+        # Save to database
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        try:
+            loop.run_until_complete(save_screenshots(job_id, screenshots, metadata))
+        finally:
+            loop.close()
+        
+        # Process and upload to S3
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        try:
+            loop.run_until_complete(process_and_upload_screenshots(screenshots))
+        finally:
+            loop.close()
+        
+        # Update job status
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        try:
+            loop.run_until_complete(update_job_status(job_id, 'completed'))
+        finally:
+            loop.close()
+        
+        return {
+            'job_id': job_id,
+            'screenshots_count': len(screenshots)
+        }
+        
+    except Exception as e:
+        # Calculate exponential backoff delay
+        countdown = self.default_retry_delay * (2 ** self.request.retries) + random.uniform(0, 1)
+        
+        # Update job status
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        try:
+            loop.run_until_complete(update_job_status(job_id, 'retrying', str(e)))
         finally:
             loop.close()
             
-    except Exception as exc:
-        logger.error(f"Error scraping App Store for app {app_id}: {str(exc)}")
-        self.retry(countdown=60, max_retries=3)  # Retry after 60 seconds
-        return {
-            "status": "error",
-            "app_id": app_id,
-            "job_id": job_id,
-            "error": str(exc)
-        }
+        raise self.retry(exc=e, countdown=countdown, max_retries=3)
 
-@celery_app.task(bind=True)
-def download_screenshots(self, screenshots: list, job_id: int = None):
-    """
-    Celery task to download screenshots
+@celery_app.task
+def cleanup_old_screenshots():
+    """Periodic task to clean up old cached screenshots"""
+    # Delete screenshots older than 30 days
+    cutoff = datetime.utcnow() - timedelta(days=30)
     
-    Args:
-        screenshots (list): List of screenshot URLs to download
-        job_id (int): The job ID for tracking purposes
-        
-    Returns:
-        dict: Result of the download operation
-    """
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
     try:
-        logger.info(f"Starting download of {len(screenshots)} screenshots for job: {job_id}")
-        
-        # TODO: Implement actual screenshot downloading logic
-        # This would typically involve:
-        # 1. Downloading images from URLs
-        # 2. Uploading to cloud storage (S3, etc.)
-        # 3. Saving metadata to database
-        
-        downloaded = []
-        failed = []
-        
-        # Simulate downloading process
-        for i, screenshot_url in enumerate(screenshots):
-            try:
-                # In a real implementation, you would actually download the image
-                # and save it to storage
-                downloaded.append({
-                    "url": screenshot_url,
-                    "storage_path": f"screenshots/{job_id}/{i}.png",
-                    "status": "downloaded"
-                })
-            except Exception as e:
-                failed.append({
-                    "url": screenshot_url,
-                    "error": str(e)
-                })
-        
-        logger.info(f"Downloaded {len(downloaded)} screenshots, {len(failed)} failed for job: {job_id}")
-        
-        return {
-            "status": "completed",
-            "job_id": job_id,
-            "downloaded": downloaded,
-            "failed": failed,
-            "total": len(screenshots),
-            "success_count": len(downloaded),
-            "failed_count": len(failed)
-        }
-        
-    except Exception as exc:
-        logger.error(f"Error downloading screenshots for job {job_id}: {str(exc)}")
-        self.retry(countdown=60, max_retries=3)  # Retry after 60 seconds
-        return {
-            "status": "error",
-            "job_id": job_id,
-            "error": str(exc)
-        }
+        loop.run_until_complete(delete_old_files(cutoff))
+    finally:
+        loop.close()
+
+# Functions for the functionality that would need to be implemented
+async def save_screenshots(job_id: int, screenshots: list, metadata: dict):
+    """Save screenshots to database"""
+    # Implementation would go here
+    pass
+
+async def process_and_upload_screenshots(screenshots: List[Dict]):
+    """Process and upload screenshots to S3"""
+    # Check if watermarking is enabled via environment variable
+    watermark_text = os.getenv('WATERMARK_TEXT')
+    image_processor = ImageProcessor(watermark_text=watermark_text)
+    s3_storage = S3Storage()
+    
+    # Implementation would go here
+    pass
+
+async def update_job_status(job_id: int, status: str, error_message: str = None):
+    """Update job status in database"""
+    # Implementation would go here
+    pass
+
+async def delete_old_files(cutoff: datetime):
+    """Delete old screenshot files"""
+    # Implementation would go here
+    pass
