@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <style>
+    body {
+      width: 300px;
+      padding: 15px;
+      font-family: Arial, sans-serif;
+    }
+    
+    .container {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    
+    button {
+      background: #4f46e5;
+      color: white;
+      border: none;
+      padding: 8px 15px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    
+    button:hover {
+      background: #4338ca;
+    }
+    
+    button:disabled {
+      background: #c7d2fe;
+      cursor: not-allowed;
+    }
+    
+    .status {
+      text-align: center;
+      padding: 5px;
+      font-size: 14px;
+      color: #4f46e5;
+    }
+    
+    .error {
+      color: #ef4444;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h3>App Screenshots</h3>
+    <p>Extract screenshots from the current page</p>
+    <button id="extractScreenshots">Extract Screenshots</button>
+    <button id="downloadScreenshots" disabled>Download Screenshots</button>
+    <div id="status" class="status"></div>
+  </div>
+  <script src="popup.js"></script>
+</body>
+</html>
