@@ -101,7 +101,7 @@ const GooglePlayIcon: React.FC<{ className?: string }> = ({ className = 'h-6 w-6
 
 const FeatureIcon: React.FC<{ icon: string }> = ({ icon }) => {
     const icons: { [key: string]: React.ReactElement } = {
-        'batch': <path strokeLinecap="round" strokeLinejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />,
+        'batch': <path strokeLinecap="round" strokeLinejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 00-2-2v-6a2 2 0 002-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />,
         'platform': <path strokeLinecap="round" strokeLinejoin="round" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2zM5 12h.01M19 12h.01M12 5h.01" />,
         'input': <path strokeLinecap="round" strokeLinejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.5L15.232 5.232z" />,
         'output': <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />,
@@ -228,7 +228,7 @@ const Header: React.FC<{
         <header className="fixed w-full top-0 z-50 bg-white/70 dark:bg-slate-950/70 backdrop-blur-xl border-b border-slate-200/60 dark:border-slate-800/60">
             <div className="container mx-auto px-6 h-16 flex justify-between items-center">
                 <div className="text-xl font-bold flex items-center gap-2">
-                    <div className="w-8 h-8 bg-gradient-to-br from-primary-500 to-primary-700 rounded-lg flex items-center justify-center text-white">
+                    <div className="w-8 h-8 bg-linear-to-br from-primary-500 to-primary-700 rounded-lg flex items-center justify-center text-white">
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5">
                             <path fillRule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clipRule="evenodd" />
                         </svg>
@@ -349,7 +349,7 @@ const Hero: React.FC<{ showToast: (message: string, type: 'success' | 'error') =
     
     return (
         <section className="relative pt-32 pb-20 overflow-hidden">
-            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[800px] bg-primary-500/10 dark:bg-primary-500/20 rounded-full blur-[100px] -z-10" />
+            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-200 h-200 bg-primary-500/10 dark:bg-primary-500/20 rounded-full blur-[100px] -z-10" />
             
             <div className="container mx-auto px-6 text-center">
                 <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary-50 dark:bg-primary-900/30 border border-primary-100 dark:border-primary-800 text-primary-700 dark:text-primary-300 text-xs font-semibold mb-8">
@@ -362,7 +362,7 @@ const Hero: React.FC<{ showToast: (message: string, type: 'success' | 'error') =
 
                 <h1 className="text-5xl md:text-7xl font-extrabold text-slate-900 dark:text-white tracking-tight leading-[1.1] mb-6 max-w-4xl mx-auto">
                     App Screenshots. <br/>
-                    <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary-600 to-violet-600">Instantly.</span>
+                    <span className="text-transparent bg-clip-text bg-linear-to-r from-primary-600 to-violet-600">Instantly.</span>
                 </h1>
                 <p className="text-lg md:text-xl text-slate-600 dark:text-slate-400 max-w-2xl mx-auto mb-10 leading-relaxed">
                     Download assets from Google Play & Apple App Store in seconds. High-quality original files ready for your next project.
@@ -544,7 +544,7 @@ const AuthModal: React.FC<{ isOpen: boolean; onClose: () => void; onLoginSuccess
         setIsLoading(false);
     };
     return (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm" onClick={onClose}>
+        <div className="fixed inset-0 z-100 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm" onClick={onClose}>
             <div className="bg-white dark:bg-slate-900 w-full max-w-sm p-8 rounded-2xl shadow-2xl" onClick={e => e.stopPropagation()}>
                 <div className="text-center mb-8">
                     <h3 className="text-xl font-bold">Welcome back</h3>
@@ -554,9 +554,9 @@ const AuthModal: React.FC<{ isOpen: boolean; onClose: () => void; onLoginSuccess
                         <GoogleIcon /> Sign in with Google
                     </button>
                     <div className="relative flex py-2 items-center text-slate-400 text-xs uppercase">
-                        <div className="flex-grow border-t border-slate-100 dark:border-slate-800"></div>
+                        <div className="grow border-t border-slate-100 dark:border-slate-800"></div>
                         <span className="mx-2">Or</span>
-                        <div className="flex-grow border-t border-slate-100 dark:border-slate-800"></div>
+                        <div className="grow border-t border-slate-100 dark:border-slate-800"></div>
                     </div>
                     <input type="email" placeholder="Email address" className="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-800 border-none focus:ring-2 focus:ring-primary-500" />
                     <button type="submit" className="w-full py-3 bg-primary-600 text-white rounded-xl font-semibold">
