@@ -5,11 +5,11 @@
 echo "Setting up development environment..."
 
 # Install frontend dependencies
-cd /workspaces/App-Screen-
+cd /workspaces/App-Screen
 npm install
 
 # Setup Python virtual environment and install backend dependencies
-cd /workspaces/App-Screen-/backend
+cd /workspaces/App-Screen/backend
 python3 -m venv venv
 source venv/bin/activate
 

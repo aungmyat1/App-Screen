@@ -3,7 +3,7 @@
 echo "Setting up development environment..."
 
 # Install Playwright browsers
-cd /workspaces/App-Screen-/backend
+cd /workspaces/App-Screen/backend
 playwright install-deps
 playwright install chromium firefox webkit
 
@@ -20,7 +20,7 @@ fi
 # Install Node dependencies if not already installed
 if [ ! -d "node_modules" ]; then
     echo "Installing Node dependencies..."
-    cd /workspaces/App-Screen-
+    cd /workspaces/App-Screen
     npm install
 else
     echo "Node modules already installed."

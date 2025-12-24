@@ -77,3 +77,55 @@
   },
   "remoteUser": "vscode"
 }
+
+{
+  "name": "App-Screen Simple",
+  "image": "mcr.microsoft.com/devcontainers/python:3.11",
+  "features": {
+    "ghcr.io/devcontainers/features/node:1": {
+      "version": "20"
+    },
+    "ghcr.io/devcontainers/features/git:1": {},
+    "ghcr.io/devcontainers/features/common-utils:2": {}
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-python.python",
+        "ms-python.vscode-pylance",
+        "ms-toolsai.jupyter",
+        "dbaeumer.vscode-eslint",
+        "esbenp.prettier-vscode",
+        "bradlc.vscode-tailwindcss",
+        "ms-vscode.vscode-typescript-next"
+      ],
+      "settings": {
+        "python.defaultInterpreterPath": "/usr/local/python/current/bin/python",
+        "python.terminal.activateEnvironment": true,
+        "python.analysis.extraPaths": ["./backend"],
+        "terminal.integrated.defaultProfile.linux": "bash",
+        "editor.formatOnSave": true,
+        "editor.codeActionsOnSave": {
+          "source.fixAll.eslint": "explicit"
+        }
+      }
+    }
+  },
+  "forwardPorts": [3000, 8000],
+  "portsAttributes": {
+    "3000": {
+      "label": "Frontend",
+      "onAutoForward": "openPreview"
+    },
+    "8000": {
+      "label": "Backend API",
+      "onAutoForward": "notify"
+    }
+  },
+  "postCreateCommand": "echo 'Dev container ready! Run setup manually if needed.'",
+  "postAttachCommand": {
+    "command": "echo 'Dev container ready! Backend API is running on port 8000, Frontend will run on port 3000'",
+    "description": "Shows status when attaching to container"
+  },
+  "remoteUser": "vscode"
+}

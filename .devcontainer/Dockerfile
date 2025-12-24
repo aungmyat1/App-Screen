@@ -15,7 +15,7 @@ RUN apk add --no-cache \
 RUN git lfs install
 
 # Create workspace
-WORKDIR /workspaces/App-Screen-
+WORKDIR /workspaces/App-Screen
 
 # Fix Git LFS configuration issues
 RUN git config --global --unset-all filter.lfs.clean 2>/dev/null || true && \
@@ -42,7 +42,7 @@ RUN npx playwright install-deps && \
 RUN python -m pip install uvicorn
 
 # Set working directory
-WORKDIR /workspaces/App-Screen-
+WORKDIR /workspaces/App-Screen
 
 # Copy requirements files
 COPY backend/requirements.txt ./backend/requirements.txt

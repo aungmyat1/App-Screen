@@ -15,12 +15,12 @@ fi
 
 # Frontend setup
 echo "📦 Installing Node.js dependencies..."
-cd /workspaces/App-Screen-
+cd /workspaces/App-Screen
 npm ci --silent
 
 # Backend setup
 echo "🐍 Setting up Python backend..."
-cd /workspaces/App-Screen-/backend
+cd /workspaces/App-Screen/backend
 
 # Install Python dependencies directly (since we already did this in the workspace)
 if [ -f "requirements.txt" ]; then
@@ -33,28 +33,28 @@ python -m playwright install chromium
 
 # Database setup (using SQLite as in the current configuration)
 echo "🗄️ Setting up database..."
-cd /workspaces/App-Screen-/backend
+cd /workspaces/App-Screen/backend
 python -m src.database.init_db
 
 # Create/update .env file if needed
-if [ ! -f "/workspaces/App-Screen-/backend/.env" ]; then
+if [ ! -f "/workspaces/App-Screen/backend/.env" ]; then
     echo "📝 Creating .env file..."
-    cp /workspaces/App-Screen-/backend/.env.example /workspaces/App-Screen-/backend/.env
+    cp /workspaces/App-Screen/backend/.env.example /workspaces/App-Screen/backend/.env
 fi
 
 # Update the .env file to use PostgreSQL if services are available
-if grep -q "DATABASE_URL=sqlite" "/workspaces/App-Screen-/backend/.env"; then
-    sed -i 's|DATABASE_URL=sqlite.*|DATABASE_URL=postgresql://appscreens_user:appscreens_pass@postgres:5432/appscreens|' "/workspaces/App-Screen-/backend/.env"
+if grep -q "DATABASE_URL=sqlite" "/workspaces/App-Screen/backend/.env"; then
+    sed -i 's|DATABASE_URL=sqlite.*|DATABASE_URL=postgresql://appscreens_user:appscreens_pass@postgres:5432/appscreens|' "/workspaces/App-Screen/backend/.env"
     echo "🔧 Updated .env to use PostgreSQL service"
 fi
 
-if grep -q "REDIS_URL=redis" "/workspaces/App-Screen-/backend/.env"; then
-    sed -i 's|REDIS_URL=redis.*|REDIS_URL=redis://redis:6379/0|' "/workspaces/App-Screen-/backend/.env"
+if grep -q "REDIS_URL=redis" "/workspaces/App-Screen/backend/.env"; then
+    sed -i 's|REDIS_URL=redis.*|REDIS_URL=redis://redis:6379/0|' "/workspaces/App-Screen/backend/.env"
     echo "🔧 Updated .env to use Redis service"
 fi
 
 # Install frontend dependencies again to ensure they're properly cached
-cd /workspaces/App-Screen-
+cd /workspaces/App-Screen
 npm install
 
 echo "✅ Setup complete!"
