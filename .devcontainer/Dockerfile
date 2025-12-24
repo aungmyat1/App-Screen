@@ -25,14 +25,8 @@ RUN git config --global --unset-all filter.lfs.clean 2>/dev/null || true && \
 
 # Set default shell
 SHELL ["/bin/ash", "-o", "pipefail", "-c"]
-
-# Install Python dependencies
-RUN pip install --upgrade pip setuptools wheel
-
-# Install Node.js and npm (using the feature, but ensuring compatibility)
-RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
-    && apt-get install -y nodejs \
-    && npm install -g npm
+RUN apk add --no-cache curl bash && \
+    npm install -g npm
 
 # Install Python dependencies
 RUN pip install --upgrade pip setuptools wheel
@@ -47,14 +41,8 @@ RUN npx playwright install-deps && \
 # Install uvicorn for running FastAPI
 RUN python -m pip install uvicorn
 
-# Create workspace directory
-RUN mkdir -p /workspaces/App-Screen-
-
 # Set working directory
 WORKDIR /workspaces/App-Screen-
-
-# Default shell
-SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 # Copy requirements files
 COPY backend/requirements.txt ./backend/requirements.txt
