@@ -1,21 +1,30 @@
-FROM mcr.microsoft.com/devcontainers/python:1-3.11-bookworm
+FROM mcr.microsoft.com/devcontainers/base:alpine-3.22
 
 # Install system dependencies
-RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
-    && apt-get -y install --no-install-recommends \
-    build-essential \
-    curl \
+RUN apk add --no-cache \
     git \
-    wget \
-    libpq-dev \
-    python3-dev \
-    postgresql-client \
-    sqlite3 \
-    ca-certificates \
-    gnupg2 \
-    dirmngr \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/*
+    git-lfs \
+    nodejs \
+    npm \
+    python3 \
+    py3-pip \
+    build-base \
+    python3-dev
+
+# Initialize Git LFS properly
+RUN git lfs install
+
+# Create workspace
+WORKDIR /workspaces/App-Screen-
+
+# Fix Git LFS configuration issues
+RUN git config --global --unset-all filter.lfs.clean 2>/dev/null || true && \
+    git config --global --unset-all filter.lfs.smudge 2>/dev/null || true && \
+    git config --global --unset-all filter.lfs.process 2>/dev/null || true && \
+    git config --global --unset-all filter.lfs.required 2>/dev/null || true
+
+# Set default shell
+SHELL ["/bin/ash", "-o", "pipefail", "-c"]
 
 # Install Python dependencies
 RUN pip install --upgrade pip setuptools wheel

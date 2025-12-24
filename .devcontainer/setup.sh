@@ -4,6 +4,15 @@ set -e
 
 echo "🚀 Setting up App-Screen development environment..."
 
+# Initialize Git LFS if it's available
+if command -v git-lfs &> /dev/null; then
+    echo "📦 Initializing Git LFS..."
+    git lfs install --skip-smudge
+    git lfs pull 2>/dev/null || echo "No LFS files to pull"
+else
+    echo "⚠️ Git LFS not available, continuing setup..."
+fi
+
 # Frontend setup
 echo "📦 Installing Node.js dependencies..."
 cd /workspaces/App-Screen-

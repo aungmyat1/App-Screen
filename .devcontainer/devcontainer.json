@@ -3,7 +3,7 @@
   "dockerComposeFile": "docker-compose.yml",
   "service": "app",
   "workspaceFolder": "/workspaces/App-Screen-",
-  "forwardPorts": [3000, 8000],
+  "forwardPorts": [3000, 8000, 5173],
   "portsAttributes": {
     "3000": {
       "label": "Frontend",
@@ -12,9 +12,13 @@
     "8000": {
       "label": "Backend API",
       "onAutoForward": "notify"
+    },
+    "5173": {
+      "label": "Vite Dev Server",
+      "onAutoForward": "openPreview"
     }
   },
-  "postCreateCommand": "bash .devcontainer/setup.sh",
+  "postCreateCommand": "bash .devcontainer/setup.sh && git config --global --unset-all filter.lfs.clean 2>/dev/null || true && git config --global --unset-all filter.lfs.smudge 2>/dev/null || true && git config --global --unset-all filter.lfs.process 2>/dev/null || true && git config --global --unset-all filter.lfs.required 2>/dev/null || true",
   "postAttachCommand": {
     "command": "echo 'Dev container ready! Backend API is running on port 8000, Frontend will run on port 3000'",
     "description": "Shows status when attaching to container"
@@ -57,6 +61,7 @@
       "installTools": true
     },
     "ghcr.io/devcontainers/features/git:1": {},
+    "ghcr.io/devcontainers/features/git-lfs:1": {},
     "ghcr.io/devcontainers/features/github-cli:1": {},
     "ghcr.io/devcontainers/features/common-utils:2": {
       "installZsh": true,
