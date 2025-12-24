@@ -1,9 +1,11 @@
 {
   "name": "App-Screen Full Stack",
-  "dockerComposeFile": "docker-compose.yml",
+  "dockerComposeFile": [
+    "docker-compose.yml"
+  ],
   "service": "app",
   "workspaceFolder": "/workspaces/App-Screen-",
-  "dockerComposeProjectName": "appscreendev",
+  "shutdownAction": "none",
   "forwardPorts": [3000, 8000, 5173],
   "portsAttributes": {
     "3000": {
@@ -19,7 +21,7 @@
       "onAutoForward": "openPreview"
     }
   },
-  "postCreateCommand": "bash .devcontainer/setup.sh && git config --global --unset-all filter.lfs.clean 2>/dev/null || true && git config --global --unset-all filter.lfs.smudge 2>/dev/null || true && git config --global --unset-all filter.lfs.process 2>/dev/null || true && git config --global --unset-all filter.lfs.required 2>/dev/null || true",
+  "postCreateCommand": "bash .devcontainer/setup.sh",
   "postAttachCommand": {
     "command": "echo 'Dev container ready! Backend API is running on port 8000, Frontend will run on port 3000'",
     "description": "Shows status when attaching to container"
@@ -72,5 +74,6 @@
       "userGid": "1000",
       "upgradePackages": true
     }
-  }
+  },
+  "remoteUser": "vscode"
 }
