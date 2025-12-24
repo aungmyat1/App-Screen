@@ -7,14 +7,14 @@ services:
       dockerfile: .devcontainer/Dockerfile
     volumes:
       - ../..:/workspaces:cached
-      - node_modules:/workspaces/App-Screen-/node_modules
-      - venv:/workspaces/App-Screen-/backend/venv
+      - node_modules:/workspaces/App-Screen/node_modules
+      - venv:/workspaces/App-Screen/backend/venv
       - ~/.ssh:/root/.ssh:ro
       - ~/.gitconfig:/root/.gitconfig:ro
     environment:
       - NODE_ENV=development
       - PYTHONUNBUFFERED=1
-      - PYTHONPATH=/workspaces/App-Screen-/backend
+      - PYTHONPATH=/workspaces/App-Screen/backend
       - DATABASE_URL=postgresql://appscreens_user:appscreens_pass@postgres:5432/appscreens
       - REDIS_URL=redis://redis:6379
     ports:

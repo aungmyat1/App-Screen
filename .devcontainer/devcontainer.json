@@ -2,7 +2,7 @@
   "name": "App-Screen Full Stack",
   "dockerComposeFile": "docker-compose.yml",
   "service": "app",
-  "workspaceFolder": "/workspaces/App-Screen-",
+  "workspaceFolder": "/workspaces/App-Screen",
   "dockerComposeProjectName": "appscreendev",
   "forwardPorts": [3000, 8000, 5173],
   "portsAttributes": {
