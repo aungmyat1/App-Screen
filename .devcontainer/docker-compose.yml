@@ -5,19 +5,21 @@ services:
     build:
       context: ..
       dockerfile: .devcontainer/Dockerfile
-    image: app-screen-dev
-    container_name: app-screen-dev
     volumes:
-      - ..:/workspaces/App-Screen-:cached
-      - /workspaces/App-Screen-/node_modules
-      - /workspaces/App-Screen-/backend/.venv
+      - ../..:/workspaces:cached
+      - node_modules:/workspaces/App-Screen-/node_modules
+      - venv:/workspaces/App-Screen-/backend/venv
+      - ~/.ssh:/root/.ssh:ro
+      - ~/.gitconfig:/root/.gitconfig:ro
     environment:
+      - NODE_ENV=development
+      - PYTHONUNBUFFERED=1
+      - PYTHONPATH=/workspaces/App-Screen-/backend
       - DATABASE_URL=postgresql://appscreens_user:appscreens_pass@postgres:5432/appscreens
       - REDIS_URL=redis://redis:6379
-      - NODE_ENV=development
     ports:
-      - "5173:5173"  # Vite dev server
-      - "8000:8000"  # FastAPI backend
+      - "5173:5173"
+      - "8000:8000"
     depends_on:
       - postgres
       - redis
@@ -28,12 +30,12 @@ services:
   postgres:
     image: postgres:15
     restart: unless-stopped
+    environment:
+      POSTGRES_USER: appscreens_user
+      POSTGRES_PASSWORD: appscreens_pass
+      POSTGRES_DB: appscreens
     volumes:
       - postgres-data:/var/lib/postgresql/data
-    environment:
-      - POSTGRES_DB=appscreens
-      - POSTGRES_USER=appscreens_user
-      - POSTGRES_PASSWORD=appscreens_pass
     ports:
       - "5432:5432"
     networks:
@@ -45,10 +47,8 @@ services:
       retries: 5
 
   redis:
-    image: redis:7
+    image: redis:7-alpine
     restart: unless-stopped
-    volumes:
-      - redis-data:/data
     ports:
       - "6379:6379"
     networks:
@@ -59,10 +59,11 @@ services:
       timeout: 5s
       retries: 5
 
-volumes:
-  postgres-data:
-  redis-data:
-
 networks:
   app-network:
     driver: bridge
+
+volumes:
+  node_modules:
+  venv:
+  postgres-data:

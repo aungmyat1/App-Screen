@@ -1,63 +1,51 @@
-FROM mcr.microsoft.com/devcontainers/python:3.11
+FROM mcr.microsoft.com/devcontainers/python:1-3.11-bookworm
 
-# Features section for devcontainer features
-ARG INSTALL_ZSH="true"
-ARG UPGRADE_PACKAGES="false"
-ARG COMMON_LINUX_DISTRO="false"
-ARG ENABLE_NONROOT_DOCKER="false"
-ARG SOURCE_SOCKET=true
-ARG PERSONAL_ACCESS_TOKEN=""
-ARG EXTENSIONS_STRING=""
-ARG FEATURES={}
-
-# Install system dependencies on Debian-based devcontainer image
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    bash \
+# Install system dependencies
+RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
+    && apt-get -y install --no-install-recommends \
+    build-essential \
     curl \
-    wget \
     git \
+    wget \
+    libpq-dev \
+    python3-dev \
     postgresql-client \
-    nodejs \
-    npm \
+    sqlite3 \
     ca-certificates \
     gnupg2 \
     dirmngr \
+    && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
 # Install Python dependencies
 RUN pip install --upgrade pip setuptools wheel
 
-# Install Playwright dependencies (Debian package names)
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    libstdc++6 \
-    libx11-6 \
-    libxcomposite1 \
-    libxdamage1 \
-    libxext6 \
-    libxfixes3 \
-    libxrandr2 \
-    libxrender1 \
-    xvfb \
-    libfreetype6 \
-    fontconfig \
-    libglib2.0-0 \
-    dbus-user-session \
-    libgtk-3-0 \
-    libgbm1 \
-    mesa-utils \
-    libnss3 \
-    && rm -rf /var/lib/apt/lists/*
+# Install Node.js and npm (using the feature, but ensuring compatibility)
+RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
+    && apt-get install -y nodejs \
+    && npm install -g npm
 
-# Install Playwright and browsers
-RUN python -m pip install --upgrade pip setuptools wheel
+# Install Python dependencies
+RUN pip install --upgrade pip setuptools wheel
+
+# Install Playwright
 RUN python -m pip install playwright
-RUN npx playwright install-deps || playwright install-deps || true
-RUN npx playwright install chromium || playwright install chromium
+
+# Install Playwright dependencies and browsers
+RUN npx playwright install-deps && \
+    npx playwright install chromium
 
 # Install uvicorn for running FastAPI
 RUN python -m pip install uvicorn
 
+# Create workspace directory
+RUN mkdir -p /workspaces/App-Screen-
+
+# Set working directory
 WORKDIR /workspaces/App-Screen-
+
+# Default shell
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 # Copy requirements files
 COPY backend/requirements.txt ./backend/requirements.txt

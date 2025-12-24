@@ -1,3 +1,50 @@
+# App-Screen Dev Container
+
+This is a development container configuration for the App-Screen full-stack application.
+
+## Features
+- Node.js 20 for frontend (React + Vite + Tailwind)
+- Python 3.11 for backend (FastAPI)
+- PostgreSQL database service
+- Redis service for caching and background tasks
+- Pre-configured VS Code extensions
+- Volume caching for node_modules and Python virtual environment
+- Port forwarding (3000 for frontend, 8000 for backend API)
+
+## Getting Started
+
+1. Open in VS Code with Dev Containers extension
+2. Open command palette (Ctrl+Shift+P)
+3. Select "Dev Containers: Reopen in Container"
+
+## Manual Setup (if needed)
+
+```bash
+# Frontend
+cd /workspaces/App-Screen-
+npm install
+npm run dev
+
+# Backend
+cd /workspaces/App-Screen-/backend
+pip install -r requirements.txt
+python -m uvicorn src.api.main:app --host 0.0.0.0 --port 8000
+```
+
+## Services
+- Frontend: http://localhost:3000
+- Backend API: http://localhost:8000
+- PostgreSQL: postgres://postgres:5432 (internal to container: postgres:5432)
+- Redis: redis://redis:6379 (internal to container: redis:6379)
+
+## Project Structure
+```
+/workspaces/App-Screen-        # Main project directory
+├── backend/                   # Python backend with FastAPI
+├── frontend/                  # React/Vite frontend
+└── .devcontainer/             # Dev container configuration
+```
+
 # Development Container Setup
 
 This project includes a development container configuration for VS Code, which provides a consistent development environment with all required dependencies pre-installed.
