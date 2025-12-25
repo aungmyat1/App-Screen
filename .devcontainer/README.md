@@ -1,139 +1,69 @@
-# App-Screen Dev Container
+# App-Screen Development Container Setup
 
-This is a development container configuration for the App-Screen full-stack application.
+This development container provides a complete environment for working on the App-Screen project, with all necessary tools and dependencies pre-installed.
 
-## Features
-- Node.js 20 for frontend (React + Vite + Tailwind)
-- Python 3.11 for backend (FastAPI)
-- PostgreSQL database service
-- Redis service for caching and background tasks
-- Pre-configured VS Code extensions
-- Volume caching for node_modules and Python virtual environment
-- Port forwarding (3000 for frontend, 8000 for backend API)
+## What's Included
 
-## Getting Started
+- **Node.js 20** with npm
+- **Python 3.11** with virtual environment
+- **PostgreSQL 15** database service
+- **Redis** for caching and task queues
+- **Playwright** with Chromium, Firefox, and WebKit browsers
+- **Git** with Git LFS support
+- **GitHub CLI**
+- VS Code extensions for Python, TypeScript, React, Tailwind CSS, and more
 
-1. Open in VS Code with Dev Containers extension
-2. Open command palette (Ctrl+Shift+P)
-3. Select "Dev Containers: Reopen in Container"
+## Services Configuration
 
-## Manual Setup (if needed)
+The devcontainer automatically starts these services:
 
-```bash
-# Frontend
-cd /workspaces/App-Screen-
-npm install
-npm run dev
+- **Backend API**: FastAPI application on port 8000
+- **Frontend Dev Server**: Vite development server on port 5173
+- **PostgreSQL**: Database on port 5432
+- **Redis**: Cache/queue on port 6379
 
-# Backend
-cd /workspaces/App-Screen-/backend
-pip install -r requirements.txt
-python -m uvicorn src.api.main:app --host 0.0.0.0 --port 8000
-```
+## Automatic Startup
 
-## Services
-- Frontend: http://localhost:3000
-- Backend API: http://localhost:8000
-- PostgreSQL: postgres://postgres:5432 (internal to container: postgres:5432)
-- Redis: redis://redis:6379 (internal to container: redis:6379)
+When you attach to the devcontainer, the services are automatically started using the `start_services.sh` script. You can see the status of the services in the terminal output.
 
-## Project Structure
-```
-/workspaces/App-Screen-        # Main project directory
-├── backend/                   # Python backend with FastAPI
-├── frontend/                  # React/Vite frontend
-└── .devcontainer/             # Dev container configuration
-```
+## Manual Service Control
 
-# Development Container Setup
+If you need to manually control the services, you can use these scripts:
 
-This project includes a development container configuration for VS Code, which provides a consistent development environment with all required dependencies pre-installed.
+- Start services: `/workspaces/App-Screen/start_services.sh`
+- Stop services: `/workspaces/App-Screen/stop_services.sh`
 
-## Prerequisites
+The services log their output to `/tmp/services.log` where you can check for any issues.
 
-- Docker Desktop
-- Visual Studio Code
-- Remote - Containers extension for VS Code
+## Ports
 
-## What's included
+The following ports are automatically forwarded:
 
-The development container includes:
+- `8000`: Backend API server
+- `5173`: Frontend Vite development server
+- `5432`: PostgreSQL database
+- `6379`: Redis server
 
-- Python 3.11
-- Node.js LTS
-- PostgreSQL (as a separate service)
-- Redis (as a separate service)
-- All Python dependencies from [backend/requirements.txt](../backend/requirements.txt)
-- All Node dependencies from [package.json](../package.json)
-- Playwright browsers for screenshot functionality
+## Available Commands
 
-## Using the Development Container
-
-1. Open this project in VS Code
-2. When prompted, click "Reopen in Container", or:
-   - Press `Ctrl/Cmd+Shift+P` to open the command palette
-   - Type "Remote-Containers: Reopen in Container" and select it
-3. Wait for the container to build (this may take several minutes on first run)
-
-## Services
-
-Once the container is running, these services will be available:
-
-- Main development container: localhost (access via VS Code terminal)
-- Frontend development server: port 3000
-- Backend API server: port 8000
-- PostgreSQL database: port 5432
-- Redis: port 6379
-
-## Running the Applications
-
-### Frontend
+From the workspace root:
 
 ```bash
-# In the integrated terminal
+# Start both backend and frontend services
+./start_services.sh
+
+# Stop running services
+./stop_services.sh
+
+# Start backend API only
+cd backend && /opt/venv/bin/uvicorn src.api.main:app --host 0.0.0.0 --port 8000 --reload
+
+# Start frontend only
 npm run dev
 ```
-
-The frontend will be available at http://localhost:3000
-
-### Backend
-
-```bash
-# In the integrated terminal
-cd backend
-./start.sh
-```
-
-The backend API will be available at http://localhost:8000
-
-## Database Access
-
-The PostgreSQL database is automatically configured. To connect:
-
-- Host: postgres (from within the container)
-- Port: 5432
-- Database: appscreens
-- User: appscreens_user
-- Password: appscreens_pass
-
-From the terminal:
-```bash
-psql postgresql://appscreens_user:appscreens_pass@postgres:5432/appscreens
-```
-
-## Redis Access
-
-Redis is available at:
-
-- Host: redis (from within the container)
-- Port: 6379
 
 ## Troubleshooting
 
-If you encounter issues:
-
-1. Make sure Docker is running
-2. Try rebuilding the container:
-   - Press `Ctrl/Cmd+Shift+P`
-   - Run "Remote-Containers: Rebuild Container"
-3. Check that all required ports are available on your host machine
+1. **Services not starting**: Check `/tmp/services.log` for error messages
+2. **Port conflicts**: Ensure ports 8000 and 5173 are available
+3. **Dependency issues**: The `postCreateCommand` should install all dependencies, but you can run `npm install` and `pip install -r requirements.txt` again if needed

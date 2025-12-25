@@ -19,8 +19,8 @@
   },
   "postCreateCommand": "bash .devcontainer/setup.sh && bash .devcontainer/postCreateCommand.sh",
   "postAttachCommand": {
-    "command": "echo 'Dev container ready! Backend API is running on port 8000, Frontend will run on port 5173'",
-    "description": "Shows status when attaching to container"
+    "command": "bash -c 'echo \"Dev container ready! Starting services...\" && nohup /workspaces/App-Screen/start_services.sh > /tmp/services.log 2>&1 & sleep 2 && echo \"Backend API is running on port 8000, Frontend will run on port 5173\" && echo \"Check logs at /tmp/services.log\"'",
+    "description": "Starts backend and frontend services when attaching to container"
   },
   "customizations": {
     "vscode": {
