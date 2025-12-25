@@ -12,9 +12,11 @@ if [ ! -d "venv" ]; then
     echo "Setting up Python virtual environment..."
     python3 -m venv venv
     source venv/bin/activate
-    pip install -r requirements.txt
+    python3 -m pip install -r requirements.txt
 else
     echo "Virtual environment already exists."
+    source venv/bin/activate
+    python3 -m pip install -r requirements.txt
 fi
 
 # Install Node dependencies if not already installed

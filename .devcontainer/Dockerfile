@@ -26,14 +26,18 @@ RUN git config --global --unset-all filter.lfs.clean 2>/dev/null || true && \
 SHELL ["/bin/ash", "-o", "pipefail", "-c"]
 RUN apk add --no-cache bash
 
-# Install Python dependencies globally
+# Install Python dependencies in a virtual environment to avoid externally-managed-environment error
+RUN python3 -m venv /opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
+
+# Install Python packages in the virtual environment
 RUN pip install --upgrade pip setuptools wheel
 
 # Install Playwright and required browsers
 RUN npm install -g playwright && \
     playwright install chromium
 
-# Install uvicorn for running FastAPI
+# Install uvicorn for running FastAPI in the virtual environment
 RUN pip install uvicorn
 
 # Create vscode user if it doesn't exist

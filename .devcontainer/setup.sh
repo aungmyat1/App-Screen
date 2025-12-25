@@ -17,19 +17,20 @@ npm install
 echo "🐍 Setting up Python backend..."
 cd /workspaces/App-Screen/backend
 
-# Install Python dependencies
+# Activate the virtual environment and install Python dependencies
 if [ -f "requirements.txt" ]; then
-    pip install --upgrade pip
-    pip install -r requirements.txt
+    # Using the system-installed Python in the virtual environment
+    python3 -m pip install --upgrade pip
+    python3 -m pip install -r requirements.txt
 fi
 
 # Install Playwright browser
-python -m playwright install chromium
+python3 -m playwright install chromium
 
 # Database setup (using SQLite as in the current configuration)
 echo "🗄️ Setting up database..."
 cd /workspaces/App-Screen/backend
-python -m src.database.init_db
+python3 -m src.database.init_db
 
 # Create/update .env file if needed
 if [ ! -f "/workspaces/App-Screen/backend/.env" ]; then
