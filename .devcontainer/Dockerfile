@@ -5,6 +5,7 @@ FROM mcr.microsoft.com/devcontainers/base:ubuntu-22.04
 RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
     && apt-get -y install --no-install-recommends \
     git \
+    git-lfs \
     curl \
     wget \
     ca-certificates \
@@ -20,32 +21,6 @@ RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
     chromium-chromedriver \
     zsh \
     fonts-powerline \
-    apt-transport-https \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/*
-
-# Install Oh My Zsh
-RUN sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended \
-    && chsh -s $(which zsh)
-
-# Set working directory
-WORKDIR /workspace
-
-# Setup user
-USER vscode
-
-# Install Python 3.11
-RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
-    && apt-get install -y software-properties-common \
-    && add-apt-repository ppa:deadsnakes/ppa \
-    && apt-get update \
-    && apt-get install -y python3.11 python3.11-venv python3.11-dev \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/*
-
-# Install Node.js 20
-RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
-    && apt-get install -y nodejs \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
@@ -92,6 +67,20 @@ RUN curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2
 RUN sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended \
     && chsh -s $(which zsh)
 
+# Set environment variables
+ENV NODE_ENV=development
+ENV PYTHONUNBUFFERED=1
+ENV GIT_DISCOVERY_ACROSS_FILESYSTEM=1
+
+# Set working directory
+WORKDIR /workspace
+
+# Setup user
+USER vscode
+
+# Initialize Git LFS
+RUN git lfs install
+
 # Install Python development tools using Python 3.11
 RUN sudo update-alternatives --install /usr/bin/python python /usr/bin/python3.11 1
 RUN pip install --upgrade pip && \
@@ -119,10 +108,6 @@ RUN update-alternatives --install /usr/bin/python python /usr/bin/python3.11 1
 
 # Switch to the non-root user
 USER vscode
-
-# Set environment variables
-ENV NODE_ENV=development
-ENV PYTHONUNBUFFERED=1
 
 # Expose common ports for development
 EXPOSE 3000 5000 8000

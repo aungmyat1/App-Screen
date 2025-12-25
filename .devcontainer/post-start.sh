@@ -8,6 +8,31 @@ echo "Starting App-Screen services..."
 echo "Waiting for PostgreSQL, Redis and MinIO to be ready..."
 sleep 15
 
+# Perform git operations if the workspace is a git repository
+cd /workspace
+if [ -d ".git" ] || git rev-parse --git-dir > /dev/null 2>&1; then
+    echo "Detected Git repository, performing Git operations..."
+    
+    # Configure git if not already configured
+    if ! git config user.email > /dev/null 2>&1; then
+        echo "Please configure your Git user.email before proceeding"
+    fi
+    
+    if ! git config user.name > /dev/null 2>&1; then
+        echo "Please configure your Git user.name before proceeding"
+    fi
+    
+    # Pull latest changes
+    echo "Pulling latest changes from origin/main..."
+    git pull origin main
+    
+    # If needed, you can also push changes to origin/main
+    # Uncomment the next line if you want to automatically push
+    # git push origin main
+else
+    echo "Not a Git repository or Git not properly initialized"
+fi
+
 # Check if backend is available and start development servers
 if [ -d "/workspace/backend" ]; then
     cd /workspace/backend
