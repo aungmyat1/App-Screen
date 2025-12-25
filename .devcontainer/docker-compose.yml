@@ -3,29 +3,35 @@ version: '3.8'
 services:
   app:
     build:
-      context: ..
+      context: .
       dockerfile: .devcontainer/Dockerfile
     volumes:
-      - ../..:/workspaces:cached
+      # Mount the workspace - this is already done by Codespaces, but we keep it for consistency
+      - /workspaces/App-Screen:/workspaces/App-Screen:cached
+      # Keep node_modules and venv in volumes for persistence
       - node_modules:/workspaces/App-Screen/node_modules
       - venv:/workspaces/App-Screen/backend/venv
-      - ~/.ssh:/home/vscode/.ssh:ro
-      - ~/.gitconfig:/home/vscode/.gitconfig:ro
+      # Codespaces will handle SSH and gitconfig automatically
     environment:
       - NODE_ENV=development
       - PYTHONUNBUFFERED=1
       - PYTHONPATH=/workspaces/App-Screen/backend
       - DATABASE_URL=postgresql://appscreens_user:appscreens_pass@postgres:5432/appscreens
       - REDIS_URL=redis://redis:6379
+      - CODESPACES=true
     ports:
       - "5173:5173"
       - "8000:8000"
     depends_on:
-      - postgres
-      - redis
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
     networks:
       - app-network
     command: sleep infinity
+    user: vscode
+    working_dir: /workspaces/App-Screen
 
   postgres:
     image: postgres:15

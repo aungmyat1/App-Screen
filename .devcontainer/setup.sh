@@ -4,6 +4,10 @@ set -e
 
 echo "🚀 Setting up App-Screen development environment..."
 
+# Create necessary directories
+mkdir -p /workspaces/App-Screen/node_modules
+mkdir -p /workspaces/App-Screen/backend/venv
+
 # Initialize Git LFS if it's available
 if command -v git-lfs &> /dev/null; then
     echo "📦 Initializing Git LFS..."
@@ -16,13 +20,13 @@ fi
 # Frontend setup
 echo "📦 Installing Node.js dependencies..."
 cd /workspaces/App-Screen
-npm ci --silent
+npm ci --silent || npm install
 
 # Backend setup
 echo "🐍 Setting up Python backend..."
 cd /workspaces/App-Screen/backend
 
-# Install Python dependencies directly (since we already did this in the workspace)
+# Install Python dependencies
 if [ -f "requirements.txt" ]; then
     pip install --upgrade pip
     pip install -r requirements.txt

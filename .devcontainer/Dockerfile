@@ -1,7 +1,9 @@
-FROM mcr.microsoft.com/devcontainers/base:alpine-3.22
+FROM mcr.microsoft.com/devcontainers/base:alpine
 
-# Install system dependencies
+# Install basic tools
 RUN apk add --no-cache \
+    curl \
+    wget \
     git \
     git-lfs \
     nodejs \
@@ -14,9 +16,6 @@ RUN apk add --no-cache \
 # Initialize Git LFS properly
 RUN git lfs install
 
-# Create workspace
-WORKDIR /workspaces/App-Screen
-
 # Fix Git LFS configuration issues
 RUN git config --global --unset-all filter.lfs.clean 2>/dev/null || true && \
     git config --global --unset-all filter.lfs.smudge 2>/dev/null || true && \
@@ -25,23 +24,30 @@ RUN git config --global --unset-all filter.lfs.clean 2>/dev/null || true && \
 
 # Set default shell
 SHELL ["/bin/ash", "-o", "pipefail", "-c"]
-RUN apk add --no-cache curl bash && \
-    npm install -g npm
+RUN apk add --no-cache bash
 
-# Install Python dependencies
+# Install Python dependencies globally
 RUN pip install --upgrade pip setuptools wheel
 
-# Install Playwright
-RUN python -m pip install playwright
-
-# Install Playwright dependencies and browsers
-RUN npx playwright install-deps && \
-    npx playwright install chromium
+# Install Playwright and required browsers
+RUN npm install -g playwright && \
+    playwright install chromium
 
 # Install uvicorn for running FastAPI
-RUN python -m pip install uvicorn
+RUN pip install uvicorn
 
-# Set working directory
+# Create vscode user if it doesn't exist
+ARG USERNAME=vscode
+ARG USER_UID=1000
+ARG USER_GID=$USER_UID
+RUN addgroup -g $USER_GID -S $USERNAME \
+    && adduser -u $USER_UID -S $USERNAME -G $USERNAME \
+    && apk add --no-cache sudo \
+    && echo $USERNAME ALL=\(root\) NOPASSWD:ALL > /etc/sudoers.d/$USERNAME \
+    && chmod 0440 /etc/sudoers.d/$USERNAME
+
+# Switch to vscode user
+USER $USERNAME
 WORKDIR /workspaces/App-Screen
 
 # Copy requirements files
