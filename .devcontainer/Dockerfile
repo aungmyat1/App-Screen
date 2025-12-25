@@ -1,21 +1,131 @@
-# [Choice] Python version: 3.12, 3.11, 3.10, 3.9, 3.8
-FROM mcr.microsoft.com/devcontainers/python:1-3.11-bookworm
+# Use the official Python 3.11 image based on Debian Bullseye
+FROM mcr.microsoft.com/devcontainers/base:ubuntu-22.04
 
-# Install Node.js
-ARG NODE_VERSION="18"
-RUN curl -fsSL https://deb.nodesource.com/setup_$NODE_VERSION.x | bash - && \
-    apt-get install -y nodejs \
-    && npm install -g npm \
+# Install system dependencies
+RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
+    && apt-get -y install --no-install-recommends \
+    git \
+    curl \
+    wget \
+    ca-certificates \
+    gnupg \
+    lsb-release \
+    build-essential \
+    libssl-dev \
+    libffi-dev \
+    python3-dev \
+    python3-pip \
+    postgresql-client \
+    chromium-browser \
+    chromium-chromedriver \
+    zsh \
+    fonts-powerline \
+    apt-transport-https \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-# Install Python dependencies
-COPY backend/requirements.txt /tmp/requirements.txt
-RUN pip install -r /tmp/requirements.txt && rm /tmp/requirements.txt
+# Install Oh My Zsh
+RUN sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended \
+    && chsh -s $(which zsh)
 
-# [Optional] Uncomment this section to install additional OS packages
-# RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
-#     && apt-get install -y --no-install-recommends <your-package-list-here>
+# Set working directory
+WORKDIR /workspace
 
-# [Optional] Uncomment this line to install global node packages
-# RUN su vscode -c "source /usr/local/share/nvm/nvm.sh && npm install -g <your-package-here>" 2>&1
+# Setup user
+USER vscode
+
+# Install Python 3.11
+RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
+    && apt-get install -y software-properties-common \
+    && add-apt-repository ppa:deadsnakes/ppa \
+    && apt-get update \
+    && apt-get install -y python3.11 python3.11-venv python3.11-dev \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Node.js 20
+RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
+    && apt-get install -y nodejs \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Python 3.11
+RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
+    && apt-get install -y software-properties-common \
+    && add-apt-repository ppa:deadsnakes/ppa \
+    && apt-get update \
+    && apt-get install -y python3.11 python3.11-venv python3.11-dev \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Node.js 20
+RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
+    && apt-get install -y nodejs \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Docker CLI
+RUN curl -fsSL https://get.docker.com | sh -
+
+# Install Docker Compose v2
+RUN DOCKER_CONFIG=/home/vscode/.docker/cli-plugins \
+    mkdir -p ${DOCKER_CONFIG} && \
+    curl -fsSL "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o ${DOCKER_CONFIG}/docker-compose && \
+    chmod +x ${DOCKER_CONFIG}/docker-compose
+
+# Install GitHub CLI
+RUN curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg && \
+    echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | tee /etc/apt/sources.list.d/github-cli.list > /dev/null && \
+    apt-get update && \
+    apt-get -y install gh && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
+# Install AWS CLI
+RUN curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip" && \
+    unzip awscliv2.zip && \
+    ./aws/install && \
+    rm awscliv2.zip && \
+    rm -rf ./aws
+
+# Install Oh My Zsh
+RUN sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended \
+    && chsh -s $(which zsh)
+
+# Install Python development tools using Python 3.11
+RUN sudo update-alternatives --install /usr/bin/python python /usr/bin/python3.11 1
+RUN pip install --upgrade pip && \
+    pip install black flake8 pytest
+
+# Create the workspace directory
+RUN mkdir -p /workspace
+
+# Set the working directory
+WORKDIR /workspace
+
+# Switch back to root to set up user and alternatives
+USER root
+
+# Create a non-root user 'vscode' if it doesn't exist
+RUN if ! id -u vscode > /dev/null 2>&1; then \
+        useradd -l -m -s /bin/zsh -N -u 1000 vscode; \
+    fi && \
+    # Add the user to the necessary groups
+    usermod -a -G sudo docker vscode && \
+    echo 'vscode ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers.d/50-vscode
+
+# Set default Python to 3.11 for all users
+RUN update-alternatives --install /usr/bin/python python /usr/bin/python3.11 1
+
+# Switch to the non-root user
+USER vscode
+
+# Set environment variables
+ENV NODE_ENV=development
+ENV PYTHONUNBUFFERED=1
+
+# Expose common ports for development
+EXPOSE 3000 5000 8000
+
+# Default command
+CMD ["sleep", "infinity"]

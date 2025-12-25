@@ -1,44 +1,86 @@
-version: '3.8'
+version: '3.9'
 
 services:
-  app:
+  dev-environment:
     build:
-      context: ..
-      dockerfile: .devcontainer/Dockerfile
+      context: .
+      dockerfile: Dockerfile
     volumes:
-      - ../..:/workspaces:cached
-      - node_modules:/workspaces/App-Screen/node_modules  # Persist node_modules
-    # Overrides default command so things don't shut down after the process ends
+      - ..:/workspace:cached
+      - node_modules:/workspace/node_modules
+      - venv:/workspace/backend/venv
+      - ~/.ssh:/home/vscode/.ssh:ro
+      - ~/.gitconfig:/home/vscode/.gitconfig:ro
     command: sleep infinity
     environment:
-      - DATABASE_URL=postgresql://appscreens_user:appscreens_pass@postgres:5432/appscreens
-      - REDIS_URL=redis://redis:6379
-    network_mode: service:postgres  # Connect to postgres network to access both db and redis
-    
+      - DATABASE_URL=postgresql://appscreen:devpass@postgres:5432/appscreen_db
+      - REDIS_URL=redis://redis:6379/0
+      - NODE_ENV=development
+      - PYTHONUNBUFFERED=1
+    networks:
+      - appscreen-network
+    depends_on:
+      - postgres
+      - redis
+      - minio
+
   postgres:
-    image: postgres:15
+    image: postgres:15-alpine
     restart: unless-stopped
+    environment:
+      POSTGRES_USER: appscreen
+      POSTGRES_PASSWORD: devpass
+      POSTGRES_DB: appscreen_db
     volumes:
       - postgres_data:/var/lib/postgresql/data
-    environment:
-      POSTGRES_DB: appscreens
-      POSTGRES_USER: appscreens_user
-      POSTGRES_PASSWORD: appscreens_pass
-    # Use different port to avoid conflict if postgres is running locally
+      - ./init-scripts:/docker-entrypoint-initdb.d
+    networks:
+      - appscreen-network
     ports:
-      - "54320:5432"  # Maps to 54320 on host, 5432 in container
-    
+      - "5432:5432"
+
   redis:
     image: redis:7-alpine
     restart: unless-stopped
+    command: redis-server --appendonly yes
     volumes:
       - redis_data:/data
-    command: redis-server --appendonly yes
-    # Use different port to avoid conflict if redis is running locally
+    networks:
+      - appscreen-network
     ports:
-      - "63790:6379"  # Maps to 63790 on host, 6379 in container
+      - "6379:6379"
+
+  minio:
+    image: minio/minio:latest
+    restart: unless-stopped
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin123
+    volumes:
+      - minio_data:/data
+    networks:
+      - appscreen-network
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+
+  mailhog:
+    image: mailhog/mailhog:latest
+    restart: unless-stopped
+    networks:
+      - appscreen-network
+    ports:
+      - "1025:1025"
+      - "8025:8025"
 
 volumes:
   postgres_data:
   redis_data:
+  minio_data:
   node_modules:
+  venv:
+
+networks:
+  appscreen-network:
+    driver: bridge

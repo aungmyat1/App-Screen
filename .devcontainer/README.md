@@ -1,55 +1,61 @@
-# Dev Container Setup for App-Screen
+# App-Screen Development Container Configuration
 
-This directory contains the configuration for the development container environment for the App-Screen project.
+This directory contains the configuration for the DevContainer environment for the App-Screen project.
 
 ## Overview
 
-The devcontainer provides a complete development environment with:
-- Python 3.11 with all required dependencies
-- Node.js 18 with npm
-- PostgreSQL database
-- Redis cache
-- Playwright for browser automation
-- All necessary VS Code extensions pre-installed
+The development container provides a complete environment for working on the App-Screen SaaS project with all necessary tools and dependencies pre-installed.
 
-## What's Included
+## Services
 
-### Services
-- `app`: Main application container with Python and Node.js
-- `postgres`: PostgreSQL database for data persistence
-- `redis`: Redis cache for session and temporary data
+The development environment includes:
 
-### VS Code Extensions
-- Python & Pylance
-- Flake8 linter
-- TypeScript/JavaScript support
-- Tailwind CSS IntelliSense
-- Docker support
+- **dev-environment**: Main development container with Python 3.11, Node.js 20, and all necessary tools
+- **postgres**: PostgreSQL database running on port 5432
+- **redis**: Redis cache and message broker running on port 6379
+- **minio**: S3-compatible storage service running on port 9000
+- **mailhog**: Email testing service with SMTP on port 1025 and web UI on port 8025
 
-### Port Forwarding
-- 54320: PostgreSQL (mapped to avoid conflicts)
-- 63790: Redis (mapped to avoid conflicts)
-- 8000: Backend API
-- 5173: Frontend development server
+## Configuration
+
+The devcontainer.json file configures:
+
+- Python 3.11 and Node.js 20 environments
+- Docker-in-Docker support
+- GitHub CLI and AWS CLI tools
+- VS Code extensions for both Python and TypeScript/React development
+- Port forwarding for all necessary services
+- Automatic setup and post-start scripts
 
 ## Setup Scripts
 
-### `setup.sh`
-- Installs frontend dependencies with `npm ci`
-- Installs Python dependencies from `backend/requirements.txt`
-- Installs Playwright browsers
+- `setup.sh`: Runs after the container is created, installs dependencies, and sets up the environment
+- `post-start.sh`: Runs when the container starts, initializes services
 
-### `postCreateCommand.sh`
-- Creates a default `.env` file with environment variables
-- Provides information about the dev container
+## Ports
 
-## Configuration Notes
+- 3000: Frontend development server
+- 5000: Backend API development server
+- 8000: Backend API production server
+- 5432: PostgreSQL database
+- 6379: Redis
+- 9000: MinIO storage
+- 1025: MailHog SMTP server
+- 8025: MailHog web UI
 
-- PostgreSQL port is mapped to 54320 on the host to avoid conflicts if PostgreSQL is running locally
-- Redis port is mapped to 63790 on the host for the same reason
-- node_modules are persisted in a Docker volume to speed up dependency installation
-- The database uses a persistent volume to maintain data between container restarts
+## Volumes
+
+The configuration includes persistent volumes for:
+- PostgreSQL data
+- Redis data
+- MinIO data
+- Node modules
+- Python virtual environment
+
+## Networks
+
+All services run on a dedicated `appscreen-network` bridge network for proper communication.
 
 ## Usage
 
-When opening this project in GitHub Codespaces or VS Code with Dev Containers enabled, the environment will be automatically set up with all required dependencies and services.
+When using VS Code with the Remote-Containers extension, the development environment will be automatically configured when you open this folder. The setup scripts will install all necessary dependencies and start the required services.

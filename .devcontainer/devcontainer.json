@@ -1,54 +1,104 @@
 {
-  "name": "App-Screen Development",
+  "name": "App-Screen SaaS Development",
   "dockerComposeFile": "docker-compose.yml",
-  "service": "app",
-  "workspaceFolder": "/workspaces/App-Screen",
+  "service": "dev-environment",
+  "workspaceFolder": "/workspace",
+  
   "features": {
-    "ghcr.io/devcontainers/features/playwright:1": {}
+    "ghcr.io/devcontainers/features/node:1": {
+      "version": "20",
+      "nodeGypDependencies": true
+    },
+    "ghcr.io/devcontainers/features/python:1": {
+      "version": "3.11",
+      "installTools": true
+    },
+    "ghcr.io/devcontainers/features/docker-in-docker:2": {
+      "version": "latest",
+      "dockerDashComposeVersion": "v2"
+    },
+    "ghcr.io/devcontainers/features/github-cli:1": {},
+    "ghcr.io/devcontainers/features/aws-cli:1": {}
   },
-  "onCreateCommand": "/bin/bash -c .devcontainer/setup.sh",
-  "postCreateCommand": "/bin/bash -c .devcontainer/postCreateCommand.sh",
+
   "customizations": {
     "vscode": {
       "extensions": [
+        "dbaeumer.vscode-eslint",
+        "esbenp.prettier-vscode",
         "ms-python.python",
         "ms-python.vscode-pylance",
-        "ms-python.flake8",
-        "ms-vscode.vscode-typescript-next",
+        "ms-azuretools.vscode-docker",
+        "eamodio.gitlens",
+        "github.copilot",
         "bradlc.vscode-tailwindcss",
-        "ms-azuretools.vscode-docker"
+        "prisma.prisma",
+        "ms-vscode.vscode-typescript-next",
+        "usernamehw.errorlens",
+        "christian-kohler.path-intellisense",
+        "formulahendry.auto-rename-tag",
+        "dsznajder.es7-react-js-snippets"
       ],
       "settings": {
-        "python.defaultInterpreterPath": "/usr/local/bin/python",
-        "python.linting.enabled": true,
-        "python.linting.flake8Enabled": true,
-        "python.formatting.provider": "black",
+        "terminal.integrated.defaultProfile.linux": "zsh",
         "editor.formatOnSave": true,
-        "files.exclude": {
-          "**/node_modules": true,
-          "**/.git": true
+        "editor.codeActionsOnSave": {
+          "source.fixAll.eslint": true
+        },
+        "python.linting.enabled": true,
+        "python.linting.pylintEnabled": true,
+        "python.formatting.provider": "black",
+        "[typescript]": {
+          "editor.defaultFormatter": "esbenp.prettier-vscode"
+        },
+        "[typescriptreact]": {
+          "editor.defaultFormatter": "esbenp.prettier-vscode"
+        },
+        "[python]": {
+          "editor.defaultFormatter": "ms-python.python"
         }
       }
     }
   },
-  "forwardPorts": [54320, 63790, 8000, 5173],
+
+  "forwardPorts": [3000, 5000, 8000, 5432, 6379, 9000, 1025, 8025],
   "portsAttributes": {
-    "54320": {
-      "label": "PostgreSQL",
+    "3000": {
+      "label": "Frontend",
       "onAutoForward": "notify"
     },
-    "63790": {
-      "label": "Redis",
+    "5000": {
+      "label": "Backend API (Dev)",
       "onAutoForward": "notify"
     },
     "8000": {
-      "label": "Backend API",
-      "onAutoForward": "notify"
+      "label": "Backend API (Prod)",
+      "onAutoForward": "silent"
     },
-    "5173": {
-      "label": "Frontend",
+    "5432": {
+      "label": "PostgreSQL",
+      "onAutoForward": "silent"
+    },
+    "6379": {
+      "label": "Redis",
+      "onAutoForward": "silent"
+    },
+    "9000": {
+      "label": "MinIO",
+      "onAutoForward": "silent"
+    },
+    "8025": {
+      "label": "MailHog UI",
       "onAutoForward": "notify"
     }
   },
-  "remoteUser": "vscode"
+
+  "postCreateCommand": "bash .devcontainer/setup.sh",
+  "postStartCommand": "bash .devcontainer/post-start.sh",
+
+  "remoteUser": "vscode",
+  "containerEnv": {
+    "NODE_ENV": "development",
+    "PYTHONUNBUFFERED": "1"
+  }
 }
