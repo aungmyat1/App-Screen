@@ -34,6 +34,28 @@ if [ -d ".git" ] || git rev-parse --git-dir > /dev/null 2>&1; then
             echo "Git LFS is being used in this repository."
             echo "LFS tracked files:"
             git lfs track
+            
+            # List LFS files to confirm they exist
+            echo "Checking for existing LFS files in repository:"
+            git lfs ls-files
+            if [ $? -eq 0 ]; then
+                echo "LFS files found - Git LFS is required for this repository."
+            else
+                echo "No LFS files found in repository."
+            fi
+            
+            # Check for Git hooks that enforce LFS
+            echo "Checking for Git LFS enforcement hooks..."
+            if [ -d ".git/hooks" ]; then
+                ls .git/hooks | grep -E "(pre-push|post-commit)"
+                if [ $? -eq 0 ]; then
+                    echo "Git LFS enforcement hooks found - LFS is required."
+                else
+                    echo "No LFS enforcement hooks found."
+                fi
+            else
+                echo ".git/hooks directory does not exist"
+            fi
         else
             echo "No LFS entries found in .gitattributes"
         fi
