@@ -6,12 +6,8 @@
   "service": "app",
   "workspaceFolder": "/workspaces/App-Screen",
   "shutdownAction": "none",
-  "forwardPorts": [3000, 8000, 5173],
+  "forwardPorts": [5173, 8000],
   "portsAttributes": {
-    "3000": {
-      "label": "Frontend",
-      "onAutoForward": "openPreview"
-    },
     "8000": {
       "label": "Backend API",
       "onAutoForward": "notify"
@@ -23,7 +19,7 @@
   },
   "postCreateCommand": "bash .devcontainer/setup.sh",
   "postAttachCommand": {
-    "command": "echo 'Dev container ready! Backend API is running on port 8000, Frontend will run on port 3000'",
+    "command": "echo 'Dev container ready! Backend API is running on port 8000, Frontend will run on port 5173'",
     "description": "Shows status when attaching to container"
   },
   "customizations": {
@@ -40,7 +36,8 @@
         "ms-azuretools.vscode-docker",
         "GitHub.copilot",
         "GitHub.copilot-chat",
-        "ms-playwright.playwright"
+        "ms-playwright.playwright",
+        "Alibaba-Cloud.tongyi-lingma"
       ],
       "settings": {
         "python.defaultInterpreterPath": "/usr/local/python/current/bin/python",

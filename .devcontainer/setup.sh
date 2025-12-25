@@ -4,23 +4,14 @@ set -e
 
 echo "🚀 Setting up App-Screen development environment..."
 
-# Create necessary directories
-mkdir -p /workspaces/App-Screen/node_modules
-mkdir -p /workspaces/App-Screen/backend/venv
-
-# Initialize Git LFS if it's available
-if command -v git-lfs &> /dev/null; then
-    echo "📦 Initializing Git LFS..."
-    git lfs install --skip-smudge
-    git lfs pull 2>/dev/null || echo "No LFS files to pull"
-else
-    echo "⚠️ Git LFS not available, continuing setup..."
-fi
+# Wait for PostgreSQL and Redis to be ready
+echo "⏳ Waiting for services to be ready..."
+sleep 10
 
 # Frontend setup
 echo "📦 Installing Node.js dependencies..."
 cd /workspaces/App-Screen
-npm ci --silent || npm install
+npm install
 
 # Backend setup
 echo "🐍 Setting up Python backend..."
@@ -69,7 +60,7 @@ echo "   Backend API: cd backend && python -m uvicorn src.api.main:app --host 0.
 echo ""
 echo "🌐 Ports:"
 echo "   - Frontend: http://localhost:3000"
-echo "   - Backend API: http://localhost:8000"
+echo "   - Backend API: http://localhost:5173"
 echo ""
 echo "💾 Services:"
 echo "   - PostgreSQL: postgres:5432"

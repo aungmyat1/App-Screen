@@ -3,8 +3,8 @@ version: '3.8'
 services:
   app:
     build:
-      context: .
-      dockerfile: Dockerfile
+      context: ..  # Changed from . to .. to access the project root
+      dockerfile: .devcontainer/Dockerfile  # Updated path to the correct location
     volumes:
       # Mount the workspace - this is already done by Codespaces, but we keep it for consistency
       - /workspaces/App-Screen:/workspaces/App-Screen:cached

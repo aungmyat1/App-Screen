@@ -50,17 +50,7 @@ RUN addgroup -g $USER_GID -S $USERNAME \
 USER $USERNAME
 WORKDIR /workspaces/App-Screen
 
-# Copy requirements files from the parent directory
-COPY ../backend/requirements.txt ./backend/requirements.txt
-
-# Install Python dependencies
-RUN cd backend && pip install -r requirements.txt
-
-# Install Node dependencies
-# package-lock.json may not exist in the repository root; copy package.json only
-COPY ../package.json ./
-RUN npm install --legacy-peer-deps || npm install
-
+# EXPOSE ports
 EXPOSE 3000 8000
 
 # Use sleep infinity so the container stays running after initialization
