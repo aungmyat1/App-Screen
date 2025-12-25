@@ -8,16 +8,16 @@ services:
     volumes:
       # Mount the workspace - this is already done by Codespaces, but we keep it for consistency
       - /workspaces/App-Screen:/workspaces/App-Screen:cached
-      # Keep node_modules and venv in volumes for persistence
+      # Keep node_modules in volumes for persistence
       - node_modules:/workspaces/App-Screen/node_modules
-      - venv:/workspaces/App-Screen/backend/venv
-      # Codespaces will handle SSH and gitconfig automatically
+      # Removed venv volume since we're building it into the image
     environment:
       - NODE_ENV=development
       - PYTHONUNBUFFERED=1
       - PYTHONPATH=/workspaces/App-Screen/backend
       - DATABASE_URL=postgresql://appscreens_user:appscreens_pass@postgres:5432/appscreens
       - REDIS_URL=redis://redis:6379
+      - PATH=/opt/venv/bin:$PATH  # Ensure the virtual environment is in PATH
       - CODESPACES=true
     ports:
       - "5173:5173"
@@ -71,5 +71,4 @@ networks:
 
 volumes:
   node_modules:
-  venv:
   postgres-data:

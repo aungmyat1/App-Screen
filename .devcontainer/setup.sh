@@ -19,18 +19,18 @@ cd /workspaces/App-Screen/backend
 
 # Activate the virtual environment and install Python dependencies
 if [ -f "requirements.txt" ]; then
-    # Using the system-installed Python in the virtual environment
-    python3 -m pip install --upgrade pip
-    python3 -m pip install -r requirements.txt
+    # Using the virtual environment we created
+    /opt/venv/bin/pip install --upgrade pip
+    /opt/venv/bin/pip install -r requirements.txt
 fi
 
-# Install Playwright browser
-python3 -m playwright install chromium
+# Install Playwright browser using the virtual environment's Python
+/opt/venv/bin/python -m playwright install chromium
 
 # Database setup (using SQLite as in the current configuration)
 echo "🗄️ Setting up database..."
 cd /workspaces/App-Screen/backend
-python3 -m src.database.init_db
+/opt/venv/bin/python -m src.database.init_db
 
 # Create/update .env file if needed
 if [ ! -f "/workspaces/App-Screen/backend/.env" ]; then

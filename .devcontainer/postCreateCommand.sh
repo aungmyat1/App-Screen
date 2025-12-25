@@ -1,5 +1,16 @@
 #!/bin/bash
 
+set -e
+
+echo "🔍 Verifying Python virtual environment..."
+python3 --version
+pip --version
+
+echo "✅ Virtual environment verification complete!"
+echo "🐍 Python is available at: $(which python3)"
+echo "📦 Pip is available at: $(which pip)"
+echo "🔧 Virtual environment path: /opt/venv"
+
 echo "Setting up development environment..."
 
 # Install Playwright browsers

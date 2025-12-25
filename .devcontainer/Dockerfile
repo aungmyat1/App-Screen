@@ -1,17 +1,15 @@
-FROM mcr.microsoft.com/devcontainers/base:alpine
+FROM mcr.microsoft.com/devcontainers/python:0-3.11
 
 # Install basic tools
-RUN apk add --no-cache \
+RUN apt-get update && apt-get install -y \
     curl \
     wget \
     git \
     git-lfs \
     nodejs \
     npm \
-    python3 \
-    py3-pip \
-    build-base \
-    python3-dev
+    build-essential \
+    && rm -rf /var/lib/apt/lists/*
 
 # Initialize Git LFS properly
 RUN git lfs install
@@ -22,11 +20,7 @@ RUN git config --global --unset-all filter.lfs.clean 2>/dev/null || true && \
     git config --global --unset-all filter.lfs.process 2>/dev/null || true && \
     git config --global --unset-all filter.lfs.required 2>/dev/null || true
 
-# Set default shell
-SHELL ["/bin/ash", "-o", "pipefail", "-c"]
-RUN apk add --no-cache bash
-
-# Install Python dependencies in a virtual environment to avoid externally-managed-environment error
+# Install Python dependencies in a virtual environment
 RUN python3 -m venv /opt/venv
 ENV PATH="/opt/venv/bin:$PATH"
 
@@ -40,15 +34,13 @@ RUN npm install -g playwright && \
 # Install uvicorn for running FastAPI in the virtual environment
 RUN pip install uvicorn
 
-# Create vscode user if it doesn't exist
+# Create vscode user if it doesn't exist (already handled by devcontainer features)
 ARG USERNAME=vscode
 ARG USER_UID=1000
 ARG USER_GID=$USER_UID
-RUN addgroup -g $USER_GID -S $USERNAME \
-    && adduser -u $USER_UID -S $USERNAME -G $USERNAME \
-    && apk add --no-cache sudo \
-    && echo $USERNAME ALL=\(root\) NOPASSWD:ALL > /etc/sudoers.d/$USERNAME \
-    && chmod 0440 /etc/sudoers.d/$USERNAME
+
+# Set the default shell
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 # Switch to vscode user
 USER $USERNAME

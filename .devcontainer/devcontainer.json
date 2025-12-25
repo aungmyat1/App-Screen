@@ -17,7 +17,7 @@
       "onAutoForward": "openPreview"
     }
   },
-  "postCreateCommand": "bash .devcontainer/setup.sh",
+  "postCreateCommand": "bash .devcontainer/setup.sh && bash .devcontainer/postCreateCommand.sh",
   "postAttachCommand": {
     "command": "echo 'Dev container ready! Backend API is running on port 8000, Frontend will run on port 5173'",
     "description": "Shows status when attaching to container"
@@ -40,7 +40,7 @@
         "Alibaba-Cloud.tongyi-lingma"
       ],
       "settings": {
-        "python.defaultInterpreterPath": "/usr/local/python/current/bin/python",
+        "python.defaultInterpreterPath": "/opt/venv/bin/python",
         "python.terminal.activateEnvironment": true,
         "python.analysis.extraPaths": ["./backend"],
         "terminal.integrated.defaultProfile.linux": "bash",
@@ -55,10 +55,6 @@
     "ghcr.io/devcontainers/features/node:1": {
       "version": "20",
       "nodeGypDependencies": true
-    },
-    "ghcr.io/devcontainers/features/python:1": {
-      "version": "3.11",
-      "installTools": true
     },
     "ghcr.io/devcontainers/features/git:1": {},
     "ghcr.io/devcontainers/features/git-lfs:1": {},
