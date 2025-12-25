@@ -26,9 +26,8 @@ if [ -d ".git" ] || git rev-parse --git-dir > /dev/null 2>&1; then
     echo "Pulling latest changes from origin/main..."
     git pull origin main
     
-    # If needed, you can also push changes to origin/main
-    # Uncomment the next line if you want to automatically push
-    # git push origin main
+    # Push LFS objects to origin/main (optional, uncomment if needed)
+    # git lfs push origin main --all
 else
     echo "Not a Git repository or Git not properly initialized"
 fi

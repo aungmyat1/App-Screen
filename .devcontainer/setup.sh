@@ -66,6 +66,31 @@ if [ ! -f "/workspace/.env" ]; then
     fi
 fi
 
+# Configure Git LFS for common large file types
+cd /workspace
+if command -v git-lfs >/dev/null 2>&1; then
+    if [ -d ".git" ] || git rev-parse --git-dir > /dev/null 2>&1; then
+        echo "Configuring Git LFS for common large file types..."
+        
+        # Initialize Git LFS
+        git lfs install
+        
+        # Track common large file types with Git LFS
+        git lfs track "*.psd" "*.zip" "*.exe" "*.bin" "*.pdf" "*.docx" "*.xlsx" "*.jar" "*.war" "*.ear" "*.so" "*.dll" "*.dylib" "*.deb" "*.rpm" "*.pkg" "*.dmg" "*.iso" "*.img" "*.mp4" "*.mov" "*.avi" "*.mkv" "*.m4v" "*.psd" "*.psb" "*.ai" "*.sketch" "*.xcf" "*.tiff" "*.tif" "*.bmp" "*.gif" "*.webm" "*.wav" "*.mp3" "*.flac" "*.ogg" "*.oga" "*.opus" "*.aiff" "*.aif" "*.au" "*.snd" "*.mid" "*.midi" "*.m3u" "*.m4a" "*.wma" "*.vob" "*.asf" "*.asx" "*.msv" "*.par" "*.raw" "*.db" "*.sql" "*.sqlite" "*.sqlite3" "*.dat" "*.data" "*.log" "*.gz" "*.bz2" "*.xz" "*.7z" "*.tar" "*.tgz" "*.rar"
+        
+        # Ensure .gitattributes is added to track LFS files
+        if [ -f ".gitattributes" ]; then
+            git add .gitattributes
+        fi
+        
+        echo "Git LFS tracking configured for common large file types."
+    else
+        echo "Not a Git repository or Git not properly initialized"
+    fi
+else
+    echo "Git LFS is not installed. Please install Git LFS to use LFS functionality."
+fi
+
 # Create init-scripts directory if needed for PostgreSQL
 mkdir -p /workspace/.devcontainer/init-scripts
 
