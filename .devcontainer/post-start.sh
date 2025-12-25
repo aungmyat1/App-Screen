@@ -22,12 +22,31 @@ if [ -d ".git" ] || git rev-parse --git-dir > /dev/null 2>&1; then
         echo "Please configure your Git user.name before proceeding"
     fi
     
+    # Initialize Git LFS if not already done (assuming it's already installed via Dockerfile)
+    git lfs install
+    
+    # Check if the repository uses Git LFS by looking at .gitattributes
+    echo "Checking if repository uses Git LFS..."
+    if [ -f ".gitattributes" ]; then
+        echo "Found .gitattributes file, checking for LFS entries:"
+        grep -i "filter=lfs" .gitattributes
+        if [ $? -eq 0 ]; then
+            echo "Git LFS is being used in this repository."
+            echo "LFS tracked files:"
+            git lfs track
+        else
+            echo "No LFS entries found in .gitattributes"
+        fi
+    else
+        echo ".gitattributes file does not exist"
+    fi
+    
     # Pull latest changes
     echo "Pulling latest changes from origin/main..."
     git pull origin main
     
-    # Push LFS objects to origin/main (optional, uncomment if needed)
-    # git lfs push origin main --all
+    # Push to origin/main (optional, uncomment if needed)
+    # git push origin main
 else
     echo "Not a Git repository or Git not properly initialized"
 fi

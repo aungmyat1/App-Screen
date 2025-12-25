@@ -1,11 +1,10 @@
-# Use the official Python 3.11 image based on Debian Bullseye
+# Use the official Ubuntu 22.04 base image
 FROM mcr.microsoft.com/devcontainers/base:ubuntu-22.04
 
 # Install system dependencies
 RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
     && apt-get -y install --no-install-recommends \
     git \
-    git-lfs \
     curl \
     wget \
     ca-certificates \
@@ -23,6 +22,10 @@ RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
     fonts-powerline \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
+
+# Install git-lfs and initialize it
+RUN apt-get update && apt-get install -y git-lfs \
+    && git lfs install
 
 # Install Python 3.11
 RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
@@ -83,8 +86,8 @@ RUN git lfs install
 
 # Install Python development tools using Python 3.11
 RUN sudo update-alternatives --install /usr/bin/python python /usr/bin/python3.11 1
-RUN pip install --upgrade pip && \
-    pip install black flake8 pytest
+RUN pip3.11 install --upgrade pip && \
+    pip3.11 install black flake8 pytest
 
 # Create the workspace directory
 RUN mkdir -p /workspace
@@ -92,16 +95,11 @@ RUN mkdir -p /workspace
 # Set the working directory
 WORKDIR /workspace
 
-# Switch back to root to set up user and alternatives
+# The vscode user is already created in the base image
+# Ensure the user is in the necessary groups
 USER root
-
-# Create a non-root user 'vscode' if it doesn't exist
-RUN if ! id -u vscode > /dev/null 2>&1; then \
-        useradd -l -m -s /bin/zsh -N -u 1000 vscode; \
-    fi && \
-    # Add the user to the necessary groups
-    usermod -a -G sudo docker vscode && \
-    echo 'vscode ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers.d/50-vscode
+usermod -a -G sudo docker vscode
+echo 'vscode ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers.d/50-vscode
 
 # Set default Python to 3.11 for all users
 RUN update-alternatives --install /usr/bin/python python /usr/bin/python3.11 1
