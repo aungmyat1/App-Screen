@@ -1,42 +1,28 @@
 #!/bin/bash
-
 set -e
 
-echo "🔍 Verifying Python virtual environment..."
-python3 --version
-pip --version
+echo "🎉 Post-create commands running..."
 
-echo "✅ Virtual environment verification complete!"
-echo "🐍 Python is available at: $(which python3)"
-echo "📦 Pip is available at: $(which pip)"
-echo "🔧 Virtual environment path: /opt/venv"
+cd /workspaces/App-Screen
 
-echo "Setting up development environment..."
-
-# Install Playwright browsers
-cd /workspaces/App-Screen/backend
-playwright install-deps
-playwright install chromium firefox webkit
-
-# Install Python dependencies if not already installed
-if [ ! -d "venv" ]; then
-    echo "Setting up Python virtual environment..."
-    python3 -m venv venv
-    source venv/bin/activate
-    python3 -m pip install -r requirements.txt
-else
-    echo "Virtual environment already exists."
-    source venv/bin/activate
-    python3 -m pip install -r requirements.txt
+# Create default .env file if it doesn't exist
+if [ ! -f ".env" ]; then
+    echo "📝 Creating default .env file..."
+    cat > .env << EOF
+# Environment variables
+NODE_ENV=development
+PYTHONPATH=/workspaces/App-Screen/backend
+DATABASE_URL=postgresql://appscreens_user:appscreens_pass@postgres:5432/appscreens
+REDIS_URL=redis://redis:6379
+GEMINI_API_KEY=
+STRIPE_SECRET_KEY=
+STRIPE_WEBHOOK_SECRET=
+EOF
 fi
 
-# Install Node dependencies if not already installed
-if [ ! -d "node_modules" ]; then
-    echo "Installing Node dependencies..."
-    cd /workspaces/App-Screen
-    npm install
-else
-    echo "Node modules already installed."
-fi
-
-echo "Setup completed!"
+echo "✨ Dev container is ready!"
+echo "📊 Services:"
+echo "  - PostgreSQL: localhost:5432"
+echo "  - Redis: localhost:6379"
+echo "  - Backend API: http://localhost:8000"
+echo "  - Frontend: http://localhost:5173"

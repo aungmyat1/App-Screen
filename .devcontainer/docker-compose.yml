@@ -3,71 +3,42 @@ version: '3.8'
 services:
   app:
     build:
-      context: ..  # Changed from . to .. to access the project root
-      dockerfile: .devcontainer/Dockerfile  # Updated path to the correct location
+      context: ..
+      dockerfile: .devcontainer/Dockerfile
     volumes:
-      # Use relative path for better portability
-      - ../:/workspaces/App-Screen:cached
-      # Keep node_modules in volumes for persistence
-      - node_modules:/workspaces/App-Screen/node_modules
+      - ../..:/workspaces:cached
+      - node_modules:/workspaces/App-Screen/node_modules  # Persist node_modules
+    # Overrides default command so things don't shut down after the process ends
+    command: sleep infinity
     environment:
-      - NODE_ENV=development
-      - PYTHONUNBUFFERED=1
-      - PYTHONPATH=/workspaces/App-Screen/backend
       - DATABASE_URL=postgresql://appscreens_user:appscreens_pass@postgres:5432/appscreens
       - REDIS_URL=redis://redis:6379
-      - PATH=/opt/venv/bin:$PATH  # Ensure the virtual environment is in PATH
-      - CODESPACES=true
-    ports:
-      - "5173:5173"
-      - "8000:8000"
-    depends_on:
-      postgres:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-    networks:
-      - app-network
-    command: sleep infinity
-    user: vscode
-    working_dir: /workspaces/App-Screen
-
+    network_mode: service:postgres  # Connect to postgres network to access both db and redis
+    
   postgres:
     image: postgres:15
     restart: unless-stopped
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
     environment:
+      POSTGRES_DB: appscreens
       POSTGRES_USER: appscreens_user
       POSTGRES_PASSWORD: appscreens_pass
-      POSTGRES_DB: appscreens
-    volumes:
-      - postgres-data:/var/lib/postgresql/data
+    # Use different port to avoid conflict if postgres is running locally
     ports:
-      - "5432:5432"
-    networks:
-      - app-network
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U appscreens_user -d appscreens"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
+      - "54320:5432"  # Maps to 54320 on host, 5432 in container
+    
   redis:
     image: redis:7-alpine
     restart: unless-stopped
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes
+    # Use different port to avoid conflict if redis is running locally
     ports:
-      - "6379:6379"
-    networks:
-      - app-network
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
-networks:
-  app-network:
-    driver: bridge
+      - "63790:6379"  # Maps to 63790 on host, 6379 in container
 
 volumes:
+  postgres_data:
+  redis_data:
   node_modules:
-  postgres-data:

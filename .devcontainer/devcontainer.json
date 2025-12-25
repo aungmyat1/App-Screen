@@ -1,75 +1,54 @@
 {
-  "name": "App-Screen Full Stack",
-  "dockerComposeFile": [
-    "docker-compose.yml"
-  ],
+  "name": "App-Screen Development",
+  "dockerComposeFile": "docker-compose.yml",
   "service": "app",
   "workspaceFolder": "/workspaces/App-Screen",
-  "shutdownAction": "none",
-  "forwardPorts": [5173, 8000],
-  "portsAttributes": {
-    "8000": {
-      "label": "Backend API",
-      "onAutoForward": "notify"
-    },
-    "5173": {
-      "label": "Vite Dev Server",
-      "onAutoForward": "openPreview"
-    }
+  "features": {
+    "ghcr.io/devcontainers/features/playwright:1": {}
   },
-  "postCreateCommand": "bash .devcontainer/setup.sh && bash .devcontainer/postCreateCommand.sh",
-  "postAttachCommand": {
-    "command": "bash -c 'echo \"Dev container ready! Starting services...\" && nohup /workspaces/App-Screen/start_services.sh > /tmp/services.log 2>&1 & sleep 2 && echo \"Backend API is running on port 8000, Frontend will run on port 5173\" && echo \"Check logs at /tmp/services.log\"'",
-    "description": "Starts backend and frontend services when attaching to container"
-  },
+  "onCreateCommand": "/bin/bash -c .devcontainer/setup.sh",
+  "postCreateCommand": "/bin/bash -c .devcontainer/postCreateCommand.sh",
   "customizations": {
     "vscode": {
       "extensions": [
         "ms-python.python",
         "ms-python.vscode-pylance",
-        "ms-toolsai.jupyter",
-        "dbaeumer.vscode-eslint",
-        "esbenp.prettier-vscode",
-        "bradlc.vscode-tailwindcss",
+        "ms-python.flake8",
         "ms-vscode.vscode-typescript-next",
-        "ms-vscode.vscode-node-azure-pack",
-        "ms-azuretools.vscode-docker",
-        "GitHub.copilot",
-        "GitHub.copilot-chat",
-        "ms-playwright.playwright",
-        "Alibaba-Cloud.tongyi-lingma"
+        "bradlc.vscode-tailwindcss",
+        "ms-azuretools.vscode-docker"
       ],
       "settings": {
-        "python.defaultInterpreterPath": "/opt/venv/bin/python",
-        "python.terminal.activateEnvironment": true,
-        "python.analysis.extraPaths": ["./backend"],
-        "terminal.integrated.defaultProfile.linux": "bash",
+        "python.defaultInterpreterPath": "/usr/local/bin/python",
+        "python.linting.enabled": true,
+        "python.linting.flake8Enabled": true,
+        "python.formatting.provider": "black",
         "editor.formatOnSave": true,
-        "editor.codeActionsOnSave": {
-          "source.fixAll.eslint": "explicit"
+        "files.exclude": {
+          "**/node_modules": true,
+          "**/.git": true
         }
       }
     }
   },
-  "features": {
-    "ghcr.io/devcontainers/features/node:1": {
-      "version": "20",
-      "nodeGypDependencies": true
+  "forwardPorts": [54320, 63790, 8000, 5173],
+  "portsAttributes": {
+    "54320": {
+      "label": "PostgreSQL",
+      "onAutoForward": "notify"
     },
-    "ghcr.io/devcontainers/features/git:1": {},
-    "ghcr.io/devcontainers/features/git-lfs:1": {},
-    "ghcr.io/devcontainers/features/github-cli:1": {},
-    "ghcr.io/devcontainers/features/common-utils:2": {
-      "installZsh": true,
-      "installOhMyZsh": true,
-      "username": "vscode",
-      "userUid": "1000",
-      "userGid": "1000",
-      "upgradePackages": true
+    "63790": {
+      "label": "Redis",
+      "onAutoForward": "notify"
+    },
+    "8000": {
+      "label": "Backend API",
+      "onAutoForward": "notify"
+    },
+    "5173": {
+      "label": "Frontend",
+      "onAutoForward": "notify"
     }
   },
-  "remoteUser": "vscode",
-  "build": {
-    "dockerfile": "Dockerfile"
-  }
+  "remoteUser": "vscode"
 }

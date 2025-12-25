@@ -1,73 +1,21 @@
-FROM mcr.microsoft.com/devcontainers/python:0-3.11
+# [Choice] Python version: 3.12, 3.11, 3.10, 3.9, 3.8
+FROM mcr.microsoft.com/devcontainers/python:1-3.11-bookworm
 
-# Install basic tools
-RUN apt-get update && apt-get install -y \
-    curl \
-    wget \
-    git \
-    git-lfs \
-    nodejs \
-    npm \
-    build-essential \
-    postgresql-client \
-    # Add Playwright system dependencies
-    libnss3 \
-    libnspr4 \
-    libatk1.0-0 \
-    libatk-bridge2.0-0 \
-    libcups2 \
-    libdrm2 \
-    libdbus-1-3 \
-    libxkbcommon0 \
-    libatspi2.0-0 \
-    libxcomposite1 \
-    libxdamage1 \
-    libxfixes3 \
-    libxrandr2 \
-    libgbm1 \
-    libpango-1.0-0 \
-    libcairo2 \
-    libasound2 \
+# Install Node.js
+ARG NODE_VERSION="18"
+RUN curl -fsSL https://deb.nodesource.com/setup_$NODE_VERSION.x | bash - && \
+    apt-get install -y nodejs \
+    && npm install -g npm \
+    && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-# Initialize Git LFS properly
-RUN git lfs install
+# Install Python dependencies
+COPY backend/requirements.txt /tmp/requirements.txt
+RUN pip install -r /tmp/requirements.txt && rm /tmp/requirements.txt
 
-# Fix Git LFS configuration issues
-RUN git config --global --unset-all filter.lfs.clean 2>/dev/null || true && \
-    git config --global --unset-all filter.lfs.smudge 2>/dev/null || true && \
-    git config --global --unset-all filter.lfs.process 2>/dev/null || true && \
-    git config --global --unset-all filter.lfs.required 2>/dev/null || true
+# [Optional] Uncomment this section to install additional OS packages
+# RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
+#     && apt-get install -y --no-install-recommends <your-package-list-here>
 
-# Create vscode user if it doesn't exist (already handled by devcontainer features)
-ARG USERNAME=vscode
-ARG USER_UID=1000
-ARG USER_GID=$USER_UID
-
-# Install Python dependencies in a virtual environment
-RUN python3 -m venv /opt/venv
-ENV PATH="/opt/venv/bin:$PATH"
-
-# Install Python packages in the virtual environment
-RUN pip install --upgrade pip setuptools wheel
-
-# Install Playwright and required browsers
-RUN npm install -g playwright && \
-    playwright install chromium --with-deps
-
-# Install uvicorn for running FastAPI in the virtual environment
-RUN pip install uvicorn
-
-# Set the default shell
-SHELL ["/bin/bash", "-o", "pipefail", "-c"]
-
-# Set working directory first, then switch user
-WORKDIR /workspaces/App-Screen
-USER $USERNAME
-
-# EXPOSE ports
-EXPOSE 3000 8000 5173
-
-# Use sleep infinity so the container stays running after initialization
-# Avoid requiring a non-guaranteed helper script as ENTRYPOINT; keep a simple CMD instead.
-CMD ["sleep", "infinity"]
+# [Optional] Uncomment this line to install global node packages
+# RUN su vscode -c "source /usr/local/share/nvm/nvm.sh && npm install -g <your-package-here>" 2>&1

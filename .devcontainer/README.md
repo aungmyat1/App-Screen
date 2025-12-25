@@ -1,69 +1,55 @@
-# App-Screen Development Container Setup
+# Dev Container Setup for App-Screen
 
-This development container provides a complete environment for working on the App-Screen project, with all necessary tools and dependencies pre-installed.
+This directory contains the configuration for the development container environment for the App-Screen project.
+
+## Overview
+
+The devcontainer provides a complete development environment with:
+- Python 3.11 with all required dependencies
+- Node.js 18 with npm
+- PostgreSQL database
+- Redis cache
+- Playwright for browser automation
+- All necessary VS Code extensions pre-installed
 
 ## What's Included
 
-- **Node.js 20** with npm
-- **Python 3.11** with virtual environment
-- **PostgreSQL 15** database service
-- **Redis** for caching and task queues
-- **Playwright** with Chromium, Firefox, and WebKit browsers
-- **Git** with Git LFS support
-- **GitHub CLI**
-- VS Code extensions for Python, TypeScript, React, Tailwind CSS, and more
+### Services
+- `app`: Main application container with Python and Node.js
+- `postgres`: PostgreSQL database for data persistence
+- `redis`: Redis cache for session and temporary data
 
-## Services Configuration
+### VS Code Extensions
+- Python & Pylance
+- Flake8 linter
+- TypeScript/JavaScript support
+- Tailwind CSS IntelliSense
+- Docker support
 
-The devcontainer automatically starts these services:
+### Port Forwarding
+- 54320: PostgreSQL (mapped to avoid conflicts)
+- 63790: Redis (mapped to avoid conflicts)
+- 8000: Backend API
+- 5173: Frontend development server
 
-- **Backend API**: FastAPI application on port 8000
-- **Frontend Dev Server**: Vite development server on port 5173
-- **PostgreSQL**: Database on port 5432
-- **Redis**: Cache/queue on port 6379
+## Setup Scripts
 
-## Automatic Startup
+### `setup.sh`
+- Installs frontend dependencies with `npm ci`
+- Installs Python dependencies from `backend/requirements.txt`
+- Installs Playwright browsers
 
-When you attach to the devcontainer, the services are automatically started using the `start_services.sh` script. You can see the status of the services in the terminal output.
+### `postCreateCommand.sh`
+- Creates a default `.env` file with environment variables
+- Provides information about the dev container
 
-## Manual Service Control
+## Configuration Notes
 
-If you need to manually control the services, you can use these scripts:
+- PostgreSQL port is mapped to 54320 on the host to avoid conflicts if PostgreSQL is running locally
+- Redis port is mapped to 63790 on the host for the same reason
+- node_modules are persisted in a Docker volume to speed up dependency installation
+- The database uses a persistent volume to maintain data between container restarts
 
-- Start services: `/workspaces/App-Screen/start_services.sh`
-- Stop services: `/workspaces/App-Screen/stop_services.sh`
+## Usage
 
-The services log their output to `/tmp/services.log` where you can check for any issues.
-
-## Ports
-
-The following ports are automatically forwarded:
-
-- `8000`: Backend API server
-- `5173`: Frontend Vite development server
-- `5432`: PostgreSQL database
-- `6379`: Redis server
-
-## Available Commands
-
-From the workspace root:
-
-```bash
-# Start both backend and frontend services
-./start_services.sh
-
-# Stop running services
-./stop_services.sh
-
-# Start backend API only
-cd backend && /opt/venv/bin/uvicorn src.api.main:app --host 0.0.0.0 --port 8000 --reload
-
-# Start frontend only
-npm run dev
-```
-
-## Troubleshooting
-
-1. **Services not starting**: Check `/tmp/services.log` for error messages
-2. **Port conflicts**: Ensure ports 8000 and 5173 are available
-3. **Dependency issues**: The `postCreateCommand` should install all dependencies, but you can run `npm install` and `pip install -r requirements.txt` again if needed
+When opening this project in GitHub Codespaces or VS Code with Dev Containers enabled, the environment will be automatically set up with all required dependencies and services.
