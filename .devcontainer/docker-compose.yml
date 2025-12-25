@@ -4,7 +4,7 @@ services:
   app:
     build:
       context: .
-      dockerfile: .devcontainer/Dockerfile
+      dockerfile: Dockerfile
     volumes:
       # Mount the workspace - this is already done by Codespaces, but we keep it for consistency
       - /workspaces/App-Screen:/workspaces/App-Screen:cached
