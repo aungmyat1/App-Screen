@@ -61,7 +61,7 @@ echo "   Backend API: cd backend && python -m uvicorn src.api.main:app --host 0.
 echo ""
 echo "🌐 Ports:"
 echo "   - Frontend: http://localhost:3000"
-echo "   - Backend API: http://localhost:5173"
+echo "   - Backend API: http://localhost:5432"
 echo ""
 echo "💾 Services:"
 echo "   - PostgreSQL: postgres:5432"

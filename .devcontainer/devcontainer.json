@@ -68,5 +68,8 @@
       "upgradePackages": true
     }
   },
-  "remoteUser": "vscode"
+  "remoteUser": "vscode",
+  "build": {
+    "dockerfile": "Dockerfile"
+  }
 }
