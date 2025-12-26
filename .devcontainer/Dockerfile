@@ -98,8 +98,8 @@ WORKDIR /workspace
 # The vscode user is already created in the base image
 # Ensure the user is in the necessary groups
 USER root
-usermod -a -G sudo docker vscode
-echo 'vscode ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers.d/50-vscode
+RUN usermod -a -G sudo vscode
+RUN echo 'vscode ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers.d/50-vscode
 
 # Set default Python to 3.11 for all users
 RUN update-alternatives --install /usr/bin/python python /usr/bin/python3.11 1
