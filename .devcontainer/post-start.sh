@@ -5,8 +5,8 @@
 echo "Starting development services..."
 
 # Start backend services
-if [ -d "/workspace/backend" ]; then
-    cd /workspace/backend
+if [ -d "/workspaces/App-Screen/backend" ]; then
+    cd /workspaces/App-Screen/backend
     
     # Start the backend API server in development mode on port 5000
     if [ -f "start_api.sh" ]; then
@@ -30,8 +30,8 @@ if [ -d "/workspace/backend" ]; then
 fi
 
 # Start the frontend development server if needed
-if [ -f "/workspace/package.json" ]; then
-    cd /workspace
+if [ -f "/workspaces/App-Screen/package.json" ]; then
+    cd /workspaces/App-Screen
     if [ -f "vite.config.ts" ] || [ -f "vite.config.js" ]; then
         echo "Starting frontend development server on port 3000..."
         npm run dev -- --host 0.0.0.0 &
@@ -55,7 +55,7 @@ echo "Waiting for PostgreSQL, Redis and MinIO to be ready..."
 sleep 15
 
 # Perform git operations if the workspace is a git repository
-cd /workspace
+cd /workspaces/App-Screen
 if [ -d ".git" ] || git rev-parse --git-dir > /dev/null 2>&1; then
     echo "Detected Git repository, performing Git operations..."
     
