@@ -1,51 +1,42 @@
 {
   "name": "App-Screen Development",
-  "image": "mcr.microsoft.com/devcontainers/typescript-node:0-18",
+  "image": "mcr.microsoft.com/devcontainers/python:3.12-nodejs-20",
+  
   "features": {
-    "ghcr.io/devcontainers/features/common-utils:2": {
-      "installZsh": true,
-      "username": "vscode",
-      "userUid": "1000",
-      "userGid": "1000",
-      "upgradePackages": true
-    },
-    "ghcr.io/devcontainers/features/desktop-lite:1": {},
     "ghcr.io/devcontainers/features/python:1": {
-      "version": "3.11",
+      "version": "3.12",
       "installTools": true
+    },
+    "ghcr.io/devcontainers/features/node:1": {
+      "version": "20"
+    },
+    "ghcr.io/devcontainers/features/git-lfs:1": {},
+    "ghcr.io/devcontainers/features/desktop-lite:1": {}
+  },
+  
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-python.python",
+        "ms-python.vscode-pylance",
+        "ms-vscode.vscode-typescript-next",
+        "esbenp.prettier-vscode",
+        "dbaeumer.vscode-eslint",
+        "bradlc.vscode-tailwindcss",
+        "ms-azuretools.vscode-docker",
+        "ms-vscode.vscode-edge-devtools"
+      ]
     }
   },
-  "overrideFeatureInstallOrder": [
-    "ghcr.io/devcontainers/features/common-utils",
-    "ghcr.io/devcontainers/features/python",
-    "ghcr.io/devcontainers/features/desktop-lite"
-  ],
-  "runArgs": [
-    "--cap-add=SYS_PTRACE",
-    "--security-opt",
-    "seccomp=unconfined",
-    "--shm-size=2gb"
-  ],
-  "mounts": [
-    "source=/tmp/.x11-unix,target=/tmp/.x11-unix,type=bind,consistency=cached"
-  ],
-  "containerEnv": {
-    "DISPLAY": "${localEnv:DISPLAY}",
-    "XDG_RUNTIME_DIR": "${localEnv:XDG_RUNTIME_DIR}",
-    "WAYLAND_DISPLAY": "${localEnv:WAYLAND_DISPLAY}",
-    "BROWSER": "/usr/bin/chromium"
-  },
-  "forwardPorts": [
-    3000,
-    5000,
-    5432,
-    6379,
-    9000
-  ],
+  
+  "postCreateCommand": "bash .devcontainer/setup.sh",
+  
+  "forwardPorts": [3000, 5000, 5432, 6379, 8000, 9000],
+  
   "portsAttributes": {
     "3000": {
       "label": "Frontend",
-      "onAutoForward": "notify"
+      "onAutoForward": "openPreview"
     },
     "5000": {
       "label": "Backend API",
@@ -59,32 +50,26 @@
       "label": "Redis",
       "onAutoForward": "silent"
     },
+    "8000": {
+      "label": "Backend API Alt",
+      "onAutoForward": "notify"
+    },
     "9000": {
       "label": "MinIO",
       "onAutoForward": "silent"
     }
   },
-  "postCreateCommand": "bash -c 'cd /workspaces/App-Screen && bash .devcontainer/backup-configs.sh && npm install && if ! bash .devcontainer/setup.sh; then echo \"Setup failed, attempting rollback...\"; bash .devcontainer/rollback.sh; exit 1; fi && if ! bash .devcontainer/validate.sh; then echo \"Validation failed, please check the setup\"; fi'",
-  "postStartCommand": "bash -c 'cd /workspaces/App-Screen && bash .devcontainer/post-start.sh &'",
-  "customizations": {
-    "vscode": {
-      "extensions": [
-        "ms-vscode.vscode-edge-devtools",
-        "msjsdiag.debugger-for-chrome",
-        "bradlc.vscode-tailwindcss",
-        "esbenp.prettier-vscode",
-        "ms-python.python",
-        "ms-python.vscode-pylance"
-      ]
-    },
-    "metadata": {
-      "lastWorkingVersion": "20251226",
-      "fallbackVersion": "20251225",
-      "description": "App-Screen development environment with Python 3.11 and Node.js 18"
-    }
-  },
-  "remoteEnv": {
-    "WORKSPACE_PATH": "/workspaces/App-Screen"
-  },
-  "updateRemoteUserUID": true
+  
+  "remoteUser": "vscode",
+  
+  "mounts": [
+    "source=${localWorkspaceFolder}/.vscode,target=/workspace/.vscode,type=bind,consistency=cached"
+  ],
+  
+  "runArgs": [
+    "--cap-add=SYS_PTRACE",
+    "--security-opt",
+    "seccomp=unconfined",
+    "--shm-size=2gb"
+  ]
 }

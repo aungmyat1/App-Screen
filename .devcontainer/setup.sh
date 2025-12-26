@@ -1,109 +1,175 @@
 #!/bin/bash
 
-# Setup script for App-Screen SaaS Development DevContainer
+set -e  # Exit on error
 
 echo "Setting up App-Screen development environment..."
 
-# Create necessary directories
-mkdir -p /workspace
+# Set workspace root correctly
+WORKSPACE_ROOT="/workspaces/App-Screen"
+cd "$WORKSPACE_ROOT"
 
-# Install Python dependencies from backend directory
-if [ -f "/workspace/backend/requirements.txt" ]; then
-    pip install --upgrade pip
-    pip install -r /workspace/backend/requirements.txt
+echo "✓ Working in: $(pwd)"
+
+# Detect the OS to use the correct package manager
+if [ -f /etc/os-release ]; then
+    . /etc/os-release
+    OS=$NAME
+    VER=$VERSION_ID
+    echo "Detected OS: $OS version $VER"
 else
-    echo "Warning: /workspace/backend/requirements.txt not found"
+    echo "Cannot detect OS, assuming Alpine"
+    OS="Alpine Linux"
 fi
 
-# Install Node.js dependencies if package.json exists at root
-if [ -f "/workspace/package.json" ]; then
-    cd /workspace
+# Install system dependencies based on OS
+if [[ "$OS" == *"Alpine"* ]]; then
+    echo "Installing system dependencies for Alpine Linux..."
+    # Update package index
+    sudo apk update
+    # Install necessary packages including those needed for Playwright
+    sudo apk add --no-cache \
+        postgresql-client \
+        postgresql-dev \
+        python3-dev \
+        gcc \
+        musl-dev \
+        libffi-dev \
+        openssl-dev \
+        cargo \
+        chromium \
+        nss \
+        freetype \
+        harfbuzz \
+        ca-certificates \
+        ttf-freefont \
+        font-noto-emoji \
+        xauth \
+        git-lfs
+else
+    echo "Installing system dependencies for Ubuntu/Debian..."
+    sudo apt-get update
+    sudo apt-get install -y \
+        postgresql-client \
+        libpq-dev \
+        python3-dev \
+        build-essential \
+        libglib2.0-0 \
+        libnss3 \
+        libnspr4 \
+        libatk1.0-0 \
+        libatk-bridge2.0-0 \
+        libcups2 \
+        libdrm2 \
+        libdbus-1-3 \
+        libxkbcommon0 \
+        libxcomposite1 \
+        libxdamage1 \
+        libxfixes3 \
+        libxrandr2 \
+        libgbm1 \
+        libasound2 \
+        libatspi2.0-0 \
+        libwayland-client0 \
+        xvfb \
+        x11-utils \
+        x11-xserver-utils \
+        xdg-utils
+fi
+
+# Setup Python virtual environment in backend
+echo "Setting up Python virtual environment..."
+cd backend
+if [ ! -d "venv" ]; then
+    python -m venv venv
+fi
+source venv/bin/activate
+
+# Upgrade pip and install Python dependencies
+echo "Installing Python dependencies..."
+pip install --upgrade pip setuptools wheel
+
+# Install Rust for Alpine (needed for some Python packages)
+if [ -f /etc/alpine-release ]; then
+    echo "Installing Rust for Alpine Linux..."
+    if [ ! -f "$HOME/.cargo/env" ]; then
+        curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+    fi
+    source "$HOME/.cargo/env"
+fi
+
+# Install Python dependencies
+if [ -f /etc/alpine-release ]; then
+    # Use Alpine-specific requirements file that excludes Playwright
+    if [ -f "requirements-alpine.txt" ]; then
+        echo "Installing Alpine-specific requirements..."
+        pip install -r requirements-alpine.txt
+    else
+        echo "Installing standard requirements..."
+        pip install -r requirements.txt
+    fi
+else
+    pip install -r requirements.txt
+fi
+
+# Install Playwright separately for non-Alpine systems
+if [ ! -f /etc/alpine-release ]; then
+    echo "Installing Playwright..."
+    pip install playwright
+    playwright install chromium
+else
+    # For Alpine, try to install Playwright but don't fail if it doesn't work
+    echo "Attempting to install Playwright for Alpine (this may fail)..."
+    if pip install playwright; then
+        echo "✓ Playwright installed successfully on Alpine"
+        python -m playwright install chromium
+    else
+        echo "⚠ Playwright could not be installed on Alpine Linux (this is expected)"
+        echo "  You may need to use a different browser automation solution for this platform"
+    fi
+fi
+
+# Setup frontend
+echo "Setting up frontend..."
+if [ -f "package.json" ]; then
     npm install
 fi
 
-# Install backend Node dependencies if needed
-if [ -f "/workspace/backend/package.json" ]; then
-    cd /workspace/backend
-    npm install
-fi
-
-# Install Playwright browsers
-echo "Installing Playwright browsers..."
-playwright install chromium
-
-# Install additional dependencies if needed
-if [ -f "/workspace/backend/install_deps.sh" ]; then
-    bash /workspace/backend/install_deps.sh
-fi
-
-# Set up the database
-if [ -f "/workspace/backend/setup_database.sh" ]; then
-    bash /workspace/backend/setup_database.sh
-elif [ -f "/workspace/backend/src/database/init_db.py" ]; then
-    cd /workspace/backend
-    python -m pip install psycopg2-binary
-    python src/database/init_db.py
-fi
-
-# Set up environment variables
-if [ ! -f "/workspace/.env" ]; then
-    echo "Creating .env file from example..."
-    if [ -f "/workspace/.env.example" ]; then
-        cp /workspace/.env.example /workspace/.env
-    else
-        touch /workspace/.env
-        echo "# Development environment variables" > /workspace/.env
-        echo "DATABASE_URL=postgresql://appscreen:devpass@postgres:5432/appscreen_db" >> /workspace/.env
-        echo "REDIS_URL=redis://redis:6379/0" >> /workspace/.env
-        echo "MINIO_ACCESS_KEY=minioadmin" >> /workspace/.env
-        echo "MINIO_SECRET_KEY=minioadmin123" >> /workspace/.env
-        echo "MINIO_ENDPOINT=minio" >> /workspace/.env
-        echo "MINIO_PORT=9000" >> /workspace/.env
-        echo "STRIPE_SECRET_KEY=your_test_key_here" >> /workspace/.env
-        echo "STRIPE_WEBHOOK_SECRET=your_webhook_secret_here" >> /workspace/.env
-        echo "MAIL_HOST=mailhog" >> /workspace/.env
-        echo "MAIL_PORT=1025" >> /workspace/.env
+# If there's a frontend directory, set it up separately
+if [ -d "../frontend" ]; then
+    cd ../frontend
+    if [ -f "package.json" ]; then
+        npm install
     fi
+    cd ../backend
 fi
 
-# Ensure Git LFS is installed and initialized
-cd /workspace
-if [ -d ".git" ] || git rev-parse --git-dir > /dev/null 2>&1; then
-    echo "Detected Git repository, configuring Git LFS..."
-    
-    # Check if Git LFS is installed, if not install it
-    if ! command -v git-lfs >/dev/null 2>&1; then
-        echo "Installing Git LFS..."
-        sudo apt update
-        sudo apt install git-lfs -y
-    fi
-    
-    # Initialize Git LFS
-    git lfs install
-    echo "Git LFS has been installed and initialized."
-    
-    # Configure Git LFS for common large file types if .gitattributes doesn't exist
-    if [ ! -f ".gitattributes" ]; then
-        echo "Configuring Git LFS for common large file types..."
-        
-        # Track common large file types with Git LFS
-        git lfs track "*.psd" "*.zip" "*.exe" "*.bin" "*.pdf" "*.docx" "*.xlsx" "*.jar" "*.war" "*.ear" "*.so" "*.dll" "*.dylib" "*.deb" "*.rpm" "*.pkg" "*.dmg" "*.iso" "*.img" "*.mp4" "*.mov" "*.avi" "*.mkv" "*.m4v" "*.psd" "*.psb" "*.ai" "*.sketch" "*.xcf" "*.tiff" "*.tif" "*.bmp" "*.gif" "*.webm" "*.wav" "*.mp3" "*.flac" "*.ogg" "*.oga" "*.opus" "*.aiff" "*.aif" "*.au" "*.snd" "*.mid" "*.midi" "*.m3u" "*.m4a" "*.wma" "*.vob" "*.asf" "*.asx" "*.msv" "*.par" "*.raw" "*.db" "*.sql" "*.sqlite" "*.sqlite3" "*.dat" "*.data" "*.log" "*.gz" "*.bz2" "*.xz" "*.7z" "*.tar" "*.tgz" "*.rar" "*.jar" "*.war" "*.ear" "*.zipx"
-        
-        # Add the .gitattributes file to track LFS files
-        git add .gitattributes
-        echo "Git LFS tracking configured for common large file types."
-    else
-        echo "Git LFS already configured, found .gitattributes file."
-    fi
+# Setup environment variables
+echo "Setting up environment variables..."
+cd "$WORKSPACE_ROOT"
+if [ ! -f ".env" ] && [ -f ".env.example" ]; then
+    cp .env.example .env
+    echo "Created .env file from example"
+fi
+
+# Setup database
+echo "Setting up database..."
+cd backend
+if [ -f "setup_database.sh" ]; then
+    bash setup_database.sh
+elif [ -f "src/database/init_db.py" ]; then
+    python -m src.database.init_db
 else
-    echo "Not a Git repository or Git not properly initialized"
+    echo "Database setup script not found, skipping"
 fi
 
-# Create init-scripts directory if needed for PostgreSQL
-mkdir -p /workspace/.devcontainer/init-scripts
-
-# Install additional Python packages that might be needed for development
+# Install development tools
+echo "Installing development tools..."
+source venv/bin/activate
 pip install black flake8 pytest
+
+# Setup Git LFS
+echo "Setting up Git LFS..."
+git lfs install
 
 # Run health checks to validate the setup
 echo "Running health checks..."
