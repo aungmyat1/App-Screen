@@ -1,134 +1,90 @@
 {
-  "name": "App-Screen Full-Stack Development",
-  "dockerComposeFile": "docker-compose.yml",
-  "service": "app",
-  "workspaceFolder": "/workspace",
-  
+  "name": "App-Screen Development",
+  "image": "mcr.microsoft.com/devcontainers/typescript-node:0-18",
   "features": {
-    "ghcr.io/devcontainers/features/node:1": {
-      "version": "20"
-    },
-    "ghcr.io/devcontainers/features/python:1": {
-      "version": "3.11"
-    },
-    "ghcr.io/devcontainers/features/docker-in-docker:2": {
-      "version": "latest",
-      "dockerDashComposeVersion": "v2"
-    },
-    "ghcr.io/devcontainers/features/git:1": {
-      "version": "latest"
-    },
     "ghcr.io/devcontainers/features/common-utils:2": {
       "installZsh": true,
-      "installOhMyZsh": true,
-      "upgradePackages": true,
       "username": "vscode",
       "userUid": "1000",
-      "userGid": "1000"
+      "userGid": "1000",
+      "upgradePackages": true
+    },
+    "ghcr.io/devcontainers/features/desktop-lite:1": {},
+    "ghcr.io/devcontainers/features/python:1": {
+      "version": "3.11",
+      "installTools": true
     }
   },
-
-  "customizations": {
-    "vscode": {
-      "extensions": [
-        "dbaeumer.vscode-eslint",
-        "esbenp.prettier-vscode",
-        "ms-python.python",
-        "ms-python.vscode-pylance",
-        "ms-python.black-formatter",
-        "ms-azuretools.vscode-docker",
-        "bradlc.vscode-tailwindcss",
-        "formulahendry.auto-rename-tag",
-        "christian-kohler.path-intellisense",
-        "usernamehw.errorlens",
-        "GitHub.copilot",
-        "eamodio.gitlens",
-        "ms-vscode.vscode-typescript-next",
-        "streetsidesoftware.code-spell-checker",
-        "tamasfe.even-better-toml",
-        "redhat.vscode-yaml"
-      ],
-      "settings": {
-        "terminal.integrated.defaultProfile.linux": "zsh",
-        "python.defaultInterpreterPath": "/usr/local/bin/python",
-        "python.linting.enabled": true,
-        "python.linting.pylintEnabled": false,
-        "python.linting.flake8Enabled": true,
-        "python.formatting.provider": "black",
-        "python.formatting.blackPath": "/usr/local/py-utils/bin/black",
-        "editor.formatOnSave": true,
-        "editor.defaultFormatter": null,
-        "editor.codeActionsOnSave": {
-          "source.fixAll.eslint": "explicit"
-        },
-        "[python]": {
-          "editor.defaultFormatter": null,
-          "editor.formatOnSave": true,
-          "editor.codeActionsOnSave": {
-            "source.organizeImports": "explicit"
-          }
-        },
-        "[typescript]": {
-          "editor.defaultFormatter": null,
-          "editor.formatOnSave": true,
-          "editor.codeActionsOnSave": {
-            "source.fixAll.eslint": "explicit"
-          }
-        },
-        "[typescriptreact]": {
-          "editor.defaultFormatter": null,
-          "editor.formatOnSave": true,
-          "editor.codeActionsOnSave": {
-            "source.fixAll.eslint": "explicit"
-          }
-        },
-        "[json]": {
-          "editor.defaultFormatter": "vscode.json-language-features"
-        },
-        "files.watcherExclude": {
-          "**/node_modules/**": true,
-          "**/.venv/**": true,
-          "**/__pycache__/**": true,
-          "**/dist/**": true,
-          "**/build/**": true
-        },
-        "eslint.workingDirectories": [
-          { "directory": ".", "changeProcessCWD": true }
-        ],
-        "tailwindCSS.experimental.classRegex": [
-          ["cva\\(([^)]*)\\)", "[\"'`]([^\"'`]*).*?[\"'`]"],
-          ["cx\\(([^)]*)\\)", "(?:'|\"|`)([^']*)(?:'|\"|`)"]
-        ]
-      }
-    }
+  "overrideFeatureInstallOrder": [
+    "ghcr.io/devcontainers/features/common-utils",
+    "ghcr.io/devcontainers/features/python",
+    "ghcr.io/devcontainers/features/desktop-lite"
+  ],
+  "runArgs": [
+    "--cap-add=SYS_PTRACE",
+    "--security-opt",
+    "seccomp=unconfined",
+    "--shm-size=2gb"
+  ],
+  "mounts": [
+    "source=/tmp/.x11-unix,target=/tmp/.x11-unix,type=bind,consistency=cached"
+  ],
+  "containerEnv": {
+    "DISPLAY": "${localEnv:DISPLAY}",
+    "XDG_RUNTIME_DIR": "${localEnv:XDG_RUNTIME_DIR}",
+    "WAYLAND_DISPLAY": "${localEnv:WAYLAND_DISPLAY}",
+    "BROWSER": "/usr/bin/chromium"
   },
-
-  "forwardPorts": [3000, 5000, 8000, 5173],
+  "forwardPorts": [
+    3000,
+    5000,
+    5432,
+    6379,
+    9000
+  ],
   "portsAttributes": {
     "3000": {
-      "label": "Frontend (React)",
+      "label": "Frontend",
       "onAutoForward": "notify"
     },
     "5000": {
-      "label": "Backend (Flask/FastAPI)",
+      "label": "Backend API",
       "onAutoForward": "notify"
     },
-    "8000": {
-      "label": "Backend Alt (FastAPI)",
-      "onAutoForward": "notify"
+    "5432": {
+      "label": "PostgreSQL",
+      "onAutoForward": "silent"
     },
-    "5173": {
-      "label": "Vite Dev Server",
-      "onAutoForward": "notify"
+    "6379": {
+      "label": "Redis",
+      "onAutoForward": "silent"
+    },
+    "9000": {
+      "label": "MinIO",
+      "onAutoForward": "silent"
     }
   },
-
-  "postCreateCommand": "bash .devcontainer/post-create.sh",
-  "postStartCommand": "git config --global --add safe.directory /workspace && bash .devcontainer/post-start.sh",
-
-  "remoteUser": "vscode",
-  
-  "mounts": [
-    "source=${localWorkspaceFolder}/.vscode,target=/workspace/.vscode,type=bind,consistency=cached"
-  ]
+  "postCreateCommand": "bash -c 'cd /workspaces/App-Screen && bash .devcontainer/backup-configs.sh && npm install && if ! bash .devcontainer/setup.sh; then echo \"Setup failed, attempting rollback...\"; bash .devcontainer/rollback.sh; exit 1; fi && if ! bash .devcontainer/validate.sh; then echo \"Validation failed, please check the setup\"; fi'",
+  "postStartCommand": "bash -c 'cd /workspaces/App-Screen && bash .devcontainer/post-start.sh &'",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-vscode.vscode-edge-devtools",
+        "msjsdiag.debugger-for-chrome",
+        "bradlc.vscode-tailwindcss",
+        "esbenp.prettier-vscode",
+        "ms-python.python",
+        "ms-python.vscode-pylance"
+      ]
+    },
+    "metadata": {
+      "lastWorkingVersion": "20251226",
+      "fallbackVersion": "20251225",
+      "description": "App-Screen development environment with Python 3.11 and Node.js 18"
+    }
+  },
+  "remoteEnv": {
+    "WORKSPACE_PATH": "/workspaces/App-Screen"
+  },
+  "updateRemoteUserUID": true
 }

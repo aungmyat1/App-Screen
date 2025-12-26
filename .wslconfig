@@ -1,0 +1,25 @@
+# WSL 2 Configuration for App-Screen Development
+# Place this file at C:\Users\<YourUsername>\.wslconfig when using WSL
+
+# Settings apply to all WSL 2 distros
+[wsl2]
+# Increase memory limits for better performance with multiple services
+memory=8GB
+
+# Increase processor cores for faster builds
+processors=4
+
+# Allocate more swap space if needed
+swap=2GB
+
+# Enable nested virtualization (if supported)
+nestedVirtualization=true
+
+# Optimized kernel command line parameters
+kernelCommandLine="vs-wsl utsnamespace=usernamespace"
+
+# Use managed switch for better networking (Windows 11 only)
+# networkVswitches=on
+
+# Use Hyper-V socket for better interop (Windows 11 only)
+# hyperVInterop=on

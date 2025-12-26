@@ -105,4 +105,18 @@ mkdir -p /workspace/.devcontainer/init-scripts
 # Install additional Python packages that might be needed for development
 pip install black flake8 pytest
 
+# Run health checks to validate the setup
+echo "Running health checks..."
+if [ -f "/workspaces/App-Screen/.devcontainer/health-check.sh" ]; then
+    chmod +x /workspaces/App-Screen/.devcontainer/health-check.sh
+    bash /workspaces/App-Screen/.devcontainer/health-check.sh
+    if [ $? -ne 0 ]; then
+        echo "Health checks failed, marking setup as failed"
+        touch /tmp/devcontainer_setup_failed
+        exit 1
+    fi
+else
+    echo "Health check script not found, skipping health checks"
+fi
+
 echo "Setup complete!"

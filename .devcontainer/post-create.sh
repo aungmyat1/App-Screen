@@ -1,14 +1,11 @@
 #!/bin/bash
 
-# Post-create script for App-Screen Full-Stack Development DevContainer
+# Post-create script for Next.js Development DevContainer
 
-echo "Setting up App-Screen development environment..."
+echo "Setting up Next.js development environment..."
 
-# Install Python dependencies if requirements.txt exists
-if [ -f "/workspace/backend/requirements.txt" ]; then
-    echo "Installing Python dependencies..."
-    pip install --user -r /workspace/backend/requirements.txt
-fi
+# Exit immediately if a command exits with a non-zero status
+set -e
 
 # Install Node.js dependencies if package.json exists
 if [ -f "/workspace/package.json" ]; then
@@ -16,27 +13,6 @@ if [ -f "/workspace/package.json" ]; then
     cd /workspace
     npm install
 fi
-
-# Setup Python virtual environment if needed
-if [ -d "/workspace/backend" ]; then
-    cd /workspace/backend
-    
-    # Create and activate virtual environment if it doesn't exist
-    if [ ! -d "venv" ]; then
-        echo "Creating Python virtual environment..."
-        python -m venv venv
-    fi
-    
-    # Activate virtual environment and install dependencies
-    source venv/bin/activate
-    if [ -f "requirements.txt" ]; then
-        pip install --upgrade pip
-        pip install -r requirements.txt
-    fi
-fi
-
-# Additional setup for Python formatting tools
-pip install black flake8
 
 # Setup Git configuration if needed
 if ! git config user.email > /dev/null 2>&1; then
@@ -59,4 +35,3 @@ echo "Development environment setup complete!"
 echo "Next steps:"
 echo "1. If you haven't already, configure Git: git config --global user.email 'your-email@example.com'"
 echo "2. Run your frontend with: cd /workspace && npm run dev"
-echo "3. Run your backend with: cd /workspace/backend && python -m uvicorn src.main:app --reload"

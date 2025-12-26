@@ -1,7 +1,7 @@
 # Use the official Ubuntu 22.04 base image
 FROM mcr.microsoft.com/devcontainers/base:ubuntu-22.04
 
-# Install system dependencies
+# Install system dependencies in a single layer to optimize Docker cache
 RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
     && apt-get -y install --no-install-recommends \
     git \
@@ -20,6 +20,7 @@ RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
     chromium-chromedriver \
     zsh \
     fonts-powerline \
+    openssh-client \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
@@ -43,9 +44,11 @@ RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
     && rm -rf /var/lib/apt/lists/*
 
 # Install Docker CLI
-RUN curl -fsSL https://get.docker.com | sh -
+RUN curl -fsSL https://get.docker.com | sh - \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
 
-# Install Docker Compose v2
+# Install Docker Compose v2 plugin
 RUN DOCKER_CONFIG=/home/vscode/.docker/cli-plugins \
     mkdir -p ${DOCKER_CONFIG} && \
     curl -fsSL "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o ${DOCKER_CONFIG}/docker-compose && \
