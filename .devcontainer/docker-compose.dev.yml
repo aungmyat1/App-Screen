@@ -3,6 +3,12 @@ version: '3.8'
 services:
   app:
     image: mcr.microsoft.com/devcontainers/python:1-3.12-bullseye
+    cap_add:
+      - SYS_PTRACE
+    security_opt:
+      - seccomp:unconfined
+    shm_size: 2gb
+    privileged: true
     volumes:
       - ../..:/workspace:cached
     command: sleep infinity

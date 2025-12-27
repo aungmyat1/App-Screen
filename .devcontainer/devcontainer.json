@@ -9,7 +9,8 @@
   "features": {
     "ghcr.io/devcontainers/features/node:1": {
       "version": "20"
-    }
+    },
+    "ghcr.io/devcontainers/features/github-cli:1": {}
   },
   
   "customizations": {
@@ -23,8 +24,16 @@
         "bradlc.vscode-tailwindcss",
         "ms-azuretools.vscode-docker",
         "ms-vscode.vscode-edge-devtools",
-        "GitHub.vscode-github-actions"
-      ]
+        "GitHub.vscode-github-actions",
+        "Alibaba-Cloud.tongyi-lingma",
+        "ms-kubernetes-tools.vscode-kubernetes-tools",
+        "eamodio.gitlens",
+        "ms-playwright.playwright"
+      ],
+      "settings": {
+        "terminal.integrated.defaultProfile.linux": "bash",
+        "python.defaultInterpreterPath": "/usr/bin/python3"
+      }
     }
   },
   
@@ -61,16 +70,12 @@
     }
   },
   
-  "remoteUser": "vscode",
-  
   "mounts": [
-    "source=${localWorkspaceFolder}/.vscode,target=/workspace/.vscode,type=bind,consistency=cached"
+    "source=${localWorkspaceFolder}/.vscode,target=/workspace/.vscode,type=bind,consistency=cached",
+    "source=/var/run/docker.sock,target=/var/run/docker.sock,type=bind"
   ],
   
-  "runArgs": [
-    "--cap-add=SYS_PTRACE",
-    "--security-opt",
-    "seccomp=unconfined",
-    "--shm-size=2gb"
-  ]
+  "remoteUser": "vscode",
+  "updateRemoteUserUID": true
+
 }
