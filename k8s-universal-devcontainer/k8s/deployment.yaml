@@ -1,0 +1,57 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dev-container
+  namespace: dev
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: dev-container
+  template:
+    metadata:
+      labels:
+        app: dev-container
+    spec:
+      containers:
+      - name: dev
+        image: your-dockerhub-username/universal-dev:latest
+        command: ["sleep", "infinity"]
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: universal-dev-deployment
+  namespace: universal-dev
+  labels:
+    app: universal-dev
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: universal-dev
+  template:
+    metadata:
+      labels:
+        app: universal-dev
+    spec:
+      containers:
+      - name: universal-dev-container
+        image: ghcr.io/your-username/k8s-universal-devcontainer:latest
+        ports:
+        - containerPort: 8080
+        env:
+        - name: ENV
+          value: "development"
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "250m"
+          limits:
+            memory: "1Gi"
+            cpu: "500m"
+        volumeMounts:
+        - name: shared-data
+          mountPath: /shared-data
+      volumes:
+      - name: shared-data
+        emptyDir: {}
