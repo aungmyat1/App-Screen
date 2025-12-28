@@ -148,3 +148,19 @@ Icon?
 Thumbs.db
 ehthumbs_v1.db
 desktop.ini
+
+# Database files
+*.db
+*.db-journal
+
+# Cache directories
+.vite-cache/
+.cache/
+node/.cache/
+
+# Temporary files
+*.tmp
+*.temp
+*~
+.swp
+*.bak

@@ -21,6 +21,8 @@ echo "alias k='kubectl'" >> ~/.bashrc
 echo "alias ksys='kubectl --namespace=kube-system'" >> ~/.bashrc
 echo "alias ka='kubectl apply -f'" >> ~/.bashrc
 echo "alias kdel='kubectl delete -f'" >> ~/.bashrc
+echo "alias kd='kubectl describe'" >> ~/.bashrc
+echo "alias kg='kubectl get'" >> ~/.bashrc
 
 # Setup common functions
 cat << 'EOF' >> ~/.bashrc
@@ -76,13 +78,17 @@ if command -v kubectl-krew >/dev/null 2>&1; then
   kubectl krew install neat
   kubectl krew install view-secret
   kubectl krew install get-all
+  kubectl krew install ingress-nginx
 fi
 
 # Setup Python virtual environment
 echo "Setting up Python virtual environment..."
 python3 -m venv ~/.venv
 source ~/.venv/bin/activate
-pip install --upgrade pip setuptools
+pip install --upgrade pip setuptools wheel
+
+# Add Python venv activation to bashrc
+echo "source ~/.venv/bin/activate" >> ~/.bashrc
 
 # Setup default kubectl configuration
 if [ ! -f ~/.kube/config ]; then
@@ -100,18 +106,40 @@ fi
 # Setup Git configuration
 echo "Setting up Git configuration..."
 if [ -z "$(git config --global user.name)" ]; then
-  echo "Please configure your Git user.name:"
-  read -r git_name
-  git config --global user.name "$git_name"
+  echo "Setting up default Git user.name..."
+  git config --global user.name "Dev Container User"
 fi
 
 if [ -z "$(git config --global user.email)" ]; then
-  echo "Please configure your Git user.email:"
-  read -r git_email
-  git config --global user.email "$git_email"
+  echo "Setting up default Git user.email..."
+  git config --global user.email "devcontainer@example.com"
 fi
 
-# Setup shell prompt
-echo "export PS1='\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ '" >> ~/.bashrc
+# Configure Git to cache credentials
+git config --global credential.helper cache
+
+# Setup shell prompt with git branch
+echo "export PS1='\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$(git branch 2>/dev/null | grep '^*' | colrm 1 2)\[\033[00m\]\$ '" >> ~/.bashrc
+
+# Add useful bash functions and aliases
+cat << 'GIT_PROXY' >> ~/.bashrc
+
+# Git aliases
+alias gs='git status'
+alias ga='git add'
+alias gc='git commit'
+alias gp='git push'
+alias gl='git log --oneline'
+
+# Docker aliases
+alias dps='docker ps'
+alias dpsa='docker ps -a'
+alias dimg='docker images'
+
+# Kubernetes aliases
+alias kx='kubectl-node-shell'
+alias ksys='kubectl -n kube-system'
+
+GIT_PROXY
 
 echo "Setup complete! Please run 'source ~/.bashrc' or start a new terminal session."

@@ -1,15 +1,86 @@
-# Kubernetes Universal Dev Environment
+# Universal Kubernetes Development Environment
 
-This repository provides a standardized development environment for Kubernetes projects. It includes all the necessary tools and configurations needed to develop, test, and deploy applications to Kubernetes clusters.
+This development container provides a complete environment for Kubernetes development, testing, and deployment activities. It's optimized for developers working with Kubernetes applications and infrastructure.
 
 ## Features
 
-- **Pre-configured Development Tools**: Includes kubectl, Helm, kubectx, kubens, k9s, and other essential Kubernetes tools
-- **Docker Integration**: Full Docker support with Docker-in-Docker capabilities
-- **VS Code Dev Container Support**: Ready-to-use configuration for VS Code development containers
-- **Language Support**: Python, Node.js, and TypeScript with appropriate extensions
-- **Kubernetes CLI Tools**: Complete set of command-line tools for Kubernetes development
-- **Git Integration**: Pre-configured Git setup with common aliases
+- **Kubernetes Tools**: kubectl, Helm, kind (Kubernetes in Docker), krew plugin manager
+- **Development Tools**: Python 3.11, Node.js 18, npm, Docker-in-Docker
+- **Kubernetes Utilities**: k9s, kubectx, kubens, and various krew plugins
+- **Git and GitHub**: GitHub CLI, optimized Git configuration
+- **Shell Enhancements**: Pre-configured aliases and functions for Kubernetes work
+
+## Optimizations
+
+This dev container has been optimized with:
+
+1. **Faster Builds**: Improved Dockerfile with better layer caching and reduced image size
+2. **Essential Tools**: Pre-installed Kubernetes ecosystem tools
+3. **Shell Productivity**: Pre-configured aliases and functions for common tasks
+4. **Python Environment**: Virtual environment with common packages
+5. **Git Integration**: Optimized Git configuration and aliases
+
+## Quick Start
+
+1. Open this folder in a Dev Container supporting editor (VS Code or Codespaces)
+2. The container will automatically build with all tools installed
+3. Post-create script will run to finalize configuration
+
+## Key Aliases and Functions
+
+### Kubernetes Aliases
+- `k` - Short alias for kubectl
+- `kg` - kubectl get
+- `kd` - kubectl describe
+- `ka` - kubectl apply -f
+- `kdel` - kubectl delete -f
+- `kx` - kubectl-node-shell
+
+### Kubernetes Functions
+- `kdes` - kubectl describe with arguments
+- `kget` - kubectl get with arguments
+- `klg` - kubectl logs with arguments
+- `kex` - kubectl exec -it with arguments
+- `kns` - kubens (namespace switching)
+- `kcx` - kubectx (context switching)
+
+### Git and Docker Aliases
+- Git: `gs` (status), `ga` (add), `gc` (commit), `gp` (push), `gl` (log)
+- Docker: `dps` (ps), `dpsa` (ps -a), `dimg` (images)
+
+## Pre-installed Tools
+
+- kubectl (latest stable)
+- Helm 3
+- kind (Kubernetes in Docker)
+- k9s (Kubernetes CLI tool)
+- krew (kubectl plugin manager)
+- kubectx and kubens
+- Various krew plugins (tree, konfig, neat, view-secret, get-all, ingress-nginx)
+
+## Usage Tips
+
+1. Use `kind` to create local Kubernetes clusters for testing
+2. Use `k9s` for an interactive Kubernetes management interface
+3. Use `kubectx` and `kubens` to quickly switch between clusters and namespaces
+4. Use `kx` for easy shell access to pods
+5. Use the krew plugin manager to install additional kubectl plugins
+
+## Configuration
+
+The dev container is configured to:
+- Mount your local .kube and .docker directories for cluster access
+- Provide Docker-in-Docker functionality
+- Include GitHub CLI for seamless GitHub integration
+- Enable Python virtual environment by default
+- Include common Python packages for Kubernetes development
+
+## Troubleshooting
+
+If you encounter issues with cluster access:
+1. Make sure your local .kube/config is properly configured
+2. Verify that the mount is working in the dev container
+3. Check that your Kubernetes cluster is accessible from the container
 
 ## Prerequisites
 

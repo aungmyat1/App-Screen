@@ -2,8 +2,11 @@
 # A lightweight container with essential Kubernetes development tools
 FROM mcr.microsoft.com/devcontainers/base:ubuntu
 
-# Install core tools and dependencies
-RUN apt-get update && apt-get install -y \
+# Avoid prompts from apt
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Install core tools and dependencies in a single layer to reduce image size
+RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
     git \
     unzip \
@@ -22,21 +25,34 @@ RUN apt-get update && apt-get install -y \
     docker.io \
     && rm -rf /var/lib/apt/lists/*
 
-# Install kubectl
-RUN curl -LO "https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl" \
+# Install kubectl with the latest stable version
+RUN curl -sLO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl" \
     && chmod +x kubectl \
-    && mv kubectl /usr/local/bin/
+    && mv kubectl /usr/local/bin/ \
+    && kubectl version --client
 
 # Install Helm
 RUN curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
 
+# Install kind (Kubernetes in Docker)
+RUN curl -Lo ./kind https://kind.sigs.k8s.io/dl/latest/kind-linux-amd64 \
+    && chmod +x kind \
+    && mv kind /usr/local/bin/
+
+# Install kubectx and kubens for namespace/context switching
+RUN git clone https://github.com/ahmetb/kubectx /opt/kubectx \
+    && ln -s /opt/kubectx/kubectx /usr/local/bin/kubectx \
+    && ln -s /opt/kubectx/kubens /usr/local/bin/kubens
+
 # Upgrade pip and install Python packages
-RUN pip3 install --upgrade pip \
-    && pip3 install \
+RUN pip3 install --no-cache-dir --upgrade pip \
+    && pip3 install --no-cache-dir \
         kubernetes \
         kubernetes-asyncio \
         pyyaml \
-        requests
+        requests \
+        yq \
+        kustomize
 
 # Set up bash completion
 RUN kubectl completion bash > /etc/bash_completion.d/kubectl \
@@ -50,14 +66,18 @@ RUN wget -qO - https://github.com/derailed/k9s/releases/latest/download/k9s_Linu
     chmod +x /usr/local/bin/k9s
 
 # Install additional tools
-RUN npm install -g \
+RUN npm install -g --no-package-lock \
     @angular/cli \
     typescript \
     ts-node \
     nodemon \
     concurrently \
+    kubectl-node-shell \
     && npm cache clean --force
 
-# Set up environment
+# Create workspace directory
+RUN mkdir -p /workspace
+
+# Set environment variables
 ENV PYTHONPATH=/workspace:$PYTHONPATH
 WORKDIR /workspace
