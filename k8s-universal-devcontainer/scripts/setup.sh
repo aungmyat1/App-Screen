@@ -70,22 +70,26 @@ else
   echo "krew is already installed"
 fi
 
-# Install useful krew plugins
+# Install useful krew plugins in background to not block startup
 if command -v kubectl-krew >/dev/null 2>&1; then
-  echo "Installing krew plugins..."
-  kubectl krew install tree
-  kubectl krew install konfig
-  kubectl krew install neat
-  kubectl krew install view-secret
-  kubectl krew install get-all
-  kubectl krew install ingress-nginx
+  echo "Installing krew plugins in background..."
+  (
+    kubectl krew install tree
+    kubectl krew install konfig
+    kubectl krew install neat
+    kubectl krew install view-secret
+    kubectl krew install get-all
+    kubectl krew install ingress-nginx
+  ) &
+else
+  echo "krew not available, skipping plugin installation"
 fi
 
 # Setup Python virtual environment
 echo "Setting up Python virtual environment..."
 python3 -m venv ~/.venv
 source ~/.venv/bin/activate
-pip install --upgrade pip setuptools wheel
+pip install --upgrade pip setuptools wheel &  # Run in background
 
 # Add Python venv activation to bashrc
 echo "source ~/.venv/bin/activate" >> ~/.bashrc
@@ -118,8 +122,8 @@ fi
 # Configure Git to cache credentials
 git config --global credential.helper cache
 
-# Setup shell prompt with git branch
-echo "export PS1='\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$(git branch 2>/dev/null | grep '^*' | colrm 1 2)\[\033[00m\]\$ '" >> ~/.bashrc
+# Setup shell prompt (simplified to reduce complexity)
+echo "export PS1='\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ '" >> ~/.bashrc
 
 # Add useful bash functions and aliases
 cat << 'GIT_PROXY' >> ~/.bashrc
@@ -140,6 +144,9 @@ alias dimg='docker images'
 alias kx='kubectl-node-shell'
 alias ksys='kubectl -n kube-system'
 
+# Optimize shell startup by deferring heavy commands
+export KUBECONFIG_OPTIMIZATION=1
+
 GIT_PROXY
 
-echo "Setup complete! Please run 'source ~/.bashrc' or start a new terminal session."
+echo "Setup complete! Background tasks may still be running."

@@ -10,6 +10,7 @@ This document provides comprehensive information about the development environme
 - [Running the Application](#running-the-application)
 - [Development Best Practices](#development-best-practices)
 - [Maintaining the Development Setup](#maintaining-the-development-setup)
+- [WSL Troubleshooting](#wsl-troubleshooting)
 
 ## Project Overview
 
@@ -262,3 +263,66 @@ Maintain a changelog section in this document for major development environment 
 - [Redis Configuration Guide](backend/src/config/REDIS.md)
 - [Security Guidelines](backend/SECURITY.md)
 - [Monitoring Setup](backend/MONITORING_SETUP.md)
+
+## WSL Troubleshooting
+
+If you're developing on Windows using WSL (Windows Subsystem for Linux), you may encounter specific issues related to file permissions, Docker integration, or Dev Container setup. This section provides guidance on resolving common WSL-related problems in the App-Screen development environment.
+
+### Using the WSL Troubleshooting Script
+
+The project includes a comprehensive troubleshooting script that addresses all common WSL issues. To use it, run the following command from your project directory:
+
+```bash
+# From WSL terminal or VS Code terminal inside Dev Container
+./wsl_troubleshoot.sh
+```
+
+The script performs the following checks and provides recommendations:
+
+1. **WSL Version Check**: Verifies your WSL version and provides instructions to upgrade to WSL 2 if necessary
+2. **Docker Installation**: Confirms Docker is installed and running properly with WSL integration
+3. **File Permissions**: Checks permissions for the project directory and important subdirectories
+4. **VS Code Server Status**: Verifies VS Code server installation in the Dev Container
+5. **Path Conversions**: Tests path conversion between Windows and Linux using `wslpath`
+6. **VS Code Logs**: Examines VS Code server logs for deeper error messages
+7. **Additional Checks**: Performs additional Dev Container and port availability checks
+
+### Common WSL Issues and Solutions
+
+#### 1. Updating to WSL 2
+
+To ensure you're using WSL 2, run the following command in Windows PowerShell as Administrator:
+
+```powershell
+wsl --set-default-version 2
+```
+
+To convert an existing distribution to WSL 2:
+```powershell
+wsl --set-version <distro-name> 2
+```
+
+#### 2. Rebuilding Dev Container
+
+To rebuild your Dev Container from VS Code:
+1. Open the Command Palette (`Ctrl+Shift+P`)
+2. Type "Dev Containers: Rebuild Container"
+3. Select the command and confirm
+
+#### 3. File Permissions Issues
+
+If you're experiencing permission issues with files in your project directory, ensure your project is stored on a local NTFS drive rather than a network drive. Then run the troubleshooting script to check and fix permissions automatically.
+
+#### 4. Docker Integration
+
+Make sure Docker Desktop is running on Windows and WSL integration is enabled for your Linux distribution in Docker Desktop settings. The troubleshooting script will verify this configuration and provide guidance if issues are found.
+
+#### 5. VS Code Server Issues
+
+If VS Code server files aren't correctly installed in the container, try reconnecting to the Dev Container:
+1. Open Command Palette (`Ctrl+Shift+P`)
+2. Select "Dev Containers: Reopen in Container"
+
+### Further Assistance
+
+If the troubleshooting script doesn't resolve your issues, refer to the [WSL_TROUBLESHOOTING.md](WSL_TROUBLESHOOTING.md) file for more detailed instructions and support options. The file contains comprehensive information about diagnosing and resolving WSL-related development environment issues.

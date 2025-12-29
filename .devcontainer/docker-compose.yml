@@ -1,18 +1,22 @@
-version: '3.9'
+version: '3.8'
 
 services:
   app:
     build:
-      context: .
-      dockerfile: Dockerfile
+      context: ..
+      dockerfile: k8s-universal-devcontainer/Dockerfile
     volumes:
       - ..:/workspace:cached
-      - node_modules:/workspace/node_modules
-      - venv:/workspace/backend/venv
-      - ~/.ssh:/home/vscode/.ssh:ro
-      - ~/.gitconfig:/home/vscode/.gitconfig:ro
+      - ${HOME}/.kube:/home/vscode/.kube:cached
+      - ${HOME}/.docker:/home/vscode/.docker:cached
     command: sleep infinity
+    cap_add:
+      - SYS_PTRACE
+    security_opt:
+      - seccomp:unconfined
     environment:
+      - DEVCONTAINER=true
+      - PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/local/games:/usr/games:/usr/lib/wsl/lib
       - DATABASE_URL=postgresql://appscreen:devpass@postgres:5432/appscreen_db
       - REDIS_URL=redis://redis:6379/0
       - NODE_ENV=development
