@@ -7,69 +7,14 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
-# Dependencies
 node_modules
-jspm_packages
-
-# Distribution / packaging
 dist
 dist-ssr
 *.local
-.pnpm-store
-.parcel-cache
 
-# Python
-venv/
-env/
-ENV/
-.venv/
-env.bak/
-venv.bak/
-backend/venv/
-backend/.venv/
-__pycache__/
-*.py[cod]
-*$py.class
-*.so
-.Python
-build/
-develop-eggs/
-dist/
-downloads/
-eggs/
-.eggs/
-lib/
-lib64/
-parts/
-sdist/
-var/
-wheels/
-*.egg-info/
-.installed.cfg
-*.egg
-celerybeat-schedule
-celerybeat.pid
-.coverage
-.pytest_cache/
-.pytest_cache__
-htmlcov/
-.tox/
-.nox/
-.hypothesis/
-
-# Virtual environments
-*/venv/
-*/env/
-*/.venv/
-*/ENV/
-
-# Playwright
-.playwright/
-
-# IDEs
+# Editor directories and files
 .vscode/*
 !.vscode/extensions.json
-!.vscode/settings.json
 .idea
 .DS_Store
 *.suo
@@ -77,90 +22,3 @@ htmlcov/
 *.njsproj
 *.sln
 *.sw?
-Thumbs.db
-
-# OS generated files
-ehthumbs_vista.db
-*.stackdump
-*.DS_Store
-.DS_Store?
-._*
-.Spotlight-V100
-.Trashes
-Icon?
-*[Tt]humbs.db
-
-# Environment files
-.env
-.env.local
-.env.production
-.env.development
-
-# Next.js
-.next/
-out/
-!**/.gitkeep
-
-# Nuxt.js
-.nuxt/
-.nuxt2/
-
-# Vue CLI
-node_modules/
-dist/
-dist-ssr/
-*.local
-
-# Editor directories and files
-.atom/
-.buildpath
-.codio
-.factorypath
-.gradle
-.idea/
-.metadata
-.project
-.recommenders
-.settings
-.springBeans
-.sts4-cache
-nbproject/
-rebel.xml
-
-# Visual Studio Code
-.vscode/
-
-# Miscellaneous
-*.jar
-*.war
-*.ear
-*.class
-*.tar.gz
-*.rar
-*.zip
-*.7z
-.DS_Store
-.DS_Store?
-._*
-.Spotlight-V100
-.Trashes
-Icon?
-Thumbs.db
-ehthumbs_v1.db
-desktop.ini
-
-# Database files
-*.db
-*.db-journal
-
-# Cache directories
-.vite-cache/
-.cache/
-node/.cache/
-
-# Temporary files
-*.tmp
-*.temp
-*~
-.swp
-*.bak

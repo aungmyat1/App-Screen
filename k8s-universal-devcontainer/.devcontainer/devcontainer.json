@@ -1,5 +1,0 @@
-{
-  "name": "Project Using Universal K8s Dev",
-  "image": "your-dockerhub-username/universal-dev:latest",
-  "workspaceFolder": "/workspace"
-}

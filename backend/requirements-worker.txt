@@ -1,5 +1,0 @@
-# Worker Dependencies for Screenshot Scraper Application
-
-celery==5.6.0
-redis==7.1.0
-kombu==5.6.1

@@ -101,7 +101,7 @@ const GooglePlayIcon: React.FC<{ className?: string }> = ({ className = 'h-6 w-6
 
 const FeatureIcon: React.FC<{ icon: string }> = ({ icon }) => {
     const icons: { [key: string]: React.ReactElement } = {
-        'batch': <path strokeLinecap="round" strokeLinejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 00-2-2v-6a2 2 0 002-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />,
+        'batch': <path strokeLinecap="round" strokeLinejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />,
         'platform': <path strokeLinecap="round" strokeLinejoin="round" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2zM5 12h.01M19 12h.01M12 5h.01" />,
         'input': <path strokeLinecap="round" strokeLinejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.5L15.232 5.232z" />,
         'output': <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />,
@@ -212,7 +212,9 @@ const Header: React.FC<{
     currentUser: User | null;
     onLogin: () => void;
     onLogout: () => void;
-}> = ({ isDarkMode, toggleDarkMode, currentUser, onLogin, onLogout }) => {
+    currentView: 'home' | 'api';
+    setView: (view: 'home' | 'api') => void;
+}> = ({ isDarkMode, toggleDarkMode, currentUser, onLogin, onLogout, currentView, setView }) => {
     const [isProfileOpen, setIsProfileOpen] = useState(false);
     const profileRef = useRef<HTMLDivElement>(null);
 
@@ -227,19 +229,20 @@ const Header: React.FC<{
     return (
         <header className="fixed w-full top-0 z-50 bg-white/70 dark:bg-slate-950/70 backdrop-blur-xl border-b border-slate-200/60 dark:border-slate-800/60">
             <div className="container mx-auto px-6 h-16 flex justify-between items-center">
-                <div className="text-xl font-bold flex items-center gap-2">
-                    <div className="w-8 h-8 bg-linear-to-br from-primary-500 to-primary-700 rounded-lg flex items-center justify-center text-white">
+                <button onClick={() => setView('home')} className="text-xl font-bold flex items-center gap-2">
+                    <div className="w-8 h-8 bg-gradient-to-br from-primary-500 to-primary-700 rounded-lg flex items-center justify-center text-white">
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5">
                             <path fillRule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clipRule="evenodd" />
                         </svg>
                     </div>
                     <span className="text-slate-900 dark:text-white">App<span className="text-primary-600 dark:text-primary-400">Screens</span></span>
-                </div>
+                </button>
                 
                 <nav className="hidden md:flex space-x-8 text-sm font-medium">
-                    <a href="#features" className="text-slate-600 dark:text-slate-300 hover:text-primary-600 transition-colors">Features</a>
-                    <a href="#pricing" className="text-slate-600 dark:text-slate-300 hover:text-primary-600 transition-colors">Pricing</a>
-                    <a href="#api" className="text-slate-600 dark:text-slate-300 hover:text-primary-600 transition-colors">API</a>
+                    <button onClick={() => setView('home')} className={`transition-colors ${currentView === 'home' ? 'text-primary-600 font-bold' : 'text-slate-600 dark:text-slate-300 hover:text-primary-600'}`}>Home</button>
+                    <a href="#features" onClick={() => setView('home')} className="text-slate-600 dark:text-slate-300 hover:text-primary-600 transition-colors">Features</a>
+                    <a href="#pricing" onClick={() => setView('home')} className="text-slate-600 dark:text-slate-300 hover:text-primary-600 transition-colors">Pricing</a>
+                    <button onClick={() => setView('api')} className={`transition-colors ${currentView === 'api' ? 'text-primary-600 font-bold' : 'text-slate-600 dark:text-slate-300 hover:text-primary-600'}`}>API</button>
                 </nav>
 
                 <div className="flex items-center space-x-3">
@@ -271,6 +274,204 @@ const Header: React.FC<{
     );
 };
 
+// --- API Documentation Section ---
+
+const CodeBlock: React.FC<{ code: string; language?: string }> = ({ code, language = 'javascript' }) => {
+    const [copied, setCopied] = useState(false);
+    const copyToClipboard = () => {
+        navigator.clipboard.writeText(code);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+    };
+
+    return (
+        <div className="relative group mt-4">
+            <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity">
+                <button 
+                    onClick={copyToClipboard}
+                    className="p-1.5 bg-slate-800 text-slate-400 hover:text-white rounded-md text-xs border border-slate-700 transition-colors"
+                >
+                    {copied ? 'Copied!' : 'Copy'}
+                </button>
+            </div>
+            <pre className="bg-slate-950 text-slate-300 p-5 rounded-xl overflow-x-auto font-mono text-sm leading-relaxed border border-slate-800/50">
+                <code>{code}</code>
+            </pre>
+        </div>
+    );
+};
+
+const ApiDocs: React.FC = () => {
+    const [activeTab, setActiveTab] = useState<'curl' | 'js' | 'python'>('js');
+
+    const examples = {
+        curl: `curl -X GET "https://api.appscreens.io/v2/screenshots?app_id=com.instagram.android" \\
+  -H "X-API-Key: YOUR_API_KEY"`,
+        js: `const response = await fetch('https://api.appscreens.io/v2/screenshots?app_id=com.instagram.android', {
+  headers: {
+    'X-API-Key': 'YOUR_API_KEY'
+  }
+});
+const data = await response.json();
+console.log(data.screenshots);`,
+        python: `import requests
+
+headers = {'X-API-Key': 'YOUR_API_KEY'}
+url = "https://api.appscreens.io/v2/screenshots"
+params = {"app_id": "com.instagram.android"}
+
+response = requests.get(url, headers=headers, params=params)
+print(response.json())`
+    };
+
+    return (
+        <section className="pt-32 pb-24 bg-white dark:bg-slate-950">
+            <div className="container mx-auto px-6 max-w-6xl">
+                <div className="flex flex-col lg:flex-row gap-12">
+                    {/* Sidebar */}
+                    <aside className="lg:w-64 flex-shrink-0">
+                        <nav className="sticky top-24 space-y-1">
+                            <p className="px-3 text-xs font-bold text-slate-400 uppercase tracking-widest mb-3">Introduction</p>
+                            <a href="#intro" className="block px-3 py-2 rounded-lg text-sm text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">Overview</a>
+                            <a href="#authentication" className="block px-3 py-2 rounded-lg text-sm text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">Authentication</a>
+                            
+                            <p className="px-3 text-xs font-bold text-slate-400 uppercase tracking-widest mt-8 mb-3">Endpoints</p>
+                            <a href="#search" className="block px-3 py-2 rounded-lg text-sm text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors font-medium">Search Apps</a>
+                            <a href="#screenshots" className="block px-3 py-2 rounded-lg text-sm text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors font-medium">Get Screenshots</a>
+                            
+                            <p className="px-3 text-xs font-bold text-slate-400 uppercase tracking-widest mt-8 mb-3">System</p>
+                            <a href="#errors" className="block px-3 py-2 rounded-lg text-sm text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">Error Codes</a>
+                            <a href="#rate-limits" className="block px-3 py-2 rounded-lg text-sm text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">Rate Limits</a>
+                        </nav>
+                    </aside>
+
+                    {/* Main Content */}
+                    <div className="flex-1 min-w-0">
+                        <div id="intro" className="mb-16">
+                            <h1 className="text-4xl font-extrabold mb-4">API Documentation</h1>
+                            <p className="text-lg text-slate-600 dark:text-slate-400 leading-relaxed max-w-3xl">
+                                Welcome to the AppScreens API. Our REST API allows you to automate screenshot collection, metadata extraction, and competitive research for any app on the Google Play Store or Apple App Store.
+                            </p>
+                            <div className="mt-8 p-4 bg-primary-50 dark:bg-primary-900/20 border border-primary-100 dark:border-primary-800 rounded-xl flex items-center gap-3">
+                                <div className="text-primary-600 font-mono text-sm font-bold">BASE URL:</div>
+                                <code className="text-primary-700 dark:text-primary-300 font-mono text-sm select-all">https://api.appscreens.io/v2</code>
+                            </div>
+                        </div>
+
+                        <div id="authentication" className="mb-16 scroll-mt-24">
+                            <h2 className="text-2xl font-bold mb-4">Authentication</h2>
+                            <p className="text-slate-600 dark:text-slate-400 mb-6">
+                                The AppScreens API uses API Keys to authenticate requests. You can find your API Key in your <a href="#" className="text-primary-600 hover:underline">Account Dashboard</a>. Your API Key should be included in all API requests in the HTTP header.
+                            </p>
+                            <div className="p-4 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl">
+                                <p className="text-sm font-semibold mb-2">Header Example:</p>
+                                <code className="text-slate-800 dark:text-slate-200 font-mono text-sm">X-API-Key: YOUR_API_KEY</code>
+                            </div>
+                        </div>
+
+                        <div id="screenshots" className="mb-16 scroll-mt-24">
+                            <div className="flex items-center gap-3 mb-4">
+                                <span className="px-3 py-1 bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-400 text-xs font-bold rounded-lg border border-green-200 dark:border-green-800">GET</span>
+                                <h2 className="text-2xl font-bold">/screenshots</h2>
+                            </div>
+                            <p className="text-slate-600 dark:text-slate-400 mb-8">
+                                Retrieve high-resolution screenshot URLs for a specific application.
+                            </p>
+
+                            <h3 className="text-sm font-bold uppercase tracking-wider text-slate-500 mb-4">Query Parameters</h3>
+                            <div className="overflow-x-auto border border-slate-200 dark:border-slate-800 rounded-xl mb-8">
+                                <table className="w-full text-left text-sm">
+                                    <thead className="bg-slate-50 dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800">
+                                        <tr>
+                                            <th className="px-4 py-3 font-semibold">Parameter</th>
+                                            <th className="px-4 py-3 font-semibold">Type</th>
+                                            <th className="px-4 py-3 font-semibold">Description</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                                        <tr>
+                                            <td className="px-4 py-3 font-mono text-primary-600">app_id</td>
+                                            <td className="px-4 py-3 text-slate-500">string</td>
+                                            <td className="px-4 py-3 text-slate-600 dark:text-slate-400"><span className="text-red-500 font-bold mr-2">Required.</span> The bundle ID or package name (e.g., com.instagram.android)</td>
+                                        </tr>
+                                        <tr>
+                                            <td className="px-4 py-3 font-mono text-primary-600">store</td>
+                                            <td className="px-4 py-3 text-slate-500">string</td>
+                                            <td className="px-4 py-3 text-slate-600 dark:text-slate-400">Either <code className="text-xs px-1 bg-slate-100 dark:bg-slate-800 rounded">google</code> or <code className="text-xs px-1 bg-slate-100 dark:bg-slate-800 rounded">apple</code>. Defaults to <code className="text-xs px-1 bg-slate-100 dark:bg-slate-800 rounded">google</code>.</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <div className="mt-8">
+                                <div className="flex border-b border-slate-200 dark:border-slate-800 mb-1">
+                                    {(['js', 'curl', 'python'] as const).map(tab => (
+                                        <button 
+                                            key={tab}
+                                            onClick={() => setActiveTab(tab)}
+                                            className={`px-4 py-2 text-sm font-medium transition-colors border-b-2 -mb-[2px] ${
+                                                activeTab === tab 
+                                                ? 'border-primary-500 text-primary-600' 
+                                                : 'border-transparent text-slate-400 hover:text-slate-600'
+                                            }`}
+                                        >
+                                            {tab === 'js' ? 'JavaScript' : tab === 'curl' ? 'cURL' : 'Python'}
+                                        </button>
+                                    ))}
+                                </div>
+                                <CodeBlock code={examples[activeTab]} />
+                            </div>
+                            
+                            <div className="mt-8">
+                                <h3 className="text-sm font-bold uppercase tracking-wider text-slate-500 mb-4">Response Example</h3>
+                                <CodeBlock code={`{
+  "status": "success",
+  "app_id": "com.instagram.android",
+  "screenshots": [
+    {
+      "url": "https://play-lh.googleusercontent.com/...",
+      "type": "phone",
+      "index": 0
+    },
+    ...
+  ],
+  "meta": {
+    "version": "315.0.0",
+    "last_updated": "2024-05-20"
+  }
+}`} />
+                            </div>
+                        </div>
+
+                        <div id="rate-limits" className="mb-16 scroll-mt-24 p-8 bg-slate-50 dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800">
+                            <h2 className="text-2xl font-bold mb-4">Rate Limits</h2>
+                            <p className="text-slate-600 dark:text-slate-400 leading-relaxed mb-6">
+                                To ensure stability, we implement rate limits on our API. If you exceed these limits, the API will respond with a <code className="text-red-500">429 Too Many Requests</code> status code.
+                            </p>
+                            <ul className="space-y-3 text-sm">
+                                <li className="flex justify-between border-b border-slate-200 dark:border-slate-800 pb-2">
+                                    <span className="font-medium">Free Plan</span>
+                                    <span className="text-slate-500 font-mono">10 requests / minute</span>
+                                </li>
+                                <li className="flex justify-between border-b border-slate-200 dark:border-slate-800 pb-2">
+                                    <span className="font-medium">Pro Plan</span>
+                                    <span className="text-slate-500 font-mono">1,000 requests / minute</span>
+                                </li>
+                                <li className="flex justify-between">
+                                    <span className="font-medium">Enterprise</span>
+                                    <span className="text-slate-500 font-mono">Unlimited</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    );
+};
+
+// --- Sub-components (Rest) ---
+
 const Hero: React.FC<{ showToast: (message: string, type: 'success' | 'error') => void }> = ({ showToast }) => {
     const [appUrl, setAppUrl] = useState('');
     const [selectedStore, setSelectedStore] = useState<'google' | 'apple'>('google');
@@ -290,7 +491,7 @@ const Hero: React.FC<{ showToast: (message: string, type: 'success' | 'error') =
     });
 
     useEffect(() => {
-        setActiveIndex(-1); // Reset index whenever suggestions change
+        setActiveIndex(-1);
     }, [suggestions]);
 
     useEffect(() => {
@@ -349,7 +550,7 @@ const Hero: React.FC<{ showToast: (message: string, type: 'success' | 'error') =
     
     return (
         <section className="relative pt-32 pb-20 overflow-hidden">
-            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-200 h-200 bg-primary-500/10 dark:bg-primary-500/20 rounded-full blur-[100px] -z-10" />
+            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[800px] bg-primary-500/10 dark:bg-primary-500/20 rounded-full blur-[100px] -z-10" />
             
             <div className="container mx-auto px-6 text-center">
                 <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary-50 dark:bg-primary-900/30 border border-primary-100 dark:border-primary-800 text-primary-700 dark:text-primary-300 text-xs font-semibold mb-8">
@@ -362,7 +563,7 @@ const Hero: React.FC<{ showToast: (message: string, type: 'success' | 'error') =
 
                 <h1 className="text-5xl md:text-7xl font-extrabold text-slate-900 dark:text-white tracking-tight leading-[1.1] mb-6 max-w-4xl mx-auto">
                     App Screenshots. <br/>
-                    <span className="text-transparent bg-clip-text bg-linear-to-r from-primary-600 to-violet-600">Instantly.</span>
+                    <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary-600 to-violet-600">Instantly.</span>
                 </h1>
                 <p className="text-lg md:text-xl text-slate-600 dark:text-slate-400 max-w-2xl mx-auto mb-10 leading-relaxed">
                     Download assets from Google Play & Apple App Store in seconds. High-quality original files ready for your next project.
@@ -482,22 +683,9 @@ const Pricing: React.FC = () => (
             </div>
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
                 {[
-                    { 
-                        name: 'Free', 
-                        price: '$0', 
-                        features: ['10 screenshots/mo', 'Basic scraping', 'Play Store only'] 
-                    },
-                    { 
-                        name: 'Pro', 
-                        price: '$29', 
-                        features: ['500 screenshots/mo', 'Both stores', 'Batch operations', 'API access'], 
-                        primary: true 
-                    },
-                    { 
-                        name: 'Enterprise', 
-                        price: '$299', 
-                        features: ['50,000 screenshots/mo', 'Everything', 'Priority support', 'Custom integration'] 
-                    }
+                    { name: 'Hobby', price: '$0', features: ['10 downloads/mo', 'Standard Quality'] },
+                    { name: 'Pro', price: '$29', features: ['Unlimited downloads', 'High Res Source', 'API Access'], primary: true },
+                    { name: 'Team', price: '$99', features: ['Unlimited Seats', 'Dedicated API Key', 'Priority Support'] }
                 ].map((plan) => (
                     <div key={plan.name} className={`p-8 rounded-3xl border ${plan.primary ? 'bg-slate-900 text-white border-slate-900 shadow-2xl ring-4 ring-primary-500/20 lg:-mt-4' : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800'}`}>
                         <h3 className="text-2xl font-bold">{plan.name}</h3>
@@ -544,7 +732,7 @@ const AuthModal: React.FC<{ isOpen: boolean; onClose: () => void; onLoginSuccess
         setIsLoading(false);
     };
     return (
-        <div className="fixed inset-0 z-100 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm" onClick={onClose}>
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm" onClick={onClose}>
             <div className="bg-white dark:bg-slate-900 w-full max-w-sm p-8 rounded-2xl shadow-2xl" onClick={e => e.stopPropagation()}>
                 <div className="text-center mb-8">
                     <h3 className="text-xl font-bold">Welcome back</h3>
@@ -554,9 +742,9 @@ const AuthModal: React.FC<{ isOpen: boolean; onClose: () => void; onLoginSuccess
                         <GoogleIcon /> Sign in with Google
                     </button>
                     <div className="relative flex py-2 items-center text-slate-400 text-xs uppercase">
-                        <div className="grow border-t border-slate-100 dark:border-slate-800"></div>
+                        <div className="flex-grow border-t border-slate-100 dark:border-slate-800"></div>
                         <span className="mx-2">Or</span>
-                        <div className="grow border-t border-slate-100 dark:border-slate-800"></div>
+                        <div className="flex-grow border-t border-slate-100 dark:border-slate-800"></div>
                     </div>
                     <input type="email" placeholder="Email address" className="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-800 border-none focus:ring-2 focus:ring-primary-500" />
                     <button type="submit" className="w-full py-3 bg-primary-600 text-white rounded-xl font-semibold">
@@ -573,6 +761,7 @@ const App: React.FC = () => {
     const [isDarkMode, setIsDarkMode] = useState(() => localStorage.getItem('theme') === 'dark');
     const [currentUser, setCurrentUser] = useState<User | null>(null);
     const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+    const [currentView, setCurrentView] = useState<'home' | 'api'>('home');
 
     useEffect(() => {
         document.documentElement.classList.toggle('dark', isDarkMode);
@@ -583,11 +772,25 @@ const App: React.FC = () => {
 
     return (
         <div className="min-h-screen bg-white dark:bg-slate-950">
-            <Header isDarkMode={isDarkMode} toggleDarkMode={() => setIsDarkMode(!isDarkMode)} currentUser={currentUser} onLogin={() => setIsAuthModalOpen(true)} onLogout={() => setCurrentUser(null)} />
+            <Header 
+                isDarkMode={isDarkMode} 
+                toggleDarkMode={() => setIsDarkMode(!isDarkMode)} 
+                currentUser={currentUser} 
+                onLogin={() => setIsAuthModalOpen(true)} 
+                onLogout={() => setCurrentUser(null)} 
+                currentView={currentView}
+                setView={setCurrentView}
+            />
             <main>
-                <Hero showToast={showToast} />
-                <Features />
-                <Pricing />
+                {currentView === 'home' ? (
+                    <>
+                        <Hero showToast={showToast} />
+                        <Features />
+                        <Pricing />
+                    </>
+                ) : (
+                    <ApiDocs />
+                )}
             </main>
             <Footer />
             {toast && <Toast key={toast.id} message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
