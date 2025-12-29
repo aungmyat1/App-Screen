@@ -23,19 +23,17 @@ logger = logging.getLogger(__name__)
 def scrape_playstore(self, job_id: int, app_id: str):
     """Celery task for Play Store scraping"""
     try:
-        scraper = PlayStoreScraper()
-        
-        # Run the async scraping function in a new event loop
+        # Since PlayStoreScraper is async, we need to run it in an event loop
         loop = asyncio.new_event_loop()
         asyncio.set_event_loop(loop)
-        
         try:
-            # Execute the scraping
-            screenshots, metadata = loop.run_until_complete(scraper.scrape(app_id))
+            scraper = PlayStoreScraper()
+            # Execute the async scraping function
+            screenshots, metadata = loop.run_until_complete(scraper.scrape_screenshots(app_id))
         finally:
             loop.close()
         
-        # Save to database
+        # Save to database (async function needs to run in event loop)
         loop = asyncio.new_event_loop()
         asyncio.set_event_loop(loop)
         try:
@@ -43,7 +41,7 @@ def scrape_playstore(self, job_id: int, app_id: str):
         finally:
             loop.close()
         
-        # Process and upload to S3
+        # Process and upload to S3 (async function needs to run in event loop)
         loop = asyncio.new_event_loop()
         asyncio.set_event_loop(loop)
         try:
@@ -51,7 +49,7 @@ def scrape_playstore(self, job_id: int, app_id: str):
         finally:
             loop.close()
         
-        # Update job status
+        # Update job status (async function needs to run in event loop)
         loop = asyncio.new_event_loop()
         asyncio.set_event_loop(loop)
         try:
@@ -65,14 +63,14 @@ def scrape_playstore(self, job_id: int, app_id: str):
         }
         
     except Exception as e:
-        # Calculate exponential backoff delay
-        countdown = self.default_retry_delay * (2 ** self.request.retries) + random.uniform(0, 1)
+        # Calculate exponential backoff delay with jitter
+        countdown = 60 * (2 ** self.request.retries) + random.uniform(0, 10)
         
-        # Update job status
+        # Update job status (async function needs to run in event loop)
         loop = asyncio.new_event_loop()
         asyncio.set_event_loop(loop)
         try:
-            loop.run_until_complete(update_job_status(job_id, 'retrying', str(e)))
+            loop.run_until_complete(update_job_status(job_id, 'failed', str(e)))
         finally:
             loop.close()
             
@@ -82,19 +80,17 @@ def scrape_playstore(self, job_id: int, app_id: str):
 def scrape_appstore(self, job_id: int, app_id: str):
     """Celery task for App Store scraping"""
     try:
-        scraper = AppStoreScraper()
-        
-        # Run the async scraping function in a new event loop
+        # Since AppStoreScraper is async, we need to run it in an event loop
         loop = asyncio.new_event_loop()
         asyncio.set_event_loop(loop)
-        
         try:
-            # Execute the scraping
-            screenshots, metadata = loop.run_until_complete(scraper.scrape(app_id))
+            scraper = AppStoreScraper()
+            # Execute the async scraping function
+            screenshots, metadata = loop.run_until_complete(scraper.scrape_screenshots(app_id))
         finally:
             loop.close()
         
-        # Save to database
+        # Save to database (async function needs to run in event loop)
         loop = asyncio.new_event_loop()
         asyncio.set_event_loop(loop)
         try:
@@ -102,7 +98,7 @@ def scrape_appstore(self, job_id: int, app_id: str):
         finally:
             loop.close()
         
-        # Process and upload to S3
+        # Process and upload to S3 (async function needs to run in event loop)
         loop = asyncio.new_event_loop()
         asyncio.set_event_loop(loop)
         try:
@@ -110,7 +106,7 @@ def scrape_appstore(self, job_id: int, app_id: str):
         finally:
             loop.close()
         
-        # Update job status
+        # Update job status (async function needs to run in event loop)
         loop = asyncio.new_event_loop()
         asyncio.set_event_loop(loop)
         try:
@@ -124,14 +120,14 @@ def scrape_appstore(self, job_id: int, app_id: str):
         }
         
     except Exception as e:
-        # Calculate exponential backoff delay
-        countdown = self.default_retry_delay * (2 ** self.request.retries) + random.uniform(0, 1)
+        # Calculate exponential backoff delay with jitter
+        countdown = 60 * (2 ** self.request.retries) + random.uniform(0, 10)
         
-        # Update job status
+        # Update job status (async function needs to run in event loop)
         loop = asyncio.new_event_loop()
         asyncio.set_event_loop(loop)
         try:
-            loop.run_until_complete(update_job_status(job_id, 'retrying', str(e)))
+            loop.run_until_complete(update_job_status(job_id, 'failed', str(e)))
         finally:
             loop.close()
             
@@ -143,6 +139,7 @@ def cleanup_old_screenshots():
     # Delete screenshots older than 30 days
     cutoff = datetime.utcnow() - timedelta(days=30)
     
+    # Delete old files (async function needs to run in event loop)
     loop = asyncio.new_event_loop()
     asyncio.set_event_loop(loop)
     try:
