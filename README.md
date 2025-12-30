@@ -1,33 +1,83 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
+# Screenshot SaaS Application
 
-# Run and deploy your AI Studio app
+A comprehensive SaaS application for extracting screenshots from app stores (Apple App Store and Google Play Store).
 
-This contains everything you need to run your app locally.
+## Features
 
-View your app in AI Studio: https://ai.studio/apps/drive/1TJLJRQ5tfbECvUMNHEemMPqYMBxsW2YC
+- Extract screenshots from both Apple App Store and Google Play Store
+- Asynchronous task processing with Celery
+- Redis caching for improved performance
+- Multiple storage backends (local and S3)
+- FastAPI-based REST API
+- Authentication and authorization
 
-## Run Locally
+## Prerequisites
 
-**Prerequisites:**  Node.js
+- Python 3.11+
+- Redis server
+- Docker (optional, for containerization)
 
+## Installation
 
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+1. Clone the repository:
+   ```bash
+   git clone <repository-url>
+   cd screenshot-saas
+   ```
 
-## Development and Troubleshooting
+2. Create a virtual environment:
+   ```bash
+   python -m venv venv
+   source venv/bin/activate  # On Windows: venv\Scripts\activate
+   ```
 
-For development setup and troubleshooting help, see the following documentation files in the repository:
+3. Install dependencies:
+   ```bash
+   pip install -r requirements.txt
+   playwright install chromium
+   ```
 
-- [DEVELOPMENT_SETUP.md](DEVELOPMENT_SETUP.md) - Comprehensive guide to setting up your development environment
-- [WSL_TROUBLESHOOTING.md](WSL_TROUBLESHOOTING.md) - Guide for troubleshooting WSL-related development issues
-- [wsl_troubleshoot.sh](wsl_troubleshoot.sh) - A script that performs automated checks for common WSL/Dev Container issues
+## Project Structure
 
-If you're using Windows with WSL (Windows Subsystem for Linux), run the troubleshooting script to diagnose common issues with your development environment:
-```bash
-./wsl_troubleshoot.sh
 ```
+screenshot-saas/
+├── src/
+│   ├── core/
+│   │   ├── scrapers/
+│   │   │   ├── playstore.py
+│   │   │   ├── appstore.py
+│   │   │   └── base.py
+│   │   ├── cache.py
+│   │   ├── queue.py
+│   │   └── storage.py
+│   ├── api/
+│   │   ├── routes/
+│   │   ├── middleware/
+│   │   └── auth.py
+│   ├── workers/
+│   ├── models/
+│   └── utils/
+├── tests/
+├── docker/
+├── config/
+└── docs/
+```
+
+## Usage
+
+1. Start Redis server
+2. Run the application:
+   ```bash
+   uvicorn src.api.main:app --reload --port 8000
+   ```
+
+## Development
+
+Run tests:
+```bash
+pytest
+```
+
+## License
+
+MIT
