@@ -1,16 +1,10 @@
 {
   "name": "AppScreen Dev Environment",
-  "build": {
-    "dockerfile": "../k8s-universal-devcontainer/Dockerfile"
-  },
+  "image": "mcr.microsoft.com/devcontainers/python:1-3.11-bookworm",
   "features": {
     "ghcr.io/devcontainers/features/docker-in-docker:2": {},
     "ghcr.io/devcontainers/features/github-cli:1": {},
     "ghcr.io/devcontainers/features/common-utils:2": {},
-    "ghcr.io/devcontainers/features/python:1": {
-      "version": "3.11",
-      "installTools": true
-    },
     "ghcr.io/devcontainers/features/node:1": {
       "version": "18"
     }
@@ -36,7 +30,7 @@
     "source=${localEnv:HOME}/.kube,target=/home/vscode/.kube,type=bind,consistency=cached",
     "source=${localEnv:HOME}/.docker,target=/home/vscode/.docker,type=bind,consistency=cached"
   ],
-  "postCreateCommand": "bash ../k8s-universal-devcontainer/scripts/setup.sh",
+  "postCreateCommand": "npm install",
   "remoteUser": "vscode",
   "runArgs": [
     "--cap-add=SYS_PTRACE",
@@ -46,8 +40,7 @@
   "containerEnv": {
     "DEVCONTAINER": "true"
   },
-  "initializeCommand": "wsl -d Ubuntu -e /bin/sh -c 'echo \"Initializing WSL environment\"'",
-  "updateRemoteUserUIDDefault": "never",
+  "initializeCommand": "echo \"Initializing container environment\"",
   "userEnvProbe": "none",
   "remoteEnv": {
     "PATH": "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/local/games:/usr/games:/usr/lib/wsl/lib"
