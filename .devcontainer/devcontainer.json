@@ -45,7 +45,8 @@
     "DATABASE_URL": "postgresql://appscreen:password@postgres:5432/appscreen",
     "MINIO_ENDPOINT": "http://minio:9000",
     "MINIO_ACCESS_KEY": "minioadmin",
-    "MINIO_SECRET_KEY": "minioadmin123"
+    "MINIO_SECRET_KEY": "minioadmin123",
+    "MAILHOG_URL": "http://mailhog:8025"
   },
   "userEnvProbe": "loginInteractiveShell",
   "mounts": [

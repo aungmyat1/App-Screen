@@ -118,6 +118,10 @@ if [ -d "backend" ]; then
     cd "$WORKSPACE_ROOT"
 fi
 
+# Make sure all shell scripts are executable
+echo "Setting executable permissions for shell scripts..."
+find . -name "*.sh" -type f -exec chmod +x {} \;
+
 # Setup environment variables
 echo "Setting up environment variables..."
 if [ ! -f ".env.local" ] && [ -f ".env.example" ]; then

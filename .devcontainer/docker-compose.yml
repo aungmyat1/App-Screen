@@ -88,6 +88,23 @@ services:
     mem_limit: 512m
     cpus: '0.5'
 
+  mailhog:
+    image: mailhog/mailhog:latest
+    restart: unless-stopped
+    ports:
+      - "1025:1025"  # SMTP server
+      - "8025:8025"  # Web UI
+    environment:
+      MH_STORAGE: maildir
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8025/"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    # Add resource limits
+    mem_limit: 128m
+    cpus: '0.25'
+
 volumes:
   postgres-data:
   redis-data:
