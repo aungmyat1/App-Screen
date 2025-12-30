@@ -76,7 +76,8 @@ else
         x11-xserver-utils \
         xdg-utils \
         curl \
-        git-lfs
+        git-lfs \
+        wget
 fi
 
 # Setup frontend
@@ -108,11 +109,17 @@ if [ -d "backend" ]; then
             python3 -m venv backend/venv
         fi
         source backend/venv/bin/activate
+        pip install --upgrade pip
         if [ -f "backend/requirements.txt" ]; then
             pip install -r backend/requirements.txt
         else
             pip install python-dotenv requests
         fi
+        
+        # Install Playwright and its browsers
+        pip install playwright
+        playwright install chromium
+        echo "✓ Playwright installed with Chromium"
     fi
     
     cd "$WORKSPACE_ROOT"

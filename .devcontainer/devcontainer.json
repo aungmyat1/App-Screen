@@ -4,12 +4,26 @@
   "service": "app",
   "workspaceFolder": "/workspaces/App-Screen",
   "features": {
-    "ghcr.io/devcontainers/features/common-utils:2": {},
+    "ghcr.io/devcontainers/features/common-utils:2": {
+      "installZsh": "true",
+      "username": "vscode",
+      "userUid": "1000",
+      "userGid": "1000",
+      "upgradePackages": "true"
+    },
     "ghcr.io/devcontainers/features/node:1": {
-      "version": "20"
+      "version": "20",
+      "nodeGypDependencies": "true",
+      "npm": "latest"
     },
     "ghcr.io/devcontainers/features/python:1": {
-      "version": "3.11"
+      "version": "3.11",
+      "installTools": "true",
+      "optimize": "disk"
+    },
+    "ghcr.io/devcontainers/features/git:1": {
+      "version": "latest",
+      "ppa": "false"
     }
   },
   "customizations": {
@@ -25,12 +39,15 @@
         "ms-vscode-remote.remote-containers",
         "esbenp.prettier-vscode",
         "dbaeumer.vscode-eslint",
-        "ms-toolsai.jupyter"
+        "ms-toolsai.jupyter",
+        "ms-python.flake8",
+        "ms-python.mypy",
+        "ms-python.pylint"
       ]
     }
   },
-  "postCreateCommand": "cd /workspaces/App-Screen && chmod +x .devcontainer/setup.sh && bash .devcontainer/setup.sh",
-  "postStartCommand": "cd /workspaces/App-Screen && chmod +x .devcontainer/post-start.sh && bash .devcontainer/post-start.sh",
+  "postCreateCommand": "bash -c 'cd /workspaces/App-Screen && chmod +x .devcontainer/setup.sh && bash .devcontainer/setup.sh'",
+  "postStartCommand": "bash -c 'cd /workspaces/App-Screen && chmod +x .devcontainer/post-start.sh && bash .devcontainer/post-start.sh'",
   "remoteUser": "vscode",
   "containerEnv": {
     "DEVCONTAINER": "true",
@@ -46,5 +63,40 @@
   "userEnvProbe": "loginInteractiveShell",
   "mounts": [
     "source=/var/run/docker.sock,target=/var/run/docker.sock,type=bind"
-  ]
+  ],
+  "forwardPorts": [3000, 5000, 5432, 6379, 9000, 9001, 1025, 8025],
+  "portsAttributes": {
+    "3000": {
+      "label": "Frontend",
+      "onAutoForward": "notify"
+    },
+    "5000": {
+      "label": "Backend API",
+      "onAutoForward": "notify"
+    },
+    "5432": {
+      "label": "PostgreSQL",
+      "onAutoForward": "silent"
+    },
+    "6379": {
+      "label": "Redis",
+      "onAutoForward": "silent"
+    },
+    "9000": {
+      "label": "MinIO API",
+      "onAutoForward": "notify"
+    },
+    "9001": {
+      "label": "MinIO Console",
+      "onAutoForward": "notify"
+    },
+    "1025": {
+      "label": "MailHog SMTP",
+      "onAutoForward": "silent"
+    },
+    "8025": {
+      "label": "MailHog UI",
+      "onAutoForward": "notify"
+    }
+  }
 }

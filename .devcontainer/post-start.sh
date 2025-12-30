@@ -77,15 +77,22 @@ fi
 if [ -d "/workspaces/App-Screen/backend" ]; then
     cd /workspaces/App-Screen/backend
     
+    # Activate the Python virtual environment
+    if [ -d "venv" ]; then
+        source venv/bin/activate
+        echo "✓ Activated Python virtual environment"
+    fi
+    
     # Start the backend API server in development mode on port 5000
     if [ -f "start_api.sh" ]; then
         echo "Starting backend API server on port 5000..."
-        # Create a temporary version of start_api.sh that runs on port 5000
-        sed 's/--port 8000/--port 5000/' start_api.sh > start_api_dev.sh
-        bash start_api_dev.sh &
-        rm start_api_dev.sh  # Clean up temporary file
+        bash start_api.sh &
     elif [ -f "src/main.py" ]; then
+        echo "Starting backend API server on port 5000..."
         python -m uvicorn src.main:app --host 0.0.0.0 --port 5000 --reload &
+    elif [ -f "main.py" ]; then
+        echo "Starting backend API server on port 5000..."
+        python -m uvicorn main:app --host 0.0.0.0 --port 5000 --reload &
     fi
     
     # Start Celery workers if they exist
@@ -103,9 +110,10 @@ if [ -f "/workspaces/App-Screen/package.json" ]; then
     cd /workspaces/App-Screen
     if [ -f "vite.config.ts" ] || [ -f "vite.config.js" ]; then
         echo "Starting frontend development server on port 3000..."
-        npm run dev -- --host 0.0.0.0 &
+        # Using nohup to ensure the server continues running
+        nohup npm run dev -- --host 0.0.0.0 > frontend.log 2>&1 &
     elif [ -f "start.sh" ]; then
-        bash start.sh &
+        nohup bash start.sh > frontend.log 2>&1 &
     fi
 fi
 
@@ -130,3 +138,6 @@ echo "Backend API (dev) should be available on port 5000"
 echo "PostgreSQL is on port 5432"
 echo "Redis is on port 6379"
 echo "MinIO is on port 9000"
+
+# Keep the script running to maintain the container
+echo "Background services are now running. The development environment will remain active."

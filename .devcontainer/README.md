@@ -1,63 +1,69 @@
-# Dev Container Setup for App-Screen
+# Development Container Setup
 
-This repository is configured for use with VS Code Dev Containers. Follow the instructions below to set up a consistent development environment.
+This repository includes a complete development environment configuration using Dev Containers, which works both locally and in GitHub Codespaces.
 
-## Prerequisites
+## Features
 
-- VS Code installed on your local machine
-- Remote - Containers extension for VS Code (`ms-vscode-remote.remote-containers`)
-- Docker Desktop or Docker Engine
-- WSL 2 (if using Windows)
+- **Python 3.11** backend with FastAPI, Playwright, and other dependencies
+- **Node.js 20** frontend environment with npm
+- **PostgreSQL 15** database
+- **Redis 7** for caching and session storage
+- **MinIO** for object storage (S3-compatible)
+- **MailHog** for email testing
+- Pre-configured VS Code extensions
 
-## Opening the Project in a Dev Container
+## Ports Forwarded
 
-1. Open VS Code
-2. Open the Command Palette (`Ctrl+Shift+P` or `Cmd+Shift+P`)
-3. Select "Dev Containers: Open Folder in Container..."
-4. Select this project folder
-5. VS Code will build the container and open the project in the containerized environment
+- `3000`: Frontend development server
+- `5000`: Backend API server
+- `5432`: PostgreSQL database
+- `6379`: Redis
+- `9000`: MinIO API
+- `9001`: MinIO Console
+- `8025`: MailHog UI
+- `1025`: MailHog SMTP
 
-## What's Included in the Dev Container
+## How to Use
 
-- Python 3.11
-- Node.js 18
-- Docker-in-Docker
-- GitHub CLI
-- Common development utilities
-- Required VS Code extensions for the project
+### GitHub Codespaces
 
-## VS Code Extensions
+1. Open this repository in GitHub Codespaces
+2. The devcontainer will automatically build and start
+3. The frontend and backend services will start automatically
 
-The following extensions will be automatically installed in the container:
-- Python extension pack
-- TypeScript/JavaScript support
-- Docker extension
-- ESLint and Prettier
-- Live Share
+### Local Dev Container
 
-## Project Setup
+1. Install Docker Desktop
+2. Install the "Dev Containers" extension in VS Code
+3. Open this repository in VS Code
+4. Press `Ctrl+Shift+P` and select "Dev Containers: Reopen in Container"
+5. Wait for the container to build and services to start
 
-When the container starts, a setup script will automatically run to:
-- Install frontend dependencies using npm
-- Set up backend environment if needed
-- Create environment files
-- Run health checks
+## Services
 
-## Starting the Development Server
+The devcontainer automatically starts:
 
-After the container is running and setup is complete:
+- Frontend development server (React/Vue app on port 3000)
+- Backend API server (FastAPI on port 5000)
+- PostgreSQL database
+- Redis cache
+- MinIO object storage
+- MailHog email testing server
 
-1. Open a terminal in VS Code
-2. Run `npm run dev` to start the development server
-3. The server will be available on the default port (usually 5173)
+## Environment Variables
+
+The environment is preconfigured with appropriate environment variables for connecting to the services. Additional API keys (like GEMINI_API_KEY) should be added to `.env.local`.
 
 ## Troubleshooting
 
-If you encounter issues with the Dev Container setup:
+If services don't start automatically, run:
 
-1. Make sure Docker is running
-2. Check that you have sufficient disk space
-3. Ensure you're using the correct branch of the repository
-4. Check the container logs in the VS Code terminal
+```bash
+bash .devcontainer/post-start.sh
+```
 
-For WSL-specific issues, run the `wsl_troubleshoot.sh` script in the project root.
+To run health checks on the environment:
+
+```bash
+bash .devcontainer/health-check.sh
+```
