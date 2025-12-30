@@ -19,7 +19,7 @@ redis-server --version
 
 # Copy our custom configuration
 echo "Copying custom Redis configuration..."
-sudo cp /workspaces/App-Screen-/backend/config/redis-persistent.conf /etc/redis/redis.conf
+sudo cp /workspaces/App-Screen/backend/config/redis-persistent.conf /etc/redis/redis.conf
 
 # Create necessary directories
 sudo mkdir -p /var/lib/redis

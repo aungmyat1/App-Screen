@@ -19,7 +19,7 @@ else
     echo "No process IDs found. Looking for processes by name..."
     
     # Find and kill the processes by name if PID file doesn't exist
-    BACKEND_PID=$(pgrep -f "uvicorn.*src.api.main:app")
+    BACKEND_PID=$(pgrep -f "uvicorn.*main:app")
     FRONTEND_PID=$(pgrep -f "vite.*dev")
     
     if [ ! -z "$BACKEND_PID" ]; then

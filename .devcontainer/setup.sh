@@ -17,8 +17,8 @@ if [ -f /etc/os-release ]; then
     VER=$VERSION_ID
     echo "Detected OS: $OS version $VER"
 else
-    echo "Cannot detect OS, assuming Alpine"
-    OS="Alpine Linux"
+    echo "Cannot detect OS, assuming Debian/Ubuntu"
+    OS="Debian GNU/Linux"
 fi
 
 # Install system dependencies based on OS
@@ -26,7 +26,7 @@ if [[ "$OS" == *"Alpine"* ]]; then
     echo "Installing system dependencies for Alpine Linux..."
     # Update package index
     sudo apk update
-    # Install necessary packages including those needed for Playwright
+    # Install necessary packages
     sudo apk add --no-cache \
         postgresql-client \
         postgresql-dev \
@@ -44,7 +44,8 @@ if [[ "$OS" == *"Alpine"* ]]; then
         ttf-freefont \
         font-noto-emoji \
         xauth \
-        git-lfs
+        git-lfs \
+        curl
 else
     echo "Installing system dependencies for Ubuntu/Debian..."
     sudo apt-get update
@@ -73,99 +74,62 @@ else
         xvfb \
         x11-utils \
         x11-xserver-utils \
-        xdg-utils
-fi
-
-# Setup Python virtual environment in backend
-echo "Setting up Python virtual environment..."
-cd backend
-if [ ! -d "venv" ]; then
-    python -m venv venv
-fi
-source venv/bin/activate
-
-# Upgrade pip and install Python dependencies
-echo "Installing Python dependencies..."
-pip install --upgrade pip setuptools wheel
-
-# Install Rust for Alpine (needed for some Python packages)
-if [ -f /etc/alpine-release ]; then
-    echo "Installing Rust for Alpine Linux..."
-    if [ ! -f "$HOME/.cargo/env" ]; then
-        curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
-    fi
-    source "$HOME/.cargo/env"
-fi
-
-# Install Python dependencies
-if [ -f /etc/alpine-release ]; then
-    # Use Alpine-specific requirements file that excludes Playwright
-    if [ -f "requirements-alpine.txt" ]; then
-        echo "Installing Alpine-specific requirements..."
-        pip install -r requirements-alpine.txt
-    else
-        echo "Installing standard requirements..."
-        pip install -r requirements.txt
-    fi
-else
-    pip install -r requirements.txt
-fi
-
-# Install Playwright separately for non-Alpine systems
-if [ ! -f /etc/alpine-release ]; then
-    echo "Installing Playwright..."
-    pip install playwright
-    playwright install chromium
-else
-    # For Alpine, try to install Playwright but don't fail if it doesn't work
-    echo "Attempting to install Playwright for Alpine (this may fail)..."
-    if pip install playwright; then
-        echo "✓ Playwright installed successfully on Alpine"
-        python -m playwright install chromium
-    else
-        echo "⚠ Playwright could not be installed on Alpine Linux (this is expected)"
-        echo "  You may need to use a different browser automation solution for this platform"
-    fi
+        xdg-utils \
+        curl \
+        git-lfs
 fi
 
 # Setup frontend
-echo "Setting up frontend..."
+echo "Setting up frontend dependencies..."
 if [ -f "package.json" ]; then
     npm install
+    echo "✓ Frontend dependencies installed"
+else
+    echo "package.json not found"
+    exit 1
 fi
 
-# If there's a frontend directory, set it up separately
-if [ -d "../frontend" ]; then
-    cd ../frontend
-    if [ -f "package.json" ]; then
-        npm install
+# Check if backend directory exists and has setup scripts
+if [ -d "backend" ]; then
+    echo "Setting up backend environment..."
+    
+    # Check if Python is needed for backend
+    if [ -f "backend/setup_env.sh" ]; then
+        echo "Running backend setup script..."
+        cd backend
+        chmod +x setup_env.sh
+        bash setup_env.sh
+        cd "$WORKSPACE_ROOT"
     fi
-    cd ../backend
+    
+    # Setup Python virtual environment if needed
+    if [ -f "backend/requirements.txt" ] || [ -f "backend/setup_env.sh" ]; then
+        if [ ! -d "backend/venv" ]; then
+            python3 -m venv backend/venv
+        fi
+        source backend/venv/bin/activate
+        if [ -f "backend/requirements.txt" ]; then
+            pip install -r backend/requirements.txt
+        else
+            pip install python-dotenv requests
+        fi
+    fi
+    
+    cd "$WORKSPACE_ROOT"
 fi
 
 # Setup environment variables
 echo "Setting up environment variables..."
-cd "$WORKSPACE_ROOT"
-if [ ! -f ".env" ] && [ -f ".env.example" ]; then
-    cp .env.example .env
-    echo "Created .env file from example"
+if [ ! -f ".env.local" ] && [ -f ".env.example" ]; then
+    cp .env.example .env.local
+    echo "Created .env.local file from example"
+elif [ ! -f ".env.local" ]; then
+    echo "Creating basic .env.local file"
+    touch .env.local
+    echo "# Add your environment variables here" >> .env.local
+    echo "GEMINI_API_KEY=" >> .env.local
+    echo "Created basic .env.local file - please add your API key"
 fi
-
-# Setup database
-echo "Setting up database..."
-cd backend
-if [ -f "setup_database.sh" ]; then
-    bash setup_database.sh
-elif [ -f "src/database/init_db.py" ]; then
-    python -m src.database.init_db
-else
-    echo "Database setup script not found, skipping"
-fi
-
-# Install development tools
-echo "Installing development tools..."
-source venv/bin/activate
-pip install black flake8 pytest
 
 # Setup Git LFS
 echo "Setting up Git LFS..."
@@ -185,4 +149,4 @@ else
     echo "Health check script not found, skipping health checks"
 fi
 
-echo "Setup complete!"
+echo "Setup complete! You can now run 'npm run dev' to start the development server."

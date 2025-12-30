@@ -16,7 +16,7 @@ fi
 
 # Copy our sentinel configuration
 echo "Copying Sentinel configuration..."
-sudo cp /workspaces/App-Screen-/backend/config/sentinel.conf /etc/redis/sentinel.conf
+sudo cp /workspaces/App-Screen/backend/config/sentinel.conf /etc/redis/sentinel.conf
 
 # Set proper ownership
 sudo chown redis:redis /etc/redis/sentinel.conf

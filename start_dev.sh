@@ -5,35 +5,34 @@ echo "Starting App-Screen development environment..."
 # Set environment to development
 export ENVIRONMENT=development
 
-# Start infrastructure services in the background
-echo "Starting PostgreSQL and Redis..."
-docker-compose up -d db redis
-
-# Wait for services to be ready
-echo "Waiting for services to be ready..."
-sleep 10
-
-# Verify services are running
-echo "Verifying services..."
-docker-compose ps
-
 # Start backend API in the background
 echo "Starting backend API server..."
-cd backend
-source venv/bin/activate
-uvicorn src.main:app --host 0.0.0.0 --port 5000 --reload &
-
-# Wait a bit for the backend to start
-sleep 5
+if [ -d "/workspaces/App-Screen/backend" ]; then
+    cd /workspaces/App-Screen/backend
+    if [ -f "venv/bin/activate" ]; then
+        source venv/bin/activate
+    fi
+    
+    # Check if API files exist before starting
+    if [ -f "src/main.py" ] || [ -f "src/api/main.py" ]; then
+        uvicorn src.main:app --host 0.0.0.0 --port 8000 --reload &
+        # Small delay to ensure backend is starting
+        sleep 5
+    else
+        echo "Backend API files not found. Skipping backend start."
+    fi
+    cd ..
+else
+    echo "Backend directory not found. Skipping backend start."
+fi
 
 # Start frontend in the background
 echo "Starting frontend development server..."
-cd ..
 npm run dev &
 
 echo "Development environment started!"
-echo "Backend API available at: http://localhost:5000"
-echo "Backend API docs available at: http://localhost:5000/docs"
+echo "Backend API available at: http://localhost:8000 (if running)"
+echo "Backend API docs available at: http://localhost:8000/docs (if running)"
 echo "Frontend available at: http://localhost:3000 (or as shown in the npm output)"
 echo ""
-echo "To stop everything, run: docker-compose down && pkill -f 'uvicorn\|npm'"
+echo "To stop everything, run: pkill -f 'uvicorn\|npm'"

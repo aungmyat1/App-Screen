@@ -6,31 +6,27 @@
     "ghcr.io/devcontainers/features/github-cli:1": {},
     "ghcr.io/devcontainers/features/common-utils:2": {},
     "ghcr.io/devcontainers/features/node:1": {
-      "version": "18"
+      "version": "20"
     }
   },
   "customizations": {
     "vscode": {
       "extensions": [
-        "ms-kubernetes-tools.vscode-kubernetes-tools",
         "ms-azuretools.vscode-docker",
         "ms-python.python",
         "ms-python.vscode-pylint",
         "ms-python.black-formatter",
         "ms-vscode.vscode-json",
-        "ms-vscode.vscode-xml",
         "bradlc.vscode-tailwindcss",
         "ms-vscode.vscode-typescript-next",
         "ms-vscode-remote.remote-containers",
-        "ms-kubernetes-tools.kind-vscode"
+        "esbenp.prettier-vscode",
+        "dbaeumer.vscode-eslint",
+        "ms-vsliveshare.vsliveshare"
       ]
     }
   },
-  "mounts": [
-    "source=${localEnv:HOME}/.kube,target=/home/vscode/.kube,type=bind,consistency=cached",
-    "source=${localEnv:HOME}/.docker,target=/home/vscode/.docker,type=bind,consistency=cached"
-  ],
-  "postCreateCommand": "npm install",
+  "postCreateCommand": "cd /workspaces/App-Screen && chmod +x .devcontainer/setup.sh && bash .devcontainer/setup.sh",
   "remoteUser": "vscode",
   "runArgs": [
     "--cap-add=SYS_PTRACE",
@@ -40,9 +36,10 @@
   "containerEnv": {
     "DEVCONTAINER": "true"
   },
-  "initializeCommand": "echo \"Initializing container environment\"",
-  "userEnvProbe": "none",
+  "userEnvProbe": "loginInteractiveShell",
   "remoteEnv": {
-    "PATH": "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/local/games:/usr/games:/usr/lib/wsl/lib"
-  }
+    "PATH": "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/local/games:/usr/games"
+  },
+  "workspaceFolder": "/workspaces/App-Screen",
+  "workspaceMount": "source=${localWorkspaceFolder},target=/workspaces/App-Screen,type=bind,consistency=cached"
 }

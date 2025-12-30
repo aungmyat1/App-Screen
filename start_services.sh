@@ -4,14 +4,43 @@
 
 echo "🚀 Starting App-Screen services..."
 
-# Start backend API in the background
-echo "🐍 Starting backend API on port 8000..."
-cd /workspaces/App-Screen/backend
-/opt/venv/bin/uvicorn src.api.main:app --host 0.0.0.0 --port 8000 --reload &
-BACKEND_PID=$!
+# Check if backend API file exists before starting
+if [ -f "/workspaces/App-Screen/backend/src/api/main.py" ]; then
+    API_PATH="src.api.main:app"
+elif [ -f "/workspaces/App-Screen/backend/src/main.py" ]; then
+    API_PATH="src.main:app"
+else
+    echo "Backend API files not found. Checking for alternative locations..."
+    if [ -d "/workspaces/App-Screen/backend/src" ]; then
+        echo "Available files in backend/src:"
+        find /workspaces/App-Screen/backend/src -name "*.py" -type f
+    else
+        echo "Backend src directory does not exist"
+    fi
+    echo "This application requires the backend API files to be present."
+    echo "Starting only the frontend for now..."
+    API_AVAILABLE=false
+fi
 
-# Small delay to ensure backend is starting
-sleep 3
+# Start backend API in the background if available
+if [ "$API_AVAILABLE" != "false" ]; then
+    echo "🐍 Starting backend API on port 8000..."
+    cd /workspaces/App-Screen/backend
+    if [ -f "venv/bin/activate" ]; then
+        source venv/bin/activate
+    elif [ -f "/opt/venv/bin/activate" ]; then
+        source /opt/venv/bin/activate
+    else
+        echo "Warning: No virtual environment found"
+    fi
+    /opt/venv/bin/uvicorn $API_PATH --host 0.0.0.0 --port 8000 --reload &
+    BACKEND_PID=$!
+    
+    # Small delay to ensure backend is starting
+    sleep 3
+else
+    BACKEND_PID=""
+fi
 
 # Start frontend development server in the background
 echo "⚛️ Starting frontend on port 5173..."
@@ -20,14 +49,24 @@ npm run dev &
 FRONTEND_PID=$!
 
 # Wait for both processes
-echo "✅ Services started!"
-echo "🌐 Backend API: http://localhost:8000"
+if [ "$API_AVAILABLE" != "false" ]; then
+    echo "✅ Services started!"
+    echo "🌐 Backend API: http://localhost:8000"
+    echo "📊 Backend API docs: http://localhost:8000/docs"
+else
+    echo "✅ Frontend only started (backend not available)!"
+fi
 echo "🌐 Frontend: http://localhost:5173"
-echo "📊 Backend API docs: http://localhost:8000/docs"
 
 # Create a file to track the PIDs so we can stop them later
-echo "$BACKEND_PID $FRONTEND_PID" > /tmp/appscreen_pids
+if [ -n "$BACKEND_PID" ]; then
+    echo "$BACKEND_PID $FRONTEND_PID" > /tmp/appscreen_pids
+else
+    echo "$FRONTEND_PID" > /tmp/appscreen_pids
+fi
 
 # Wait for both processes to complete
-wait $BACKEND_PID
+if [ -n "$BACKEND_PID" ]; then
+    wait $BACKEND_PID
+fi
 wait $FRONTEND_PID
