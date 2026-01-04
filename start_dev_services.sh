@@ -3,7 +3,7 @@
 # Script to start development services for App-Screen
 # This script can be run manually to start all development services
 
-echo "Starting App-Screen development services..."
+echo "🚀 Starting App-Screen development services..."
 
 # Exit immediately if a command exits with a non-zero status
 set -e
@@ -11,62 +11,80 @@ set -e
 # Ensure we're in the right directory
 cd /workspaces/App-Screen
 
+# Check if Python virtual environment exists, create if not
+if [ ! -d "venv" ]; then
+    echo "Python virtual environment not found, creating one..."
+    python3 -m venv venv
+fi
+
+# Activate virtual environment
+source venv/bin/activate
+
+# Install dependencies if requirements changed
+echo "Checking and installing Python dependencies..."
+pip install -r requirements.txt
+
+# Install Playwright browsers if not already installed
+echo "Ensuring Playwright browsers are installed..."
+python -m playwright install chromium --quiet
+
+# Check if Node dependencies are installed
+if [ ! -d "node_modules" ]; then
+    echo "Installing Node.js dependencies..."
+    npm install
+fi
+
 # Start backend services if they exist
-if [ -d "backend" ]; then
-    cd backend
+if [ -d "src" ]; then
+    # Start the backend API server in development mode
+    echo "🐍 Starting backend API server on port 8000..."
+    uvicorn src.api.main:app --host 0.0.0.0 --port 8000 --reload &
+    BACKEND_PID=$!
+    echo "Backend API server started with PID $BACKEND_PID"
     
-    # Start the backend API server in development mode on port 5000
-    if [ -f "start_api.sh" ]; then
-        echo "Starting backend API server on port 5000..."
-        bash start_api.sh &
-        echo "Backend API server started on port 5000"
-    elif [ -f "src/main.py" ]; then
-        source venv/bin/activate 2>/dev/null || true
-        python -m uvicorn src.main:app --host 0.0.0.0 --port 5000 --reload &
-        echo "Backend API server started on port 5000"
+    # Start Celery worker in background if available
+    if command -v celery &> /dev/null; then
+        echo "⚡ Starting Celery worker..."
+        celery -A src.workers worker --loglevel=info --detach
+        echo "Celery worker started"
     fi
     
-    # Start Celery workers if they exist
-    if [ -f "start_workers.sh" ]; then
-        echo "Starting Celery workers..."
-        bash start_workers.sh &
-        echo "Celery workers started"
-    fi
-    
-    # Start Celery beat if it exists
-    if [ -f "start_beat.sh" ]; then
-        echo "Starting Celery beat..."
-        bash start_beat.sh &
-        echo "Celery beat started"
-    fi
-    
-    # Start Flower monitoring if available
-    if [ -f "start_flower.sh" ]; then
-        echo "Starting Flower monitoring..."
-        bash start_flower.sh &
-        echo "Flower monitoring started"
-    fi
+    # Small delay to ensure backend is starting
+    sleep 3
 fi
 
 # Start the frontend development server
-cd /workspaces/App-Screen
 if [ -f "package.json" ]; then
     if [ -f "vite.config.ts" ] || [ -f "vite.config.js" ]; then
-        echo "Starting frontend development server on port 3000..."
-        npm run dev -- --host 0.0.0.0 &
-        echo "Frontend development server started on port 3000"
+        echo "⚛️ Starting frontend development server on port 5173..."
+        npm run dev -- --host 0.0.0.0 > frontend.log 2>&1 &
+        FRONTEND_PID=$!
+        echo "Frontend development server started with PID $FRONTEND_PID"
     else
         echo "Vite configuration not found, trying other options..."
         if command -v npm &> /dev/null; then
             npm start &
-            echo "Frontend development server started"
+            FRONTEND_PID=$!
+            echo "Frontend development server started with PID $FRONTEND_PID"
         fi
     fi
 fi
 
-echo "All development services have been started!"
-echo "Frontend should be available on port 3000"
-echo "Backend API should be available on port 5000"
+echo "✅ All development services have been started!"
+echo "🌐 Frontend should be available on http://localhost:5173"
+echo "🌐 Backend API should be available on http://localhost:8000"
+echo "📊 Backend API docs available on http://localhost:8000/docs"
 echo ""
 echo "Press Ctrl+C to stop all services"
-echo "To keep services running in background, run this script with 'nohup' or in a detached screen session"
+echo ""
+echo "Note: If running in GitHub Codespaces, make sure to set ports 5173 and 8000 as Public"
+echo "using the Ports tab in the lower panel of your VSCode window."
+
+# Wait for processes to complete
+if [ -n "$BACKEND_PID" ] && [ -n "$FRONTEND_PID" ]; then
+    wait $BACKEND_PID $FRONTEND_PID
+elif [ -n "$BACKEND_PID" ]; then
+    wait $BACKEND_PID
+elif [ -n "$FRONTEND_PID" ]; then
+    wait $FRONTEND_PID
+fi

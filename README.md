@@ -14,6 +14,7 @@ A comprehensive SaaS application for extracting screenshots from app stores (App
 ## Prerequisites
 
 - Python 3.11+
+- Node.js v18+
 - Redis server
 - Docker (optional, for containerization)
 
@@ -36,6 +37,57 @@ A comprehensive SaaS application for extracting screenshots from app stores (App
    pip install -r requirements.txt
    playwright install chromium
    ```
+
+4. Install frontend dependencies:
+   ```bash
+   npm install
+   ```
+
+## Local Development Setup
+
+### Using VSCode
+
+This project includes VSCode configurations to help with local development:
+
+1. Open the project in VSCode
+2. Install recommended extensions (they will be suggested automatically)
+3. Use the provided launch configurations to run/debug the application
+4. Use the provided tasks for common operations (Ctrl+Shift+P → "Tasks: Run Task")
+
+### Running the Application
+
+**Option 1: Using scripts**
+```bash
+# Terminal 1: Start backend
+source venv/bin/activate
+uvicorn src.api.main:app --reload --port 8000
+
+# Terminal 2: Start frontend
+npm run dev
+```
+
+**Option 2: Using VSCode tasks**
+1. Press Ctrl+Shift+P (or Cmd+Shift+P on Mac)
+2. Type "Tasks: Run Task"
+3. Select "start backend" and "start frontend" tasks
+
+**Option 3: Using the start_services script**
+```bash
+./start_services.sh
+```
+
+### VSCode Debugging
+
+The project includes launch configurations for debugging:
+
+1. **Python: FastAPI** - Runs the backend API with debugging enabled
+2. **TypeScript: React Dev Server** - Runs the frontend development server
+3. **Full App Debug** - Runs both backend and frontend in debugging mode
+
+To use these:
+1. Go to the Run and Debug view (Ctrl+Shift+D)
+2. Select the desired configuration from the dropdown
+3. Press F5 to start debugging
 
 ## Project Structure
 

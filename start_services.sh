@@ -5,17 +5,17 @@
 echo "🚀 Starting App-Screen services..."
 
 # Check if backend API file exists before starting
-if [ -f "/workspaces/App-Screen/backend/src/api/main.py" ]; then
+if [ -f "/workspaces/App-Screen/src/api/main.py" ]; then
     API_PATH="src.api.main:app"
-elif [ -f "/workspaces/App-Screen/backend/src/main.py" ]; then
+elif [ -f "/workspaces/App-Screen/src/main.py" ]; then
     API_PATH="src.main:app"
 else
     echo "Backend API files not found. Checking for alternative locations..."
-    if [ -d "/workspaces/App-Screen/backend/src" ]; then
-        echo "Available files in backend/src:"
-        find /workspaces/App-Screen/backend/src -name "*.py" -type f
+    if [ -d "/workspaces/App-Screen/src" ]; then
+        echo "Available files in src:"
+        find /workspaces/App-Screen/src -name "*.py" -type f
     else
-        echo "Backend src directory does not exist"
+        echo "Src directory does not exist"
     fi
     echo "This application requires the backend API files to be present."
     echo "Starting only the frontend for now..."
@@ -25,7 +25,7 @@ fi
 # Start backend API in the background if available
 if [ "$API_AVAILABLE" != "false" ]; then
     echo "🐍 Starting backend API on port 8000..."
-    cd /workspaces/App-Screen/backend
+    cd /workspaces/App-Screen
     if [ -f "venv/bin/activate" ]; then
         source venv/bin/activate
     elif [ -f "/opt/venv/bin/activate" ]; then
@@ -33,7 +33,7 @@ if [ "$API_AVAILABLE" != "false" ]; then
     else
         echo "Warning: No virtual environment found"
     fi
-    /opt/venv/bin/uvicorn $API_PATH --host 0.0.0.0 --port 8000 --reload &
+    uvicorn $API_PATH --host 0.0.0.0 --port 8000 --reload &
     BACKEND_PID=$!
     
     # Small delay to ensure backend is starting
