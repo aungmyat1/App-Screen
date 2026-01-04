@@ -63,11 +63,29 @@ function useQuery<T>({
   return state;
 }
 
+// --- Utils ---
+
+const APP_STORE_PATTERNS = {
+    google: /^(https?:\/\/)?play\.google\.com\/store\/apps\/details\?id=[a-zA-Z0-9._]+/,
+    apple: /^(https?:\/\/)?apps\.apple\.com\/([a-z]{2}\/)?app\/[a-zA-Z0-9-]+\/id[0-9]+/
+};
+
+const validateAppStoreUrl = (url: string): { isValid: boolean; store?: 'google' | 'apple' } => {
+    const trimmed = url.trim();
+    if (APP_STORE_PATTERNS.google.test(trimmed)) return { isValid: true, store: 'google' };
+    if (APP_STORE_PATTERNS.apple.test(trimmed)) return { isValid: true, store: 'apple' };
+    return { isValid: false };
+};
+
+const isPotentialUrl = (text: string): boolean => {
+    return text.includes('play.google.com') || text.includes('apps.apple.com') || text.startsWith('http');
+};
+
 // --- Icons ---
 
 const CheckIcon: React.FC<{ className?: string }> = ({ className = 'w-5 h-5' }) => (
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
-    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clipRule="evenodd" />
   </svg>
 );
 
@@ -195,12 +213,13 @@ const parseDownloads = (d: string) => {
 
 const fetchAppSuggestions = async (query: string, store: 'google' | 'apple' | 'both', sortBy: SortOption): Promise<AppSuggestion[]> => {
     await new Promise(resolve => setTimeout(resolve, 400));
-    if (!query.trim()) return [];
+    const q = query.trim();
+    if (!q) return [];
     
-    const isUrl = query.startsWith('http://') || query.startsWith('https://');
-    if (isUrl) return [];
+    // If it looks like a direct URL, don't show search suggestions
+    if (isPotentialUrl(q)) return [];
 
-    const lowerCaseQuery = query.toLowerCase();
+    const lowerCaseQuery = q.toLowerCase();
     
     // Filter
     let filtered = mockApps.filter(app => {
@@ -509,7 +528,6 @@ print(response.json())`
 const Hero: React.FC<{ showToast: (message: string, type: 'success' | 'error') => void }> = ({ showToast }) => {
     const [appUrl, setAppUrl] = useState('');
     const [selectedStore, setSelectedStore] = useState<'google' | 'apple' | 'both'>('both');
-    const [sortBy, setSortBy] = useState<SortOption>('rating');
     const [showSuggestions, setShowSuggestions] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -520,8 +538,8 @@ const Hero: React.FC<{ showToast: (message: string, type: 'success' | 'error') =
 
     const debouncedAppUrl = useDebounce(appUrl, 300);
     const { data: suggestions = [], isLoading: isSearching } = useQuery({
-        queryKey: ['suggestions', debouncedAppUrl, selectedStore, sortBy],
-        queryFn: () => fetchAppSuggestions(debouncedAppUrl, selectedStore, sortBy),
+        queryKey: ['suggestions', debouncedAppUrl, selectedStore],
+        queryFn: () => fetchAppSuggestions(debouncedAppUrl, selectedStore, 'rating'),
         enabled: !!debouncedAppUrl.trim(),
     });
 
@@ -538,13 +556,20 @@ const Hero: React.FC<{ showToast: (message: string, type: 'success' | 'error') =
     }, [debouncedAppUrl]);
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setAppUrl(e.target.value);
+        const value = e.target.value;
+        setAppUrl(value);
         setError(null);
-        setShowSuggestions(!!e.target.value.trim());
+        
+        // Show suggestions only if it's NOT a direct URL
+        if (value.trim() && !isPotentialUrl(value.trim())) {
+            setShowSuggestions(true);
+        } else {
+            setShowSuggestions(false);
+        }
     };
     
     const handleInputFocus = () => {
-        if (appUrl.trim()) setShowSuggestions(true);
+        if (appUrl.trim() && !isPotentialUrl(appUrl.trim())) setShowSuggestions(true);
     };
 
     const handleSuggestionClick = (app: AppSuggestion) => {
@@ -575,11 +600,28 @@ const Hero: React.FC<{ showToast: (message: string, type: 'success' | 'error') =
     };
 
     const handleDownload = async () => {
-        if (!appUrl.trim()) { setError("Please enter a valid URL."); return; }
+        const trimmed = appUrl.trim();
+        if (!trimmed) {
+            setError("Search for an app or paste a store link.");
+            return;
+        }
+
+        const { isValid, store } = validateAppStoreUrl(trimmed);
+        
+        if (!isValid) {
+            if (isPotentialUrl(trimmed)) {
+                setError("Please provide a valid App Store or Play Store app link.");
+            } else {
+                setError("Select an app from the search results or paste a valid store link.");
+            }
+            return;
+        }
+
         setError(null);
         setIsLoading(true);
+        // Simulation of processing
         await new Promise(resolve => setTimeout(resolve, 1500));
-        showToast('Download started successfully!', 'success');
+        showToast(`Download started for ${store === 'google' ? 'Play Store' : 'App Store'} app!`, 'success');
         setIsLoading(false);
     };
     
@@ -593,7 +635,7 @@ const Hero: React.FC<{ showToast: (message: string, type: 'success' | 'error') =
                       <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary-400 opacity-75"></span>
                       <span className="relative inline-flex rounded-full h-2 w-2 bg-primary-500"></span>
                     </span>
-                    New: Advanced Filtering v2.1
+                    New: High-Res ASO Tools v2.2
                 </div>
 
                 <h1 className="text-5xl md:text-7xl font-extrabold text-slate-900 dark:text-white tracking-tight leading-[1.1] mb-6 max-w-4xl mx-auto">
@@ -606,7 +648,7 @@ const Hero: React.FC<{ showToast: (message: string, type: 'success' | 'error') =
 
                 <div className="max-w-3xl mx-auto relative" ref={suggestionsContainerRef} onKeyDown={handleKeyDown}>
                     {/* Primary Input Container */}
-                    <div className="bg-white dark:bg-slate-900/80 p-2 rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 backdrop-blur-sm transition-all focus-within:ring-4 focus-within:ring-primary-100/50 group">
+                    <div className={`bg-white dark:bg-slate-900/80 p-2 rounded-3xl shadow-2xl border ${error ? 'border-red-500/50' : 'border-slate-200 dark:border-slate-800'} backdrop-blur-sm transition-all focus-within:ring-4 ${error ? 'focus-within:ring-red-100/50' : 'focus-within:ring-primary-100/50'} group`}>
                         <div className="flex flex-col sm:flex-row items-center gap-2">
                             <div className="flex-1 w-full relative">
                                 <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">
@@ -620,7 +662,7 @@ const Hero: React.FC<{ showToast: (message: string, type: 'success' | 'error') =
                                     value={appUrl}
                                     onChange={handleInputChange}
                                     onFocus={handleInputFocus}
-                                    placeholder="Search apps by name, publisher or paste URL..."
+                                    placeholder="Search apps or paste a store URL..."
                                     className="w-full bg-transparent border-none outline-none text-lg pl-12 pr-4 py-4 text-slate-900 dark:text-white"
                                     autoComplete="off"
                                 />
@@ -628,8 +670,8 @@ const Hero: React.FC<{ showToast: (message: string, type: 'success' | 'error') =
 
                             <button
                                 onClick={handleDownload}
-                                disabled={isLoading || !appUrl}
-                                className="w-full sm:w-auto px-10 py-4 rounded-2xl bg-primary-600 hover:bg-primary-700 text-white font-bold text-lg shadow-xl shadow-primary-500/30 disabled:opacity-50 transition-all transform active:scale-95"
+                                disabled={isLoading || !appUrl.trim()}
+                                className={`w-full sm:w-auto px-10 py-4 rounded-2xl ${error ? 'bg-slate-500' : 'bg-primary-600 hover:bg-primary-700'} text-white font-bold text-lg shadow-xl ${error ? 'shadow-slate-500/30' : 'shadow-primary-500/30'} disabled:opacity-50 transition-all transform active:scale-95`}
                             >
                                 {isLoading ? <LoadingSpinner /> : 'Download'}
                             </button>
@@ -637,9 +679,9 @@ const Hero: React.FC<{ showToast: (message: string, type: 'success' | 'error') =
                     </div>
                     
                     {/* Secondary Filters Row */}
-                    <div className="mt-4 flex flex-wrap items-center justify-between gap-4 px-2">
+                    <div className="mt-4 flex flex-wrap items-center justify-start gap-4 px-2">
                         <div className="flex items-center gap-2">
-                            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Platform:</span>
+                            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Platform Filter:</span>
                             <div className="flex rounded-xl bg-slate-200/50 dark:bg-slate-800/50 p-1 border border-slate-200 dark:border-slate-800 backdrop-blur-sm">
                                 <button 
                                     onClick={() => setSelectedStore('both')} 
@@ -661,27 +703,16 @@ const Hero: React.FC<{ showToast: (message: string, type: 'success' | 'error') =
                                 </button>
                             </div>
                         </div>
-
-                        <div className="flex items-center gap-2">
-                            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Sort By:</span>
-                            <div className="relative inline-block">
-                                <select 
-                                    value={sortBy} 
-                                    onChange={(e) => setSortBy(e.target.value as SortOption)}
-                                    className="appearance-none bg-slate-200/50 dark:bg-slate-800/50 text-[10px] font-black uppercase tracking-widest text-slate-500 dark:text-slate-400 py-2.5 pl-4 pr-10 rounded-xl border border-slate-200 dark:border-slate-800 focus:ring-0 cursor-pointer backdrop-blur-sm"
-                                >
-                                    <option value="rating">Top Rated</option>
-                                    <option value="downloads">Most Downloads</option>
-                                    <option value="date">Newest First</option>
-                                </select>
-                                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-slate-400">
-                                    <svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/></svg>
-                                </div>
-                            </div>
-                        </div>
                     </div>
                     
-                    {error && <p className="mt-4 text-red-500 text-sm font-medium">{error}</p>}
+                    {error && (
+                        <div className="mt-4 flex items-center justify-center gap-2 text-red-500 text-sm font-bold bg-red-500/10 py-2 px-4 rounded-xl animate-shake">
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                            </svg>
+                            {error}
+                        </div>
+                    )}
 
                     {showSuggestions && (
                         <div className="absolute top-full left-0 right-0 mt-6 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl shadow-2xl z-20 text-left overflow-hidden animate-fade-in ring-1 ring-black/5">
@@ -690,13 +721,13 @@ const Hero: React.FC<{ showToast: (message: string, type: 'success' | 'error') =
                                     {isSearching ? 'Searching...' : `${suggestions.length} apps found`}
                                 </span>
                                 <span className="text-[10px] font-black text-primary-500 uppercase tracking-widest">
-                                    Filtered results
+                                    Search suggestions
                                 </span>
                             </div>
                             {isSearching ? (
                                 <div className="p-16 text-center text-slate-500 flex flex-col items-center gap-4">
                                     <LoadingSpinner />
-                                    <span className="text-sm font-bold tracking-tight">Fetching app data...</span>
+                                    <span className="text-sm font-bold tracking-tight">Searching app database...</span>
                                 </div>
                             ) : suggestions.length > 0 ? (
                                 <ul className="max-h-[400px] overflow-y-auto">
@@ -744,14 +775,25 @@ const Hero: React.FC<{ showToast: (message: string, type: 'success' | 'error') =
                                             <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                                         </svg>
                                     </div>
-                                    <p className="text-lg font-extrabold text-slate-900 dark:text-white tracking-tight">No results matching your query</p>
-                                    <p className="text-sm text-slate-500 mt-2">Try different keywords or platform filters.</p>
+                                    <p className="text-lg font-extrabold text-slate-900 dark:text-white tracking-tight">No apps matching your query</p>
+                                    <p className="text-sm text-slate-500 mt-2">Try different keywords or paste a direct store URL.</p>
                                 </div>
                             )}
                         </div>
                     )}
                 </div>
             </div>
+            <style dangerouslySetInnerHTML={{ __html: `
+                @keyframes shake {
+                    0%, 100% { transform: translateX(0); }
+                    25% { transform: translateX(-4px); }
+                    75% { transform: translateX(4px); }
+                }
+                .animate-shake {
+                    animation: shake 0.2s cubic-bezier(.36,.07,.19,.97) both;
+                    transform: translate3d(0, 0, 0);
+                }
+            ` }} />
         </section>
     );
 };
