@@ -158,33 +158,67 @@ const HighlightMatch: React.FC<{ text: string; query: string }> = ({ text, query
 
 // --- Types & Data ---
 
+type SortOption = 'rating' | 'downloads' | 'date';
+
 type User = { name: string; avatarUrl: string; };
-type AppSuggestion = { name: string; publisher: string; icon: string; url: string; store: 'google' | 'apple'; rating?: number; downloads?: string; };
+type AppSuggestion = { 
+    name: string; 
+    publisher: string; 
+    icon: string; 
+    url: string; 
+    store: 'google' | 'apple'; 
+    rating: number; 
+    downloads: string;
+    releaseDate: string; // ISO format
+};
 
 const mockApps: AppSuggestion[] = [
-    { name: 'Google Maps', publisher: 'Google LLC', icon: '🗺️', url: 'https://play.google.com/store/apps/details?id=com.google.android.apps.maps', store: 'google', rating: 4.7, downloads: '5B+' },
-    { name: 'Instagram', publisher: 'Meta Platforms, Inc.', icon: '📸', url: 'https://play.google.com/store/apps/details?id=com.instagram.android', store: 'google', rating: 4.5, downloads: '5B+' },
-    { name: 'TikTok', publisher: 'TikTok Pte. Ltd.', icon: '🎵', url: 'https://play.google.com/store/apps/details?id=com.zhiliaoapp.musically', store: 'google', rating: 4.4, downloads: '1B+' },
-    { name: 'WhatsApp Messenger', publisher: 'WhatsApp LLC', icon: '💬', url: 'https://play.google.com/store/apps/details?id=com.whatsapp', store: 'google', rating: 4.3, downloads: '5B+' },
-    { name: 'Spotify', publisher: 'Spotify AB', icon: '🎧', url: 'https://play.google.com/store/apps/details?id=com.spotify.music', store: 'google', rating: 4.4, downloads: '1B+' },
-    { name: 'Procreate', publisher: 'Savage Interactive Pty Ltd', icon: '🖌️', url: 'https://apps.apple.com/us/app/procreate/id425073498', store: 'apple', rating: 4.5, downloads: '10M+' },
-    { name: 'ChatGPT', publisher: 'OpenAI', icon: '🤖', url: 'https://apps.apple.com/us/app/chatgpt/id6448311069', store: 'apple', rating: 4.9, downloads: '50M+' },
-    { name: 'YouTube', publisher: 'Google LLC', icon: '▶️', url: 'https://apps.apple.com/us/app/youtube-watch-listen-stream/id544007664', store: 'apple', rating: 4.7, downloads: '1B+' },
+    { name: 'Google Maps', publisher: 'Google LLC', icon: '🗺️', url: 'https://play.google.com/store/apps/details?id=com.google.android.apps.maps', store: 'google', rating: 4.7, downloads: '5B+', releaseDate: '2010-09-14' },
+    { name: 'Instagram', publisher: 'Meta Platforms, Inc.', icon: '📸', url: 'https://play.google.com/store/apps/details?id=com.instagram.android', store: 'google', rating: 4.5, downloads: '5B+', releaseDate: '2012-04-03' },
+    { name: 'TikTok', publisher: 'TikTok Pte. Ltd.', icon: '🎵', url: 'https://play.google.com/store/apps/details?id=com.zhiliaoapp.musically', store: 'google', rating: 4.4, downloads: '1B+', releaseDate: '2017-09-14' },
+    { name: 'WhatsApp Messenger', publisher: 'WhatsApp LLC', icon: '💬', url: 'https://play.google.com/store/apps/details?id=com.whatsapp', store: 'google', rating: 4.3, downloads: '5B+', releaseDate: '2010-10-18' },
+    { name: 'Spotify', publisher: 'Spotify AB', icon: '🎧', url: 'https://play.google.com/store/apps/details?id=com.spotify.music', store: 'google', rating: 4.4, downloads: '1B+', releaseDate: '2008-10-07' },
+    { name: 'Procreate', publisher: 'Savage Interactive Pty Ltd', icon: '🖌️', url: 'https://apps.apple.com/us/app/procreate/id425073498', store: 'apple', rating: 4.5, downloads: '10M+', releaseDate: '2011-03-16' },
+    { name: 'ChatGPT', publisher: 'OpenAI', icon: '🤖', url: 'https://apps.apple.com/us/app/chatgpt/id6448311069', store: 'apple', rating: 4.9, downloads: '50M+', releaseDate: '2023-05-18' },
+    { name: 'YouTube', publisher: 'Google LLC', icon: '▶️', url: 'https://apps.apple.com/us/app/youtube-watch-listen-stream/id544007664', store: 'apple', rating: 4.7, downloads: '1B+', releaseDate: '2012-09-11' },
+    { name: 'Slack', publisher: 'Slack Technologies', icon: '💼', url: 'https://play.google.com/store/apps/details?id=com.Slack', store: 'google', rating: 4.2, downloads: '100M+', releaseDate: '2013-08-12' },
+    { name: 'Notion', publisher: 'Notion Labs, Inc.', icon: '📓', url: 'https://apps.apple.com/us/app/notion-notes-projects-docs/id1232780281', store: 'apple', rating: 4.8, downloads: '20M+', releaseDate: '2018-06-05' },
 ];
 
-const fetchAppSuggestions = async (query: string, store: 'google' | 'apple'): Promise<AppSuggestion[]> => {
-    await new Promise(resolve => setTimeout(resolve, 300));
+const parseDownloads = (d: string) => {
+    const num = parseFloat(d);
+    if (d.includes('B')) return num * 1_000_000_000;
+    if (d.includes('M')) return num * 1_000_000;
+    if (d.includes('K')) return num * 1_000;
+    return num;
+};
+
+const fetchAppSuggestions = async (query: string, store: 'google' | 'apple' | 'both', sortBy: SortOption): Promise<AppSuggestion[]> => {
+    await new Promise(resolve => setTimeout(resolve, 400));
     if (!query.trim()) return [];
     
     const isUrl = query.startsWith('http://') || query.startsWith('https://');
     if (isUrl) return [];
 
     const lowerCaseQuery = query.toLowerCase();
-    const storeApps = mockApps.filter(app => app.store === store);
-    return storeApps.filter(app =>
-        app.name.toLowerCase().includes(lowerCaseQuery) ||
-        app.publisher.toLowerCase().includes(lowerCaseQuery)
-    ).slice(0, 5);
+    
+    // Filter
+    let filtered = mockApps.filter(app => {
+        const matchesStore = store === 'both' || app.store === store;
+        const matchesQuery = app.name.toLowerCase().includes(lowerCaseQuery) || 
+                             app.publisher.toLowerCase().includes(lowerCaseQuery);
+        return matchesStore && matchesQuery;
+    });
+
+    // Sort
+    filtered.sort((a, b) => {
+        if (sortBy === 'rating') return b.rating - a.rating;
+        if (sortBy === 'downloads') return parseDownloads(b.downloads) - parseDownloads(a.downloads);
+        if (sortBy === 'date') return new Date(b.releaseDate).getTime() - new Date(a.releaseDate).getTime();
+        return 0;
+    });
+
+    return filtered.slice(0, 8);
 };
 
 // --- Sub-components ---
@@ -474,7 +508,8 @@ print(response.json())`
 
 const Hero: React.FC<{ showToast: (message: string, type: 'success' | 'error') => void }> = ({ showToast }) => {
     const [appUrl, setAppUrl] = useState('');
-    const [selectedStore, setSelectedStore] = useState<'google' | 'apple'>('google');
+    const [selectedStore, setSelectedStore] = useState<'google' | 'apple' | 'both'>('both');
+    const [sortBy, setSortBy] = useState<SortOption>('rating');
     const [showSuggestions, setShowSuggestions] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -485,8 +520,8 @@ const Hero: React.FC<{ showToast: (message: string, type: 'success' | 'error') =
 
     const debouncedAppUrl = useDebounce(appUrl, 300);
     const { data: suggestions = [], isLoading: isSearching } = useQuery({
-        queryKey: ['suggestions', debouncedAppUrl, selectedStore],
-        queryFn: () => fetchAppSuggestions(debouncedAppUrl, selectedStore),
+        queryKey: ['suggestions', debouncedAppUrl, selectedStore, sortBy],
+        queryFn: () => fetchAppSuggestions(debouncedAppUrl, selectedStore, sortBy),
         enabled: !!debouncedAppUrl.trim(),
     });
 
@@ -558,7 +593,7 @@ const Hero: React.FC<{ showToast: (message: string, type: 'success' | 'error') =
                       <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary-400 opacity-75"></span>
                       <span className="relative inline-flex rounded-full h-2 w-2 bg-primary-500"></span>
                     </span>
-                    New: API v2.0 available
+                    New: Advanced Filtering v2.1
                 </div>
 
                 <h1 className="text-5xl md:text-7xl font-extrabold text-slate-900 dark:text-white tracking-tight leading-[1.1] mb-6 max-w-4xl mx-auto">
@@ -570,72 +605,148 @@ const Hero: React.FC<{ showToast: (message: string, type: 'success' | 'error') =
                 </p>
 
                 <div className="max-w-3xl mx-auto relative" ref={suggestionsContainerRef} onKeyDown={handleKeyDown}>
-                    <div className="bg-white dark:bg-slate-900/80 p-2 rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 backdrop-blur-sm transition-all focus-within:ring-4 focus-within:ring-primary-100/50">
+                    {/* Primary Input Container */}
+                    <div className="bg-white dark:bg-slate-900/80 p-2 rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 backdrop-blur-sm transition-all focus-within:ring-4 focus-within:ring-primary-100/50 group">
                         <div className="flex flex-col sm:flex-row items-center gap-2">
-                            <div className="flex rounded-2xl bg-slate-100 dark:bg-slate-800 p-1 ml-1">
-                                <button onClick={() => setSelectedStore('google')} className={`p-2 rounded-xl transition-all ${selectedStore === 'google' ? 'bg-white dark:bg-slate-700 shadow-sm text-primary-600' : 'text-slate-400'}`}>
-                                    <GooglePlayIcon className="w-6 h-6" />
-                                </button>
-                                <button onClick={() => setSelectedStore('apple')} className={`p-2 rounded-xl transition-all ${selectedStore === 'apple' ? 'bg-white dark:bg-slate-700 shadow-sm text-primary-600' : 'text-slate-400'}`}>
-                                    <AppStoreIcon className="w-6 h-6" />
-                                </button>
+                            <div className="flex-1 w-full relative">
+                                <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">
+                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                    </svg>
+                                </div>
+                                <input
+                                    ref={inputRef}
+                                    type="text"
+                                    value={appUrl}
+                                    onChange={handleInputChange}
+                                    onFocus={handleInputFocus}
+                                    placeholder="Search apps by name, publisher or paste URL..."
+                                    className="w-full bg-transparent border-none outline-none text-lg pl-12 pr-4 py-4 text-slate-900 dark:text-white"
+                                    autoComplete="off"
+                                />
                             </div>
-                            
-                            <input
-                                ref={inputRef}
-                                type="text"
-                                value={appUrl}
-                                onChange={handleInputChange}
-                                onFocus={handleInputFocus}
-                                placeholder={selectedStore === 'google' ? "Search for apps or paste URL..." : "Search for apps or paste URL..."}
-                                className="flex-1 w-full bg-transparent border-none outline-none text-lg px-4 py-3 text-slate-900 dark:text-white"
-                                autoComplete="off"
-                            />
 
                             <button
                                 onClick={handleDownload}
                                 disabled={isLoading || !appUrl}
-                                className="w-full sm:w-auto px-8 py-3 rounded-2xl bg-primary-600 hover:bg-primary-700 text-white font-semibold text-lg shadow-lg shadow-primary-500/30 disabled:opacity-50"
+                                className="w-full sm:w-auto px-10 py-4 rounded-2xl bg-primary-600 hover:bg-primary-700 text-white font-bold text-lg shadow-xl shadow-primary-500/30 disabled:opacity-50 transition-all transform active:scale-95"
                             >
                                 {isLoading ? <LoadingSpinner /> : 'Download'}
                             </button>
                         </div>
                     </div>
                     
+                    {/* Secondary Filters Row */}
+                    <div className="mt-4 flex flex-wrap items-center justify-between gap-4 px-2">
+                        <div className="flex items-center gap-2">
+                            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Platform:</span>
+                            <div className="flex rounded-xl bg-slate-200/50 dark:bg-slate-800/50 p-1 border border-slate-200 dark:border-slate-800 backdrop-blur-sm">
+                                <button 
+                                    onClick={() => setSelectedStore('both')} 
+                                    className={`px-4 py-1.5 rounded-lg transition-all text-[10px] font-black uppercase tracking-tighter ${selectedStore === 'both' ? 'bg-white dark:bg-slate-700 shadow-sm text-primary-600' : 'text-slate-400 hover:text-slate-600'}`}
+                                >
+                                    Both
+                                </button>
+                                <button 
+                                    onClick={() => setSelectedStore('google')} 
+                                    className={`px-4 py-1.5 rounded-lg transition-all flex items-center gap-2 text-[10px] font-black uppercase tracking-tighter ${selectedStore === 'google' ? 'bg-white dark:bg-slate-700 shadow-sm text-green-600' : 'text-slate-400 hover:text-slate-600'}`}
+                                >
+                                    <GooglePlayIcon className="w-3 h-3" /> Android
+                                </button>
+                                <button 
+                                    onClick={() => setSelectedStore('apple')} 
+                                    className={`px-4 py-1.5 rounded-lg transition-all flex items-center gap-2 text-[10px] font-black uppercase tracking-tighter ${selectedStore === 'apple' ? 'bg-white dark:bg-slate-700 shadow-sm text-blue-500' : 'text-slate-400 hover:text-slate-600'}`}
+                                >
+                                    <AppStoreIcon className="w-3 h-3" /> iOS
+                                </button>
+                            </div>
+                        </div>
+
+                        <div className="flex items-center gap-2">
+                            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Sort By:</span>
+                            <div className="relative inline-block">
+                                <select 
+                                    value={sortBy} 
+                                    onChange={(e) => setSortBy(e.target.value as SortOption)}
+                                    className="appearance-none bg-slate-200/50 dark:bg-slate-800/50 text-[10px] font-black uppercase tracking-widest text-slate-500 dark:text-slate-400 py-2.5 pl-4 pr-10 rounded-xl border border-slate-200 dark:border-slate-800 focus:ring-0 cursor-pointer backdrop-blur-sm"
+                                >
+                                    <option value="rating">Top Rated</option>
+                                    <option value="downloads">Most Downloads</option>
+                                    <option value="date">Newest First</option>
+                                </select>
+                                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-slate-400">
+                                    <svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/></svg>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
                     {error && <p className="mt-4 text-red-500 text-sm font-medium">{error}</p>}
 
                     {showSuggestions && (
-                        <div className="absolute top-full left-0 right-0 mt-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl z-20 text-left overflow-hidden animate-fade-in">
+                        <div className="absolute top-full left-0 right-0 mt-6 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl shadow-2xl z-20 text-left overflow-hidden animate-fade-in ring-1 ring-black/5">
+                            <div className="px-5 py-3 border-b border-slate-50 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 flex justify-between items-center">
+                                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                                    {isSearching ? 'Searching...' : `${suggestions.length} apps found`}
+                                </span>
+                                <span className="text-[10px] font-black text-primary-500 uppercase tracking-widest">
+                                    Filtered results
+                                </span>
+                            </div>
                             {isSearching ? (
-                                <div className="p-8 text-center text-slate-500 flex flex-col items-center gap-2">
+                                <div className="p-16 text-center text-slate-500 flex flex-col items-center gap-4">
                                     <LoadingSpinner />
-                                    <span className="text-sm">Searching...</span>
+                                    <span className="text-sm font-bold tracking-tight">Fetching app data...</span>
                                 </div>
                             ) : suggestions.length > 0 ? (
-                                <ul>
+                                <ul className="max-h-[400px] overflow-y-auto">
                                     {suggestions.map((app, index) => (
                                         <li key={app.url}
                                             onClick={() => handleSuggestionClick(app)}
                                             onMouseEnter={() => setActiveIndex(index)}
-                                            className={`p-4 flex items-center space-x-4 cursor-pointer transition-colors ${
-                                                index === activeIndex ? 'bg-primary-50 dark:bg-primary-900/20' : 'hover:bg-slate-50 dark:hover:bg-slate-800/50'
+                                            className={`p-5 flex items-center space-x-5 cursor-pointer transition-all border-b last:border-none border-slate-50 dark:border-slate-800 ${
+                                                index === activeIndex ? 'bg-primary-50 dark:bg-primary-900/30 scale-[0.99] rounded-xl mx-2 my-1 border-transparent' : 'hover:bg-slate-50 dark:hover:bg-slate-800/50'
                                             }`}
                                         >
-                                            <span className="text-4xl">{app.icon}</span>
+                                            <span className="text-4xl flex-shrink-0 bg-white dark:bg-slate-800 p-2.5 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700">{app.icon}</span>
                                             <div className="flex-1 min-w-0">
-                                                <p className="font-semibold text-slate-900 dark:text-slate-100 truncate">
-                                                    <HighlightMatch text={app.name} query={appUrl} />
-                                                </p>
-                                                <p className="text-sm text-slate-500 truncate">{app.publisher}</p>
+                                                <div className="flex items-center gap-2">
+                                                    <p className="font-extrabold text-slate-900 dark:text-slate-100 truncate text-lg tracking-tight">
+                                                        <HighlightMatch text={app.name} query={appUrl} />
+                                                    </p>
+                                                    <div className={`p-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 ${app.store === 'google' ? 'text-green-600' : 'text-blue-500'}`}>
+                                                        {app.store === 'google' ? <GooglePlayIcon className="w-3.5 h-3.5" /> : <AppStoreIcon className="w-3.5 h-3.5" />}
+                                                    </div>
+                                                </div>
+                                                <p className="text-sm font-medium text-slate-500 truncate">{app.publisher}</p>
+                                                <div className="flex items-center gap-3 mt-2 text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                                                    <span className="flex items-center gap-1.5 text-yellow-600">
+                                                        <StarIcon className="w-3.5 h-3.5" /> {app.rating}
+                                                    </span>
+                                                    <span>•</span>
+                                                    <span>{app.downloads} DLs</span>
+                                                    <span>•</span>
+                                                    <span>v{new Date(app.releaseDate).getFullYear()}.{new Date(app.releaseDate).getMonth() + 1}</span>
+                                                </div>
                                             </div>
-                                            <div className="hidden sm:flex items-center text-yellow-500 text-sm font-medium">
-                                                <span>{app.rating}</span> <StarIcon className="ml-1" />
+                                            <div className="hidden sm:block">
+                                                <button className="px-5 py-2.5 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-xl text-xs font-black uppercase tracking-widest hover:bg-primary-600 hover:text-white dark:hover:bg-primary-600 dark:hover:text-white transition-all shadow-md">
+                                                    Select
+                                                </button>
                                             </div>
                                         </li>
                                     ))}
                                 </ul>
                             ) : (
-                                <div className="p-8 text-center text-slate-500">No suggestions for "{appUrl}"</div>
+                                <div className="p-16 text-center text-slate-500 flex flex-col items-center">
+                                    <div className="w-16 h-16 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center mb-6">
+                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                        </svg>
+                                    </div>
+                                    <p className="text-lg font-extrabold text-slate-900 dark:text-white tracking-tight">No results matching your query</p>
+                                    <p className="text-sm text-slate-500 mt-2">Try different keywords or platform filters.</p>
+                                </div>
                             )}
                         </div>
                     )}
@@ -649,7 +760,7 @@ const Features: React.FC = () => (
     <section id="features" className="py-24 bg-slate-50 dark:bg-slate-950">
         <div className="container mx-auto px-6">
             <div className="text-center max-w-3xl mx-auto mb-16">
-                <h2 className="text-3xl md:text-4xl font-bold tracking-tight">Everything you need to analyze apps</h2>
+                <h2 className="text-3xl md:text-4xl font-bold tracking-tight text-slate-900 dark:text-white">Everything you need to analyze apps</h2>
                 <p className="mt-4 text-lg text-slate-600 dark:text-slate-400">Built for speed and precision. Stop taking manual screenshots.</p>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -661,11 +772,11 @@ const Features: React.FC = () => (
                     { icon: 'api', title: 'Developer API', description: 'RESTful API to automate your competitive analysis.' },
                     { icon: 'input', title: 'Smart Search', description: 'Find apps by name, ID, or URL with our instant search.' },
                 ].map((feature, i) => (
-                    <div key={i} className="bg-white dark:bg-slate-900 p-8 rounded-2xl border border-slate-200 dark:border-slate-800 hover:shadow-xl transition-all">
-                        <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-primary-600 text-white mb-6">
+                    <div key={i} className="bg-white dark:bg-slate-900 p-8 rounded-2xl border border-slate-200 dark:border-slate-800 hover:shadow-xl transition-all group">
+                        <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-primary-600 text-white mb-6 group-hover:scale-110 transition-transform">
                            <FeatureIcon icon={feature.icon} />
                         </div>
-                        <h3 className="text-xl font-bold mb-3">{feature.title}</h3>
+                        <h3 className="text-xl font-bold mb-3 text-slate-900 dark:text-white">{feature.title}</h3>
                         <p className="text-slate-600 dark:text-slate-400 leading-relaxed">{feature.description}</p>
                     </div>
                 ))}
@@ -678,7 +789,7 @@ const Pricing: React.FC = () => (
     <section id="pricing" className="py-32 bg-white dark:bg-slate-950">
         <div className="container mx-auto px-6">
             <div className="text-center mb-16">
-                <h2 className="text-3xl font-bold tracking-tight">Simple Pricing</h2>
+                <h2 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">Simple Pricing</h2>
                 <p className="mt-4 text-slate-600 dark:text-slate-400">Scale as you grow.</p>
             </div>
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
@@ -687,8 +798,9 @@ const Pricing: React.FC = () => (
                     { name: 'Pro', price: '$29', features: ['Unlimited downloads', 'High Res Source', 'API Access'], primary: true },
                     { name: 'Team', price: '$99', features: ['Unlimited Seats', 'Dedicated API Key', 'Priority Support'] }
                 ].map((plan) => (
-                    <div key={plan.name} className={`p-8 rounded-3xl border ${plan.primary ? 'bg-slate-900 text-white border-slate-900 shadow-2xl ring-4 ring-primary-500/20 lg:-mt-4' : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800'}`}>
-                        <h3 className="text-2xl font-bold">{plan.name}</h3>
+                    <div key={plan.name} className={`p-8 rounded-3xl border transition-all ${plan.primary ? 'bg-slate-900 text-white border-slate-900 shadow-2xl ring-4 ring-primary-500/20 lg:-mt-4 relative overflow-hidden' : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800'}`}>
+                        {plan.primary && <div className="absolute top-0 right-0 bg-primary-500 text-white text-[10px] font-black px-4 py-1 rotate-45 translate-x-3 translate-y-3">POPULAR</div>}
+                        <h3 className={`text-2xl font-bold ${plan.primary ? 'text-white' : 'text-slate-900 dark:text-white'}`}>{plan.name}</h3>
                         <div className="my-8">
                             <span className="text-5xl font-extrabold">{plan.price}</span>
                             <span className="text-lg opacity-60">/mo</span>
@@ -696,12 +808,12 @@ const Pricing: React.FC = () => (
                         <ul className="space-y-4 mb-8">
                             {plan.features.map((f, i) => (
                                 <li key={i} className="flex items-center text-sm">
-                                    <CheckIcon className="w-5 h-5 mr-3 text-primary-500" />
+                                    <CheckIcon className={`w-5 h-5 mr-3 ${plan.primary ? 'text-primary-400' : 'text-primary-500'}`} />
                                     {f}
                                 </li>
                             ))}
                         </ul>
-                        <button className={`w-full py-3 rounded-xl font-bold ${plan.primary ? 'bg-white text-slate-900' : 'bg-slate-100 dark:bg-slate-800'}`}>Get Started</button>
+                        <button className={`w-full py-3 rounded-xl font-bold transition-colors ${plan.primary ? 'bg-white text-slate-900 hover:bg-slate-100' : 'bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white hover:bg-slate-200 dark:hover:bg-slate-700'}`}>Get Started</button>
                     </div>
                 ))}
             </div>
@@ -713,10 +825,14 @@ const Footer: React.FC = () => (
     <footer className="bg-slate-50 dark:bg-slate-950 border-t border-slate-200 dark:border-slate-800 py-12">
         <div className="container mx-auto px-6 text-center">
             <div className="flex items-center justify-center gap-2 mb-6">
-                 <div className="w-6 h-6 bg-primary-600 rounded flex items-center justify-center text-white text-xs">A</div>
-                 <span className="font-bold">AppScreens</span>
+                 <div className="w-8 h-8 bg-gradient-to-br from-primary-500 to-primary-700 rounded-lg flex items-center justify-center text-white">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5">
+                        <path fillRule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clipRule="evenodd" />
+                    </svg>
+                </div>
+                 <span className="font-bold text-slate-900 dark:text-white">AppScreens</span>
             </div>
-            <p className="text-slate-400 text-sm">&copy; {new Date().getFullYear()} AppScreens Inc.</p>
+            <p className="text-slate-400 text-sm">&copy; {new Date().getFullYear()} AppScreens Inc. All rights reserved.</p>
         </div>
     </footer>
 );
@@ -732,22 +848,23 @@ const AuthModal: React.FC<{ isOpen: boolean; onClose: () => void; onLoginSuccess
         setIsLoading(false);
     };
     return (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm" onClick={onClose}>
-            <div className="bg-white dark:bg-slate-900 w-full max-w-sm p-8 rounded-2xl shadow-2xl" onClick={e => e.stopPropagation()}>
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-md" onClick={onClose}>
+            <div className="bg-white dark:bg-slate-900 w-full max-w-sm p-8 rounded-3xl shadow-2xl animate-fade-in" onClick={e => e.stopPropagation()}>
                 <div className="text-center mb-8">
-                    <h3 className="text-xl font-bold">Welcome back</h3>
+                    <h3 className="text-2xl font-bold text-slate-900 dark:text-white">Welcome back</h3>
+                    <p className="text-sm text-slate-500 dark:text-slate-400 mt-2">Sign in to your account</p>
                 </div>
                 <form onSubmit={handleLogin} className="space-y-4">
-                    <button type="button" className="w-full flex items-center justify-center gap-3 py-2.5 border border-slate-200 dark:border-slate-700 rounded-xl font-medium">
+                    <button type="button" className="w-full flex items-center justify-center gap-3 py-3 border border-slate-200 dark:border-slate-700 rounded-2xl font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
                         <GoogleIcon /> Sign in with Google
                     </button>
-                    <div className="relative flex py-2 items-center text-slate-400 text-xs uppercase">
+                    <div className="relative flex py-2 items-center text-slate-400 text-[10px] font-bold uppercase tracking-widest">
                         <div className="flex-grow border-t border-slate-100 dark:border-slate-800"></div>
-                        <span className="mx-2">Or</span>
+                        <span className="mx-2">Or with Email</span>
                         <div className="flex-grow border-t border-slate-100 dark:border-slate-800"></div>
                     </div>
-                    <input type="email" placeholder="Email address" className="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-800 border-none focus:ring-2 focus:ring-primary-500" />
-                    <button type="submit" className="w-full py-3 bg-primary-600 text-white rounded-xl font-semibold">
+                    <input type="email" placeholder="Email address" className="w-full px-4 py-3 rounded-2xl bg-slate-50 dark:bg-slate-800 border-none focus:ring-2 focus:ring-primary-500 text-slate-900 dark:text-white" />
+                    <button type="submit" className="w-full py-3 bg-primary-600 text-white rounded-2xl font-bold shadow-lg shadow-primary-500/20 hover:bg-primary-700 transition-colors">
                         {isLoading ? <LoadingSpinner /> : 'Sign In'}
                     </button>
                 </form>
@@ -758,7 +875,12 @@ const AuthModal: React.FC<{ isOpen: boolean; onClose: () => void; onLoginSuccess
 
 const App: React.FC = () => {
     const [toast, setToast] = useState<{ message: string; type: 'success' | 'error'; id: number } | null>(null);
-    const [isDarkMode, setIsDarkMode] = useState(() => localStorage.getItem('theme') === 'dark');
+    const [isDarkMode, setIsDarkMode] = useState(() => {
+        if (typeof window !== 'undefined') {
+            return localStorage.getItem('theme') === 'dark';
+        }
+        return false;
+    });
     const [currentUser, setCurrentUser] = useState<User | null>(null);
     const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
     const [currentView, setCurrentView] = useState<'home' | 'api'>('home');
@@ -771,7 +893,7 @@ const App: React.FC = () => {
     const showToast = (message: string, type: 'success' | 'error') => setToast({ message, type, id: Date.now() });
 
     return (
-        <div className="min-h-screen bg-white dark:bg-slate-950">
+        <div className="min-h-screen bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-200">
             <Header 
                 isDarkMode={isDarkMode} 
                 toggleDarkMode={() => setIsDarkMode(!isDarkMode)} 
@@ -794,7 +916,15 @@ const App: React.FC = () => {
             </main>
             <Footer />
             {toast && <Toast key={toast.id} message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
-            <AuthModal isOpen={isAuthModalOpen} onClose={() => setIsAuthModalOpen(false)} onLoginSuccess={() => { setCurrentUser({ name: 'User', avatarUrl: 'https://i.pravatar.cc/150?u=1' }); setIsAuthModalOpen(false); }} />
+            <AuthModal 
+                isOpen={isAuthModalOpen} 
+                onClose={() => setIsAuthModalOpen(false)} 
+                onLoginSuccess={() => { 
+                    setCurrentUser({ name: 'Alex Johnson', avatarUrl: 'https://i.pravatar.cc/150?u=alex' }); 
+                    setIsAuthModalOpen(false); 
+                    showToast('Logged in successfully!', 'success');
+                }} 
+            />
         </div>
     );
 };

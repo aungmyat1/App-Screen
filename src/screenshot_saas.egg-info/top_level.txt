@@ -1,5 +1,0 @@
-api
-core
-models
-utils
-workers
