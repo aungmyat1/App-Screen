@@ -1,11 +1,11 @@
 {
   "compilerOptions": {
-    "target": "ES2022",
+    "target": "ES2020",
+    "useDefineForClassFields": true,
     "experimentalDecorators": true,
-    "useDefineForClassFields": false,
     "module": "ESNext",
     "lib": [
-      "ES2022",
+      "ES2020",
       "DOM",
       "DOM.Iterable"
     ],
@@ -13,7 +13,11 @@
     "types": [
       "node"
     ],
+    
+    /* Bundler mode */
     "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "resolveJsonModule": true,
     "isolatedModules": true,
     "moduleDetection": "force",
     "allowJs": true,
@@ -23,7 +27,16 @@
         "./*"
       ]
     },
-    "allowImportingTsExtensions": true,
-    "noEmit": true
+    "noEmit": true,
+    
+    /* Linting */
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true,
+    
+    /* Performance */
+    "incremental": true,
+    "tsBuildInfoFile": "./node_modules/.tmp/tsbuildinfo.json"
   }
 }
