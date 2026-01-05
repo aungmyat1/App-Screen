@@ -1,37 +1,30 @@
 #!/bin/bash
-
-# Post-create script for Next.js Development DevContainer
-
-echo "Setting up Next.js development environment..."
-
-# Exit immediately if a command exits with a non-zero status
 set -e
 
-# Install Node.js dependencies if package.json exists
-if [ -f "/workspace/package.json" ]; then
-    echo "Installing Node.js dependencies..."
-    cd /workspace
-    npm install
+echo "🚀 Post-create setup..."
+
+# Python venv
+if [ ! -d "backend/venv" ] && [ -d "backend" ]; then
+  echo "🐍 Creating Python virtual environment..."
+  python -m venv backend/venv
 fi
 
-# Setup Git configuration if needed
-if ! git config user.email > /dev/null 2>&1; then
-    echo "Please configure your Git email: git config --global user.email <your-email>"
+# Install Python dependencies
+if [ -f "backend/requirements.txt" ]; then
+  echo "📦 Installing Python dependencies..."
+  source backend/venv/bin/activate
+  pip install -r backend/requirements.txt
 fi
 
-if ! git config user.name > /dev/null 2>&1; then
-    echo "Please configure your Git username: git config --global user.name <your-username>"
+# Install Node dependencies
+if [ -f "package.json" ]; then
+  echo "📦 Installing Node dependencies..."
+  npm install
 fi
 
-# Initialize Git LFS if .gitattributes exists
-if [ -f "/workspace/.gitattributes" ]; then
-    git lfs install
+# Copy env file if not exist
+if [ ! -f ".env" ] && [ -f ".devcontainer/env.example" ]; then
+  cp .devcontainer/env.example .env
 fi
 
-# Set proper permissions for scripts
-chmod +x /workspace/.devcontainer/post-start.sh
-
-echo "Development environment setup complete!"
-echo "Next steps:"
-echo "1. If you haven't already, configure Git: git config --global user.email 'your-email@example.com'"
-echo "2. Run your frontend with: cd /workspace && npm run dev"
+echo "✅ Dev Container ready!"
