@@ -27,4 +27,15 @@ if [ ! -f ".env" ] && [ -f ".devcontainer/env.example" ]; then
   cp .devcontainer/env.example .env
 fi
 
+# Initialize Git LFS if it's a Git repository
+if command -v git >/dev/null 2>&1 && [ -d .git ]; then
+  echo "🔍 Git repository detected, checking Git LFS..."
+  if git lfs version >/dev/null 2>&1; then
+    echo "-lfs Initializing Git LFS..."
+    git lfs install
+  else
+    echo "⚠️ Git LFS not available in this environment"
+  fi
+fi
+
 echo "✅ Dev Container ready!"
