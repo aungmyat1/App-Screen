@@ -17,6 +17,11 @@ RUN add-apt-repository ppa:deadsnakes/ppa -y \
     && apt-get install -y python${PYTHON_VERSION} python${PYTHON_VERSION}-venv python${PYTHON_VERSION}-dev \
     && update-alternatives --install /usr/bin/python python /usr/bin/python${PYTHON_VERSION} 1
 
+# Install Git LFS
+RUN curl -s https://packagecloud.io/install/repositories/github/git-lfs/script.deb.sh | bash - \
+    && apt-get install -y git-lfs \
+    && git lfs install --system
+
 RUN npm install -g npm yarn pnpm \
     && python -m pip install --upgrade pip
 
