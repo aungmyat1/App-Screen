@@ -1,4 +1,4 @@
-git push origin main
+{
   "compilerOptions": {
     "target": "ES2020",
     "useDefineForClassFields": true,
@@ -10,9 +10,7 @@ git push origin main
       "DOM.Iterable"
     ],
     "skipLibCheck": true,
-    "types": [
-      "node"
-    ],
+    "types": [],
     
     /* Bundler mode */
     "moduleResolution": "bundler",
