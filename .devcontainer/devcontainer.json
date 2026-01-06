@@ -41,7 +41,11 @@
     },
     "remoteEnv": {
         "DEVCONTAINER": "true",
-        "ENVIRONMENT": "development"
+        "ENVIRONMENT": "development",
+        "DATABASE_URL": "postgresql://appscreens_user:appscreens_pass@postgres:5432/appscreens",
+        "REDIS_URL": "redis://redis:6379",
+        "NODE_ENV": "development",
+        "PYTHONPATH": "/workspaces/App-Screen/backend"
     },
     "runArgs": [
         "--cap-add=SYS_PTRACE",
