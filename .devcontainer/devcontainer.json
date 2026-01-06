@@ -1,40 +1,50 @@
 {
-  "name": "Universal Dev Container",
-  "dockerComposeFile": "docker-compose.yml",
-  "service": "app",
-  "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
-
-  "features": {
-    "ghcr.io/devcontainers/features/git:1": {},
-    "ghcr.io/devcontainers/features/github-cli:1": {},
-    "ghcr.io/devcontainers/features/docker-in-docker:2": {}
-  },
-
-  "customizations": {
-    "vscode": {
-      "extensions": [
-        "ms-python.python",
-        "ms-vscode.vscode-typescript-next",
-        "dbaeumer.vscode-eslint",
-        "esbenp.prettier-vscode",
-        "ms-azuretools.vscode-docker",
-        "eamodio.gitlens",
-        "Alibaba-Cloud.tongyi-lingma"
-      ],
-      "settings": {
-        "editor.formatOnSave": true,
-        "terminal.integrated.defaultProfile.linux": "bash"
-      }
-    }
-  },
-
-  "postCreateCommand": "bash .devcontainer/post-create.sh",
-  "remoteUser": "vscode",
-  "shutdownAction": "stopCompose",
-
-  // Codespaces-specific settings
-  "forwardPorts": [3000, 5432, 6379],
-  "portsAttributes": {
-    "3000": { "label": "App HTTP", "onAutoForward": "openBrowser" }
-  }
+    "name": "App-Screen Development Environment",
+    "image": "mcr.microsoft.com/devcontainers/python:3.11",
+    "features": {
+        "ghcr.io/devcontainers/features/node:1": {
+            "version": "18"
+        },
+        "ghcr.io/devcontainers/features/git-lfs:1": {}
+    },
+    "postCreateCommand": "bash .devcontainer/postCreate.sh",
+    "postStartCommand": "bash .devcontainer/wait-for.sh -t 10 localhost:8000 || true",
+    "customizations": {
+        "vscode": {
+            "settings": {
+                "python.defaultInterpreterPath": "/usr/local/bin/python",
+                "python.linting.enabled": true,
+                "python.linting.flake8Enabled": true,
+                "python.formatting.provider": "black",
+                "python.testing.pytestEnabled": true
+            },
+            "extensions": [
+                "ms-python.python",
+                "ms-python.vscode-pylance",
+                "bradlc.vscode-tailwindcss",
+                "formulahendry.auto-rename-tag",
+                "ms-vscode.vscode-json",
+                "esbenp.prettier-vscode",
+                "ms-vscode.vscode-typescript-next"
+            ]
+        }
+    },
+    "forwardPorts": [8000, 5173],
+    "portsAttributes": {
+        "8000": {
+            "label": "Backend API"
+        },
+        "5173": {
+            "label": "Frontend"
+        }
+    },
+    "remoteEnv": {
+        "DEVCONTAINER": "true",
+        "ENVIRONMENT": "development"
+    },
+    "runArgs": [
+        "--cap-add=SYS_PTRACE",
+        "--security-opt",
+        "seccomp=unconfined"
+    ]
 }

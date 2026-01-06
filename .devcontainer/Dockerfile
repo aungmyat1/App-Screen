@@ -1,4 +1,19 @@
-FROM mcr.microsoft.com/devcontainers/base:ubuntu
+FROM mcr.microsoft.com/devcontainers/python:3.11
+
+# Install additional system packages including git-lfs and netcat
+RUN apt-get update && apt-get install -y \
+    git-lfs \
+    netcat-openbsd \
+    && rm -rf /var/lib/apt/lists/*
+
+# Set up Git LFS
+RUN git lfs version
+
+# Install Playwright browsers (if needed)
+RUN python3 -m playwright install chromium --quiet
+
+# Set the default command to bash
+CMD ["/bin/bash"]
 
 ARG NODE_VERSION=20
 ARG PYTHON_VERSION=3.11
