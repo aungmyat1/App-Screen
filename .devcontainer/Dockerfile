@@ -1,3 +1,4 @@
+# Use the same base image as specified in devcontainer.json
 FROM mcr.microsoft.com/devcontainers/python:3.11
 
 # Install additional system packages including git-lfs and netcat
@@ -9,7 +10,7 @@ RUN apt-get update && apt-get install -y \
 # Set up Git LFS
 RUN git lfs version
 
-# Install Playwright browsers (if needed)
+# Install Playwright browsers
 RUN python3 -m playwright install chromium --quiet
 
 # Set the default command to bash

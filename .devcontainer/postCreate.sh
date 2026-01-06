@@ -54,30 +54,24 @@ fi
 # Generate .env file if it doesn't exist
 if [ ! -f ".env" ]; then
   echo "📝 Creating default .env file..."
-
-  cat > .env << EOF
-NODE_ENV=development
-PYTHONPATH=${WORKSPACE_FOLDER:-/workspaces/App-Screen}/backend
-
-# Services (docker-compose)
-DATABASE_URL=postgresql://appscreens_user:appscreens_pass@postgres:5432/appscreens
-REDIS_URL=redis://redis:6379
-
-# API Keys (fill manually)
-GEMINI_API_KEY=
-STRIPE_SECRET_KEY=
-STRIPE_WEBHOOK_SECRET=
-
-# Environment
-ENVIRONMENT=development
-DEVCONTAINER=true
-EOF
+  cp .env.example .env
+  echo "ℹ️ .env file created from .env.example - please fill in your secrets"
 fi
 
 # Check if Node dependencies are installed
 if [ -f "package.json" ] && [ ! -d "node_modules" ]; then
     echo "📦 Installing Node.js dependencies..."
     npm install --prefer-offline --no-audit
+fi
+
+# Wait for database services to be ready before running migrations
+echo "⏳ Waiting for database services to be ready..."
+if command -v docker &> /dev/null && [ -f ".devcontainer/docker-compose.yml" ]; then
+    # Wait for postgres
+    timeout 60 bash -c 'until docker compose -f .devcontainer/docker-compose.yml exec postgres pg_isready > /dev/null 2>&1; do sleep 2; done' || echo "Postgres may still be starting..."
+    
+    # Wait for redis
+    timeout 30 bash -c 'until docker compose -f .devcontainer/docker-compose.yml exec redis redis-cli ping > /dev/null 2>&1; do sleep 2; done' || echo "Redis may still be starting..."
 fi
 
 # Run any pending database migrations if backend exists

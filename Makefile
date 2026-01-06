@@ -2,7 +2,7 @@
 
 # Commands for managing the development environment
 
-.PHONY: up down dev restart
+.PHONY: up down dev restart status logs test-backend test-frontend healthcheck
 
 # Start all services in detached mode
 up:
@@ -35,3 +35,12 @@ test-backend:
 # Run frontend tests
 test-frontend:
 	docker compose -f .devcontainer/docker-compose.yml exec app npm test
+
+# Check service health
+healthcheck:
+	docker compose -f .devcontainer/docker-compose.yml ps --health
+
+# Wait for services to be ready
+wait-for-services:
+	bash .devcontainer/wait-for.sh postgres:5432 || true
+	bash .devcontainer/wait-for.sh redis:6379 || true
