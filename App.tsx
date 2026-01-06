@@ -527,7 +527,6 @@ print(response.json())`
 
 const Hero: React.FC<{ showToast: (message: string, type: 'success' | 'error') => void }> = ({ showToast }) => {
     const [appUrl, setAppUrl] = useState('');
-    const [selectedStore, setSelectedStore] = useState<'google' | 'apple' | 'both'>('both');
     const [showSuggestions, setShowSuggestions] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -538,8 +537,8 @@ const Hero: React.FC<{ showToast: (message: string, type: 'success' | 'error') =
 
     const debouncedAppUrl = useDebounce(appUrl, 300);
     const { data: suggestions = [], isLoading: isSearching } = useQuery({
-        queryKey: ['suggestions', debouncedAppUrl, selectedStore],
-        queryFn: () => fetchAppSuggestions(debouncedAppUrl, selectedStore, 'rating'),
+        queryKey: ['suggestions', debouncedAppUrl],
+        queryFn: () => fetchAppSuggestions(debouncedAppUrl, 'both', 'rating'),
         enabled: !!debouncedAppUrl.trim(),
     });
 
@@ -675,33 +674,6 @@ const Hero: React.FC<{ showToast: (message: string, type: 'success' | 'error') =
                             >
                                 {isLoading ? <LoadingSpinner /> : 'Download'}
                             </button>
-                        </div>
-                    </div>
-                    
-                    {/* Secondary Filters Row */}
-                    <div className="mt-4 flex flex-wrap items-center justify-start gap-4 px-2">
-                        <div className="flex items-center gap-2">
-                            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Platform Filter:</span>
-                            <div className="flex rounded-xl bg-slate-200/50 dark:bg-slate-800/50 p-1 border border-slate-200 dark:border-slate-800 backdrop-blur-sm">
-                                <button 
-                                    onClick={() => setSelectedStore('both')} 
-                                    className={`px-4 py-1.5 rounded-lg transition-all text-[10px] font-black uppercase tracking-tighter ${selectedStore === 'both' ? 'bg-white dark:bg-slate-700 shadow-sm text-primary-600' : 'text-slate-400 hover:text-slate-600'}`}
-                                >
-                                    Both
-                                </button>
-                                <button 
-                                    onClick={() => setSelectedStore('google')} 
-                                    className={`px-4 py-1.5 rounded-lg transition-all flex items-center gap-2 text-[10px] font-black uppercase tracking-tighter ${selectedStore === 'google' ? 'bg-white dark:bg-slate-700 shadow-sm text-green-600' : 'text-slate-400 hover:text-slate-600'}`}
-                                >
-                                    <GooglePlayIcon className="w-3 h-3" /> Android
-                                </button>
-                                <button 
-                                    onClick={() => setSelectedStore('apple')} 
-                                    className={`px-4 py-1.5 rounded-lg transition-all flex items-center gap-2 text-[10px] font-black uppercase tracking-tighter ${selectedStore === 'apple' ? 'bg-white dark:bg-slate-700 shadow-sm text-blue-500' : 'text-slate-400 hover:text-slate-600'}`}
-                                >
-                                    <AppStoreIcon className="w-3 h-3" /> iOS
-                                </button>
-                            </div>
                         </div>
                     </div>
                     
