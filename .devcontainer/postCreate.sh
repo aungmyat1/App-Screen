@@ -89,3 +89,14 @@ echo "  - PostgreSQL : 5432"
 echo "  - Redis      : 6379"
 echo "  - Backend    : 8000"
 echo "  - Frontend   : 5173"
+
+# Run validation to ensure everything is properly set up
+echo ""
+echo "🧪 Running validation to ensure all components are working..."
+if [ -f "./validate.sh" ]; then
+    echo "Running validation script..."
+    chmod +x ./validate.sh
+    ./validate.sh
+else
+    echo "⚠️ Validation script not found, skipping validation"
+fi

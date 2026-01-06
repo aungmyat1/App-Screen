@@ -1,10 +1,12 @@
 # Use the same base image as specified in devcontainer.json
 FROM mcr.microsoft.com/devcontainers/python:3.11
 
-# Install additional system packages including git-lfs and netcat
+# Install additional system packages including git-lfs, netcat, postgresql-client and redis-tools
 RUN apt-get update && apt-get install -y \
     git-lfs \
     netcat-openbsd \
+    postgresql-client \
+    redis-tools \
     && rm -rf /var/lib/apt/lists/*
 
 # Set up Git LFS

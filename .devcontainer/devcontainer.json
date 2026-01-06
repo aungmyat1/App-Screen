@@ -5,7 +5,8 @@
         "ghcr.io/devcontainers/features/node:1": {
             "version": "18"
         },
-        "ghcr.io/devcontainers/features/git-lfs:1": {}
+        "ghcr.io/devcontainers/features/git-lfs:1": {},
+        "ghcr.io/devcontainers/features/github-cli:1": {}
     },
     "postCreateCommand": "bash .devcontainer/postCreate.sh",
     "postStartCommand": "bash .devcontainer/wait-for.sh -t 10 localhost:8000 || true",
