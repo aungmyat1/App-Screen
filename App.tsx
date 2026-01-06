@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, useCallback } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 
 // --- Helper Hooks ---
 
@@ -119,7 +119,7 @@ const GooglePlayIcon: React.FC<{ className?: string }> = ({ className = 'h-6 w-6
 
 const FeatureIcon: React.FC<{ icon: string }> = ({ icon }) => {
     const icons: { [key: string]: React.ReactElement } = {
-        'batch': <path strokeLinecap="round" strokeLinejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />,
+        'batch': <path strokeLinecap="round" strokeLinejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 00-2-2v-6a2 2 0 002-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />,
         'platform': <path strokeLinecap="round" strokeLinejoin="round" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2zM5 12h.01M19 12h.01M12 5h.01" />,
         'input': <path strokeLinecap="round" strokeLinejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.5L15.232 5.232z" />,
         'output': <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />,
@@ -347,8 +347,8 @@ const CodeBlock: React.FC<{ code: string; language?: string }> = ({ code, langua
                     {copied ? 'Copied!' : 'Copy'}
                 </button>
             </div>
-            <pre className="bg-slate-950 text-slate-300 p-5 rounded-xl overflow-x-auto font-mono text-sm leading-relaxed border border-slate-800/50">
-                <code>{code}</code>
+            <pre className={`bg-slate-950 text-slate-300 p-5 rounded-xl overflow-x-auto font-mono text-sm leading-relaxed border border-slate-800/50 language-${language}`}>
+                <code className={`language-${language}`}>{code}</code>
             </pre>
         </div>
     );
